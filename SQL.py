@@ -312,7 +312,10 @@ class ADODatabase( object ):
 		map( self.Execute, batches )
 
 	def UseDatabase( self, dbName ):
-		self.connection.Properties('Current Catalog').Value = '[%s]' % dbName
+		'Connect the current catalog in SQL server to dbName'
+		# apparently, the name has to be in quotes for the initial call to set the current catalog.
+		dbName = '[%s]' % dbName
+		self.connection.Properties('Current Catalog').Value = dbName
 
 	def GetNextRowAsDictionary( self ):
 		fieldNames = self.GetFieldNames()
