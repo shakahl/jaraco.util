@@ -14,9 +14,9 @@ an HTTP or HTTPS connection to the other end of the tunnel.
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 3 $'[11:-2]
+__version__ = '$Revision: 4 $'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-04-08 11:33 $'[10:-2]
+__date__ = '$Modtime: 04-04-13 16:34 $'[10:-2]
 
 import httplib, urllib2, urllib, socket
 import autohttp
@@ -61,7 +61,7 @@ class ProxyTunnelHandler( urllib2.ProxyHandler ):
 		try:
 			tunnel_connection.endheaders()
 		except socket.error, err:
-			raise URLError(err)
+			raise urllib2.URLError(err)
 		response = tunnel_connection.getresponse()
 		response.read()
 		request.sock = tunnel_connection.sock
