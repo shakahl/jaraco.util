@@ -1,3 +1,7 @@
+#
+
+"cookies.py"
+
 import os, copy
 import itertools
 import string, re
@@ -34,12 +38,15 @@ def isNotCookieDelimiter(s ):
 	return s != '*\n'
 
 class cookie( dict ):
+	"""cookie class parses cookie information from HTTP Responses and outputs
+	for HTTP Requests"""
 	parameterNames = ( 'expires', 'path', 'domain', 'secure' )
 	def __init__( self, header = None ):
 		if header:
 			self.readFromSetHeader( header )
 			
 	def readFromSetHeader( self, header ):
+		'Read a cookie from a header as received in an HTTP Response'
 		fields = re.split( ';\s*', header )
 		splitEquals = lambda x: x.split( '=' )
 		fieldPairs = map( splitEquals, fields )
@@ -58,6 +65,7 @@ class cookie( dict ):
 		del self[name]
 
 	def getRequestHeader( self ):
+		"returns the cookie as can be used in an HTTP Request"
 		return '='.join( ( self['name'], self['value'] ) )
 
 	def isSecure( self ):
