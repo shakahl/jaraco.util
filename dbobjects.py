@@ -8,9 +8,9 @@ for retrieving the objects.
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 2 $'[11:-2]
+__version__ = '$Revision: 3 $'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 8-09-04 19:21 $'[10:-2]
+__date__ = '$Modtime: 4-10-04 13:57 $'[10:-2]
 
 import xmlTools, tools, SQL
 
@@ -21,7 +21,9 @@ log = logging.getLogger( __name__ )
 
 class SimpleObject( xmlTools.XMLObject ):
 	pkPattern = re.compile( "Violation of PRIMARY KEY constraint '.*'\. Cannot insert duplicate key in object '.*'\." )
-
+	__autoInsert__ = True
+	__autoRetrieve__ = True
+	
 	def __init__( self, *args ):
 		self.__LoadFieldNames__()
 		if not( len( args ) == 1 and isinstance( args[0], ( dict, tuple, list ) ) ):
@@ -67,10 +69,18 @@ class SimpleObject( xmlTools.XMLObject ):
 		self.__RemoveIdentityField__( data )
 		getdb().Update( self.tableName, { self.IDField: self }, data )
 
+	def __getitem__( self, key ):
+		# trigger autofetch/insert of the object if the IDField is requested
+		if key == self.IDField and not self.has_key( key ):
+			self.fetch() or self.insert()
+		return xmlTools.XMLObject.__getitem__( self, key )
+
 	def __GetSQLRepr__( self ):
-		"""Return the SQL Representation for this object.  The object should
-		already have been retrieved from the database."""
-		return SQL.GetSQLRepr( self.get( self.IDField ) )
+		"""Return the SQL Representation for this object."""
+		try:
+			return SQL.GetSQLRepr( self[ self.IDField ] )
+		except KeyError:
+			raise Exception, 'Could not acquire an object ID for object %s' % self
 	SQLRepr = property( __GetSQLRepr__ )
 
 	def GetAll( ob ):
