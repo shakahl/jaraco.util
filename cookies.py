@@ -6,6 +6,8 @@ This works better than the library supplied in Python.
 """
 
 import os, copy, urllib, httplib
+# import case-insensitive string & dictionary
+from tools import ciString, ciDict
 import itertools
 import string, re
 
@@ -58,7 +60,7 @@ def getCookies( source, path = None ):
 		result = map( cookie, cookieTextStrings )
 		if path: map( lambda c: c.setPathIfEmpty( path ), result )
 	else:
-		result = None
+		result = []
 	return result
 
 def isNotCookieDelimiter(s ):
@@ -67,7 +69,7 @@ def isNotCookieDelimiter(s ):
 class cookie( object ):
 	"""cookie class parses cookie information from HTTP Responses and outputs
 	for HTTP Requests"""
-	parameterNames = ( 'expires', 'path', 'domain', 'secure' )
+	parameterNames = tuple( map( ciString, ( 'expires', 'path', 'domain', 'secure' ) ) )
 	def __init__( self, source = None ):
 		if isinstance( source, basestring ):
 			self.readFromSetHeader( source )
@@ -81,7 +83,7 @@ class cookie( object ):
 		fields = re.split( ';\s*', header )
 		splitEquals = lambda x: x.split( '=', 1 )
 		fieldPairs = map( splitEquals, fields )
-		self.__parameters = dict( fieldPairs )
+		self.__parameters = ciDict( fieldPairs )
 		self.__findName()
 
 	def __findName( self ):
@@ -89,7 +91,7 @@ class cookie( object ):
 		isNotParameter = lambda k: k not in self.parameterNames
 		names = filter( isNotParameter, self.__parameters )
 		if not len( names ) == 1:
-			raise ValueError, "Found more than one name/value pair where name isn't a cookie parameter"
+			raise ValueError, "Found more than one name/value pair where name isn't a cookie parameter %s" % names
 		name = names[0]
 		self.__name = name
 		self.__value = self.__parameters[name]
@@ -112,6 +114,9 @@ class cookie( object ):
 
 	def getParameters( self ):
 		return self.__parameters
+
+	def get( self, *args ):
+		return self.__parameters.get( *args )
 
 	def setPathIfEmpty( self, path ):
 		if not self.getPath():
