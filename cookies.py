@@ -48,7 +48,7 @@ class cookie( dict ):
 	def readFromSetHeader( self, header ):
 		'Read a cookie from a header as received in an HTTP Response'
 		fields = re.split( ';\s*', header )
-		splitEquals = lambda x: x.split( '=' )
+		splitEquals = lambda x: x.split( '=', 1 )
 		fieldPairs = map( splitEquals, fields )
 		self.update( dict( fieldPairs ) )
 		self.findName()
@@ -66,6 +66,7 @@ class cookie( dict ):
 
 	def getRequestHeader( self ):
 		"returns the cookie as can be used in an HTTP Request"
+		return '='.join( ( self['name'], self['value'] ) )
 		return '='.join( ( self['name'], urllib.quote( self['value'] ) ) )
 
 	def isSecure( self ):
