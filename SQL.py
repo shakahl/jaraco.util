@@ -129,9 +129,28 @@ except pywintypes.com_error:
 	win32com.client.gencache.EnsureModule('{EF53050B-882E-4776-B643-EDA472E8E3F2}', 0, 2, 7)
 
 class ADODatabase( object ):
-	# this method converts the list of column names into a tuple, and
-	#  then removes the 's, converting the column names into a SQL list.
+	"""Class for performing ADO functionality.  See SQLServerDatabase
+	for an example."""
+	def __init__( self, parameters={} ):
+		self.connectionParameters.update( parameters )
+		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
+		self.connect()
+
+	def connect( self ):
+		if self.connection.State:
+			self.connection.Close()
+		self.connection.Provider = self.provider
+		self.__class__._setProperties( self.connection, self.connectionParameters )
+		self.connection.Open()
+
+	def _setProperties( object, properties ):
+		for property, value in properties.items():
+			object.Properties( property ).Value = value
+	_setProperties = staticmethod( _setProperties )
+
 	def MakeSQLList( self, list ):
+		"""This method converts the list of column names into a tuple, and
+then converts the list elements into their SQL representation."""
 		list = map( self.GetSQLRepr, list )
 		return '(' + string.join( list, ', ' ) + ')'
 
@@ -139,6 +158,7 @@ class ADODatabase( object ):
 		return '(' + string.join( map( lambda x: '['+x+']', list ), ', ' ) + ')'
 
 	def GetSQLRepr( self, object ):
+		"Get an object's SQL representation"
 		if hasattr( object, 'SQLRepr' ):
 			result = object.SQLRepr
 		else:
@@ -146,10 +166,12 @@ class ADODatabase( object ):
 			#  on the python type.  If no inference is made, use the python representation.
 			if type( object ) is types.LongType:
 				# strip off the 'L' at the end
-				result = object.__repr__( self )[:-1]
+				result = object.__repr__( )[:-1]
 			elif isinstance( object, basestring ):
+				# convert it to a SQL.String and get the repr
 				result = String( object ).SQLRepr
 			elif type( object ) in ( time.struct_time, datetime.datetime, datetime.date ):
+				# convert it to a SQL.Time and get the repr
 				result = Time( object ).SQLRepr
 			else:
 				result = repr( object )
@@ -365,7 +387,10 @@ class ADODatabase( object ):
 	def GetUserTables( self ):
 		self.Select( 'name', 'sysobjects', {'type':'U'} )
 		return self.GetDataAsList()
-	
+
+class AccessDatabase( ADODatabase ):
+	connectionParameters = { }
+	provider = 'Microsoft.Jet.OLEDB.4.0'
 
 class ODBCDatabase( ADODatabase ):
 	def __init__( self, ODBCName ):
@@ -385,34 +410,6 @@ class ODBCDatabase( ADODatabase ):
 			result = string.replace( self.recordSet.GetString(), '\r', '' )
 		return result
 
-class SQLServerDatabase( ADODatabase ):
-	provider = 'SQLOLEDB'
-	connectionParameters = {}
-	# use Windows integrated security by default
-	connectionParameters['Integrated Security'] = 'SSPI'
-	def __init__( self, parameters={} ):
-		self.connectionParameters.update( parameters )
-		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
-		self.connect()
-
-	def connect( self ):
-		if self.connection.State:
-			self.connection.Close()
-		self.connection.Provider = self.provider
-		self.__class__._setProperties( self.connection, self.connectionParameters )
-		self.connection.Open()
-
-	def _setProperties( object, properties ):
-		for property, value in properties.items():
-			object.Properties( property ).Value = value
-	_setProperties = staticmethod( _setProperties )
-
-	def Attach( self, dbName, files ):
-		query = "exec sp_attach_db @dbname='%s'"
-		filesString = string.join( files, ', ' )
-		query = string.join( ( query, filesString ), ', ' )
-		self.Execute( query )
-
 	def ExecuteToStream( self, command ):
 		result = win32com.client.Dispatch( 'ADODB.Stream' )
 		result.Open()
@@ -426,6 +423,18 @@ class SQLServerDatabase( ADODatabase ):
 
 		result.Position = 0
 		return result
+
+class SQLServerDatabase( ADODatabase ):
+	provider = 'SQLOLEDB'
+	connectionParameters = {}
+	# use Windows integrated security by default
+	connectionParameters['Integrated Security'] = 'SSPI'
+
+	def Attach( self, dbName, files ):
+		query = "exec sp_attach_db @dbname='%s'"
+		filesString = string.join( files, ', ' )
+		query = string.join( ( query, filesString ), ', ' )
+		self.Execute( query )
 
 	def SelectXML( self, *queryArgs ):
 		__doc__ = ADODatabase.Select.__doc__
