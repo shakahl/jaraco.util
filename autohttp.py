@@ -59,6 +59,9 @@ class AbstractHTTPHandler( object ):
 			raise URLError('no host given')
 
 		connection = http_class( host ) # will parse host:port
+		# if the request has a socket attached to it, use it explicitly.
+		if hasattr( req, 'sock' ):
+			connection.connect( req.sock )
 		if req.has_data():
 			method = 'POST'
 			if 'Content-Type' not in req.headers:
