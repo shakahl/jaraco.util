@@ -13,79 +13,94 @@ class translator( object ):
 		definition.setProperty( 'SelectionNamespaces',
 								'xmlns:em="urn:envmon.mms.sandia.gov:envmon"' )
 		definition.load( definitionFilename )
-		self.createResultDocument()
-		self.processNode( definition.documentElement )
+		self.result = self.processNode( definition.documentElement )
 
-	def createResultDocument( self ):
-		self.result = win32com.client.Dispatch( 'Msxml2.DOMDocument.4.0' )
-		self.result.documentElement = \
-			self.result.createNode( win32com.client.constants.NODE_ELEMENT, 'result', 'el' )
-		self.currentResultNode = self.result.documentElement
+	def handleEnvMonChild( self, parent, child ):
+		if self.isEnvMonNode( child ):
+			parent.appendChild( child )
+		elif self.isAttributeNode( child ):
+			parent.addAttribute( child.getAttribute( 'Name' ), child.Value )
+			
+	def isEnvMonNode( node ):
+		return node.prefix == 'em'
+	isEnvMonNode = staticmethod( isEnvMonNode )
+	
+	def getChildResults( self, node, contextData ):
+		for childNode in node.childNodes:
+			yield self.processNode( childNode, contextData )
 
 	def processNode( self, node, contextData = None ):
-		log.info( 'Processing node %s', node.nodeName )
-		# unless overridden, feed the same data to children as fed in
-		newContextDataFeed = ( contextData, )
-		if node.prefix:
-			# this is not a data collection object, so copy it
+		log.debug( 'Processing node %s.', node.nodeName )
+		if translator.isEnvMonNode( node ):
+			# create a newNode, a clone of the current node
 			cloneChildren = False
-			clonedNode = node.cloneNode( cloneChildren )
-			self.currentResultNode.appendChild( clonedNode )
-			previousNode = self.currentResultNode
-			self.currentResultNode = clonedNode
+			newNode = node.cloneNode( cloneChildren )
+			# iterate through results for children nodes
+			results = self.getChildResults( node, contextData )
+			for result in results:
+				self.handleEnvMonChild( parent = newNode, child = result )
+			result = newNode
 		else:
-			methodName = 'process%sNode' % node.nodeName
-			try:
-				method = getattr( self, methodName )
-				result = method( node, contextData )
-				if not result is None:
-					newContextDataFeed = result
-			except AttributeError:
-				log.error( 'Unknown node %s found. Ignoring' % node.nodeName )
-			previousNode = self.currentResultNode
-		log.debug( 'newContextDataFeed is %s', newContextDataFeed )
-		for contextData in newContextDataFeed:
-			for child in node.selectNodes( '*' ):
-				self.processNode( child, contextData )
-		self.currentResultNode = previousNode
+			# do any actions pertinent to children, should call getChildResults
+			result = self._processDCNode( node, contextData )
+		return result
 
-	def processDataCollectionNode( self, node, contextData ):
-		pass
+	def _processDCNode( self, node, contextData ):
+		methodName = 'handle%sNode' % node.nodeName
+		try:
+			method = getattr( self, methodName )
+			result = method( node, contextData )
+		except AttributeError:
+			log.error( 'Unknown node %s found. Ignoring' % node.nodeName )
+			# iterate through results for children nodes
+			result = tuple( self.getChildResults( node, contextData ) )
+		return result
 
-	def processMethodNode( self, node, contextData ):
+	# handle<NodeName>Node functions should take the node and contextData as parameters,
+	#  and return the tuple( result, contextData ) where result is dependent on the node and
+	#  contextData is the new context data (may be the original object passed).
+
+	def handleMethodNode( self, node, contextData ):
 		"""
 		Method nodes describe a method by which data is collected.
 		Since there are many classes of method nodes, each is represented
 		by a class in code.
+		Since a method collects data, the contextData should be altered by this
+		method.
 		"""
 		className = '%sMethod' % node.getAttribute( 'class' )
 		c = globals()[ className ]
 		method = c( node )
-		return method.Run()
+		doMethodChildren = lambda data: self.getChildResults( node, data )
+		results = map( doMethodChildren, method.Run() )
+		return results
 
-	def processStringNode( self, node, contextData ):
-		attributes = map( lambda a: (a.name, a.value), node.attributes )
-		attributes = dict( attributes )
-		if not attributes['minLength'] <= len( contextData ) <= attributes['maxLength']:
-			raise ValueError, 'String not within bounds'
+#	def processStringNode( self, node, contextData ):
+#		attributes = map( lambda a: (a.name, a.value), node.attributes )
+#		attributes = dict( attributes )
+#		if not attributes['minLength'] <= len( contextData ) <= attributes['maxLength']:
+#			raise ValueError, 'String not within bounds'
 
-	def processAttributeNode( self, node, contextData ):
-		value = self.processNode( node.getSingleNode( '*' ) )
-		name = node.getAttribute( 'Name' )
-		self.currentResultNode.setAttribute( name, value )
+	def handleAttributeNode( self, node, contextData ):
+		result = {}
+		result['Value'] = self.getChildResults( node, contextData )
+		if isinstance( result['Value'], ( tuple, list ) ):
+			raise NotImplementedError, 'attributes must have only one value'
+		result['Name'] = node.getAttribute( 'Name' )
+		return result
 
-	def processCheckNode( self, node, contextData ):
-		pass #stubbed
-
-	def processFieldNode( self, node, contextData ):
+	def handleValueNode( self, node, contextData ):
 		length = node.getAttribute( 'length' )
-		return contextData[:length]
+		value = contextData.getBytes( length )
+		self.getChildResults( node, value )
+		return value
 
 class ContextData( object ):
 	def __init__( self, value ):
 		self.value = value
+		self.position = 0
 
-	def getNext( self, q ):
+	def getBytes( self, q ):
 		p = self.position
 		result = self.value[ p: p + q ]
 		self.position += q
@@ -112,7 +127,6 @@ class RS232Method( Method ):
 
 	def Run( self ):
 		result = map( lambda s: s.decode( 'base64' ), self.sampleMessages )
-		result = map( ContextData, result )
 		return result
 		"""
 		while( 1 ):
