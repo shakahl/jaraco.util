@@ -1,5 +1,7 @@
 import htmllib, formatter
-import log
+import logging
+
+log = logging.getLogger( 'TableParser' )
 
 class TableParser( htmllib.HTMLParser ):
 	def __init__( self ):
@@ -61,8 +63,8 @@ class TableParser( htmllib.HTMLParser ):
 
 	# note that this will not be called if the extra rows are in the last column(s).
 	def checkForExtraRows( self ):
-		log.processMessage( 'self.extraRows is %s.' % self.extraRows, 'TableParser', log.DEBUG )
-		log.processMessage( 'currentColumnNumber is %s.' % self.currentColumnNumber, 'TableParser', log.DEBUG )
+		log.debug( 'self.extraRows is %s.', self.extraRows )
+		log.debug( 'currentColumnNumber is %s.', self.currentColumnNumber )
 		if self.extraRows.has_key( self.currentColumnNumber ):
 			self.extraRows[ self.currentColumnNumber ] -= 1
 			self.currentRow.append( '' )
