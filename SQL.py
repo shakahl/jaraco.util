@@ -2,10 +2,13 @@
 #  SQL databases.
 
 import types, time, datetime
-import string, re, sys
+import string, re, sys, logging
 import operator
-import log
+import tools
 import pywintypes # for TimeType
+import encodings.ascii
+
+log = logging.getLogger( 'SQL' )
 
 class ExecuteException( Exception ):
 	def __init__( self, original_exc, query ):
@@ -76,7 +79,7 @@ class Binary( str ):
 		toBin = lambda byteStr: chr( long( byteStr, 16 ) )
 		return Binary( string.join( map( toBin, bytes ), '' ) )
 
-	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )	
+	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )
 
 class String( unicode ):
 	def _SQLRepr( self ):
@@ -114,8 +117,8 @@ class ADODatabase( object ):
 				result = time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", object )
 			else:
 				result = repr( object )
-		log.processMessage( 'SQL representation for %s is %s.' % ( object, result ), 'SQL.Database', log.DEBUG )
-		log.processMessage( 'type( %s ) is %s.' % ( object, type( object ) ), 'SQL.Database', log.DEBUG )
+		log.debug( 'SQL representation for %s is %s.' % ( object, result ) )
+		log.debug( 'type( %s ) is %s.' % ( object, type( object ) ) )
 		return result
 
 	def Insert( self, table, values ):
@@ -133,7 +136,7 @@ class ADODatabase( object ):
 		sql = "SELECT @@IDENTITY;"
 		self.Execute( sql )
 		result = self.GetSingletonResult()
-		log.processMessage( 'Last ID was %s' % result, 'SQL.Database', log.DEBUG )
+		log.debug( 'Last ID was %s' % result )
 		return result
 
 	def Exists( self, table, values ):
@@ -155,7 +158,7 @@ class ADODatabase( object ):
 		if not self.recordSet.EOF:
 			data = self.recordSet.GetRows( -1, 0, (keyField, valueField) )
 			# transpose the data
-			data = apply( zip, data )
+			data = zip( *data )
 			# make into a dictionary
 			data = dict( data )
 			result = data
@@ -167,7 +170,7 @@ class ADODatabase( object ):
 		if not self.recordSet.EOF:
 			data = self.recordSet.GetRows( -1, 0 )
 			# transpose the data
-			data = apply( zip, data )
+			data = zip( *data )
 			result = data
 		else:
 			result = ()
@@ -180,13 +183,18 @@ class ADODatabase( object ):
 		else:
 			result = ()
 		return result
+
+	def GetResultAsObjects( self ):
+		fieldNames = self.GetFieldNames()
+		makeDict = lambda l: dict( zip( fieldNames, l ) )
+		return map( makeDict, self.GetAllRows() )
 	
 	def Select( self, *queryArgs ):
-		sql = apply( self.BuildSelectQuery, queryArgs )
+		sql = self.BuildSelectQuery( *queryArgs )
 		self.Execute( sql )
 
 	def SelectXML( self, *queryArgs ):
-		sql = apply( self.BuildSelectQuery, queryArgs )
+		sql = self.BuildSelectQuery( *queryArgs )
 		sql = sql + ' For XML Auto'
 		self.Execute( sql )
 
@@ -235,14 +243,14 @@ class ADODatabase( object ):
 
 	def Execute( self, query ):
 		self.lastQuery = query
-		log.processMessage( 'Executing query "%s".' % query, 'SQL.Database', log.DEBUG )
+		log.debug( 'Executing query "%s".' % query )
 		try:
 			self.FlushRecordset()
 			# execute the query.
 			self.recordSet, result = self.connection.Execute( query )
 		except:
 			raise ExecuteException( sys.exc_value, self.lastQuery )
-		log.processMessage( 'Query result is %d.' % result, 'SQL.Database', log.DEBUG )
+		log.debug( 'Query result is %d.' % result )
 		# result is the number of records affected
 		return result
 
@@ -258,7 +266,7 @@ class ADODatabase( object ):
 		if not self.recordSet.EOF:
 			result = self.recordSet.Fields(0).Value
 		else:
-			log.processMessage( 'Recordset is empty at call to GetSingletonResult.', 'SQL.Database', log.WARNING )
+			log.info( 'Recordset is empty at call to GetSingletonResult.' )
 			result = None
 		return result
 
@@ -279,7 +287,7 @@ class ADODatabase( object ):
 		self.FlushRecordset()
 		res = self.connection.BeginTrans()
 		msg = 'Beginning Transaction (%d transactions currently in progress).' % res
-		log.processMessage( msg, 'SQL.Database', log.DEBUG )
+		log.debug( msg )
 	
 	def CommitTransaction( self, name = None ):
 		self.FlushRecordset()
@@ -306,6 +314,26 @@ class ADODatabase( object ):
 	def UseDatabase( self, dbName ):
 		self.connection.Properties('Current Catalog').Value = dbName
 
+	def GetNextRowAsDictionary( self ):
+		fieldNames = self.GetFieldNames()
+		result = dict( zip( fieldNames, self.recordSet.Fields ) )
+		return tools.DictMap( lambda d: d.Value, result )
+
+	def MakeConnectionString( self, parameters ):
+		makeSQLParameter = lambda p: string.join( p, '=' )
+		parameters = map( makeSQLParameter, parameters.items() )
+		parameters = string.join( parameters, '; ' )
+		return parameters
+
+	def GrantPermission( self, object, permission = 'SELECT', user = 'public' ):
+		query = 'GRANT %(permission)s ON [%(object)s] TO %(user)s'
+		self.Execute( query )
+
+	def GetUserTables( self ):
+		self.Select( 'name', 'sysobjects', {'type':'U'} )
+		return self.GetDataAsList()
+	
+
 class ODBCDatabase( ADODatabase ):
 	def __init__( self, ODBCName ):
 		self.ODBCName = ODBCName
@@ -313,11 +341,17 @@ class ODBCDatabase( ADODatabase ):
 		self.connection.Open( ODBCName )
 
 class SQLServerDatabase( ADODatabase ):
-	def __init__( self ):
+	def __init__( self, parameters={} ):
 		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
 		self.connection.Provider = 'sqloledb'
 		self.connection.Properties( 'Integrated Security' ).Value = 'SSPI'
-		self.connection.Open()
+		self.connection.Open( self.MakeConnectionString( parameters ) )
+
+	def Attach( self, dbName, files ):
+		query = "exec sp_attach_db @dbname='%s'"
+		filesString = string.join( files, ', ' )
+		query = string.join( ( query, filesString ), ', ' )
+		self.Execute( query )
 	
 # mix-in class for HTML generation in Database classes
 class HTMLGenerator( object ):
@@ -344,6 +378,7 @@ class HTMLGenerator( object ):
 	def AppendElement( self, value ):
 		elem = self.htmldoc.createElement( self.elementTag )
 		if value is not None:
+			value = self.MakeStringValue( value )
 			txt = self.htmldoc.createTextNode( value )
 			elem.appendChild( txt )
 		self.currentElement.appendChild( elem )
@@ -352,4 +387,11 @@ class HTMLGenerator( object ):
 		self.currentElement = self.htmldoc.createElement( 'tr' )
 		map( self.AppendElement, row )
 		self.tableElement.appendChild( self.currentElement )
-		
+
+	def MakeStringValue( self, value ):
+		if type( value ) is pywintypes.TimeType:
+			result = value.Format()
+		else:
+			result = str( value )
+		return result
+	
