@@ -214,9 +214,7 @@ class Database( object ):
 		self.lastQuery = query
 		log.processMessage( 'Executing query "%s".' % query, 'SQL.Database', log.DEBUG )
 		try:
-			# clear out any existing recordSet, or we run into a situation where we're
-			#  in a sub-connection and things behave differently.
-			if hasattr( self, 'recordSet' ): del self.recordSet
+			self.FlushRecordset()
 			# execute the query.
 			self.recordSet, result = self.connection.Execute( query )
 		except:
@@ -235,7 +233,6 @@ class Database( object ):
 	def GetSingletonResult( self ):
 		if not self.recordSet.EOF:
 			result = self.recordSet.Fields(0).Value
-			self.recordSet.Close()
 		else:
 			log.processMessage( 'Recordset is empty at call to GetSingletonResult.', 'SQL.Database', log.WARNING )
 			raise Exception, 'Recordset is empty at call to GetSingletonResult.'
@@ -244,24 +241,26 @@ class Database( object ):
 	def GetXMLResult( self ):
 		return string.replace( self.recordSet.GetString(), '\r', '' )
 
+	def FlushRecordset( self ):
+		# clear out any existing recordSet, or we run into a situation where we're
+		#  in a sub-connection and things behave differently.
+		if hasattr( self, 'recordSet' ):
+			del self.recordSet
+		
 	def BeginTransaction( self, name = None ):
-		query = 'BEGIN TRANSACTION'
-		if name: query = string.join( ( query, name ) )
-		self.Execute( query )
-		del self.recordSet
-
+		self.FlushRecordset()
+		res = self.connection.BeginTrans()
+		msg = 'Beginning Transaction (%d transactions currently in progress).' % res
+		log.processMessage( msg, 'SQL.Database', log.DEBUG )
+	
 	def CommitTransaction( self, name = None ):
-		query = 'COMMIT TRANSACTION'
-		if name: query = string.join( ( query, name ) )
-		self.Execute( query )
-		del self.recordSet
-
+		self.FlushRecordset()
+		self.connection.CommitTrans()
+	
 	def RollbackTransaction( self, name = None ):
-		query = 'ROLLBACK TRANSACTION'
-		if name: query = string.join( ( query, name ) )
-		self.Execute( query )
-		del self.recordSet
-
+		self.FlushRecordset()
+		self.connection.CommitTrans()
+	
 # mix-in class for HTML generation in Database classes
 class HTMLGenerator( object ):
 	def GetAsHTMLTable( self, query = None ):
