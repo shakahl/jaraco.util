@@ -184,7 +184,7 @@ class Database( object ):
 		if value is None:
 			fmt = '[%(field)s] is NULL'
 		else:
-			value = `value`
+			value = self.GetSQLRepr( value )
 			fmt = '[%(field)s] = %(value)s'
 		return fmt % vars()
 	
