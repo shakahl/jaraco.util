@@ -38,7 +38,12 @@ class ProxyTunnelHandler( urllib2.ProxyHandler ):
 		tunnel_connection.response_class = TunnelResponse
 		host_port = urllib.splitnport( request.get_host(), httplib.HTTPS_PORT )
 		tunnel_connection.putrequest( 'CONNECT', '%s:%d' % host_port )
-		tunnel_connection.endheaders()
+		# httplib will attempt to connect() here.  be prepared
+		# to convert a socket error to a URLError.
+		try:
+			tunnel_connection.endheaders()
+		except socket.error, err:
+			raise URLError(err)
 		response = tunnel_connection.getresponse()
 		response.read()
 		request.sock = tunnel_connection.sock
