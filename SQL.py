@@ -449,6 +449,18 @@ class SQLServerDatabase( ADODatabase ):
 		command.CommandText = query
 		return command
 
+	def RestoreDatabase( self, dbName, backupFilePath, moves = {} ):
+		"moves is a dictionary of logical file name to physical file name mapping"
+		query =  "restore database [%(dbname)s] from disk='%(backupFilePath)s'" % vars()
+		if moves:
+			moves = map( lambda m: "move '%s' to '%s'" % m, moves.items() )
+			moves = ', '.join( moves )
+			query = ' with '.join( ( query, moves ) )
+		oldTimeout = self.connection.CommandTimeout
+		self.connection.CommandTimeout = 999
+		self.Execute( query )
+		self.connection.CommandTimeout = oldTimeout
+
 class SQLXMLDatabase( SQLServerDatabase ):
 	provider = 'SQLXMLOLEDB'
 	connectionParameters = {}
