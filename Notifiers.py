@@ -1,8 +1,11 @@
 import string
-
-
 import smtplib, socket
-class SMTPMailbox:
+
+class Notifier( object ):
+	def write( self, msg ):
+		self.Notify( msg )
+		
+class SMTPMailbox( Notifier ):
 	def __init__( self, address ):
 		self.Address = address
 
@@ -18,6 +21,6 @@ class SMTPMailbox:
 
 	def FormatMessage( self, headers, msg ):
 		return string.join( map( lambda x: '%s: %s\r\n' % x, headers.items() ), '' ) + '\r\n' + msg
-		
+
 	def __repr__( self ):
 		return 'mailto://' + self.Address
