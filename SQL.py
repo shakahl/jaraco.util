@@ -13,10 +13,12 @@ import dbi
 #  or the mxODBC equivalent.
 class Time:
 	def __init__( self, value ):
-		if type( value ) is types.TupleType:
+		if type( value ) in ( types.TupleType, time.struct_time ):
 			self.time = value
 		elif type( value ) is types.FloatType:
 			self.time = time.gmtime( value )
+		else:
+			raise TypeError, 'Initialization value to Time must be a time tuple or GMT seconds.'
 
 	def __repr__( self ):
 		return time.strftime( '#%Y/%m/%d %H:%M:%S#', self.time )
