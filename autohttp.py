@@ -5,7 +5,7 @@
 """
 
 import httplib, mimetypes
-from urlparse import urlparse, urlunparse
+from urlparse import urlparse, urlunparse, urljoin
 import urllib, urllib2, htmllib, formatter, socket
 import string, re, logging, time, os
 import cookies, tools
@@ -20,6 +20,16 @@ def splitHostPort( host ):
 		port = None
 	return host, port
 
+class CookieHandler( urllib2.BaseHandler ):
+	"""This handler will ensure that on a redirect, any cookies in the redirect request
+	will be processed.  Normally, the OpenerDirector is responsible for handling
+	information such as this, but an OpenerDirector never sees a redirect request
+	if the HTTPRedirectHandler is installed."""
+	handler_order = 50
+	def http_error_302( self, req, fp, code, msg, headers ):
+		self.parent.processCookies( headers )
+	http_error_301 = http_error_303 = http_error_307 = http_error_302
+		
 class AbstractHTTPHandler( object ):
 	# override do_open because the default one uses deprecated HTTP
 	#  class
@@ -46,7 +56,7 @@ class AbstractHTTPHandler( object ):
 		if code == 200:
 			return response
 		else:
-			return self.parent.error(req.get_type(), req, fp, code, msg, hdrs)
+			return self.parent.error(req.get_type(), req, fp, code, msg, hdrs )
 
 class HTTPHandler( AbstractHTTPHandler, urllib2.HTTPHandler ):
 	def http_open( self, req ):
@@ -59,20 +69,16 @@ class HTTPSHandler( AbstractHTTPHandler, urllib2.HTTPSHandler ):
 opener = urllib2.build_opener( HTTPHandler, HTTPSHandler )
 urllib2.install_opener( opener )
 
-def getCookieHeader( cookies, targetURL ):
-	cookies = filter( URLMatch( targetURL ), cookies )
-	cookieStrings = map( lambda c: c.getRequestHeader(), cookies )
-	cookieDelimiter = "; "
-	return cookieDelimiter.join( cookieStrings )
-
-class URLMatch( object ):
-	def __init__( self, targetURL ):
-		self.targetURL = targetURL
+class RequestMatch( object ):
+	def __init__( self, request ):
+		self.request = request
 
 	def __call__( self, cookie ):		
-		"Return true if the given cookie matches this URL"
-		( scheme, host, selector, parameters, query, fragment ) = urlparse( self.targetURL )
-		host, port = splitHostPort( host )
+		"Return true if the given cookie matches this request"
+		r = self.request
+		host, port = splitHostPort( r.get_host() )
+		selector = r.get_selector()
+		scheme = r.get_type()
 		result = True
 		if cookie.get( 'domain', host ) not in host:
 			result = False
@@ -81,7 +87,6 @@ class URLMatch( object ):
 		if cookie.isSecure() and not scheme == 'https':
 			result = False
 		return result
-
 
 class MultipartHandler( object ):
 	"A mix-in object for a Request for handling multi-part forms"
@@ -141,24 +146,7 @@ Mozilla_default_headers = {
 
 def getRelativeURL( targetURL, originalURL ):
 	"Takes the relative URL passed and returns an absolute URL based on the original URL"
-	target = urlparse( targetURL )
-	orig = urlparse( originalURL )
-	# check to see if the target path is absolute.  If not, join it to the basepath of the orig
-	#  (index 2 is the selector, or path).
-	#  so if target[2] is relative (without a slash at the beginning), take on the base of orig[2].
-	if not os.path.isabs( target[2] ) and orig[2]:
-		# make target mutable
-		target = list( target )
-		target[2] = _getRelativePath( target[2], orig[2] )
-	update = lambda x,y: x or y  # returns x if x evaluates to true (non-empty), otherwise returns y
-	# this won't work as expected if orig[3:] has any values but target[3:] doesn't... because orig
-	#  shouldn't be copied in this state.
-	result = map( update, target, orig )
-	return urlunparse( result )
-
-def _getRelativePath( target, base ):
-	base = os.path.dirname( base )
-	return string.join( ( base, target ), '/' )
+	return urljoin( originalURL, targetURL )
 
 class FormField( dict ): pass
 
@@ -194,46 +182,6 @@ class FormParser( htmllib.HTMLParser ):
 		self.currentField['value'] = value
 		del self.currentField
 
-class CookieRequest( urllib2.Request ):
-	"""CookieRequest: an HTTP/HTTPS request class for handling
-	cookies."""
-	def __init__( self, *args, **kargs ):
-		urllib2.Request.__init__( self, *args, **kargs )
-		self._cookies = []
-
-	def cookieMatch( self, cookie ):
-		"Return true if the given cookie matches this request"
-		host, port = splitHostPort( self.get_host() )
-		selector = self.get_selector()
-		scheme = self.get_type()
-		result = True
-		if cookie.get( 'domain', host ) not in host:
-			result = False
-		if cookie.get( 'path', selector ) not in selector:
-			result = False
-		if cookie.isSecure() and not scheme == 'https':
-			result = False
-		return result
-
-	def addCookie( self, cookie ):
-		self._cookies.append( cookie )
-		self.add_header( 'Cookie', self._buildCookieHeader() )
-
-	def setCookies( self, cookies ):
-		assert isinstance( cookies, list )
-		self._cookies = cookies
-		if self._cookies:
-			self.add_header( 'Cookie', self._buildCookieHeader() )
-		else:
-			self.headers.pop( 'Cookie', None )
-
-	def _buildCookieHeader( self ):
-		cookies = filter( self.cookieMatch, self._cookies )
-		cookieStrings = map( lambda c: c.getRequestHeader(), cookies )
-		cookieDelimiter = "; "
-		result = cookieDelimiter.join( cookieStrings )
-		return result
-
 class FormProcessor( object ):
 	"""Proccesses an HTML Form in an automated fashion
 	Call in this manner:
@@ -259,7 +207,7 @@ class FormProcessor( object ):
 		if string.lower( self.formFields[name].get( 'type', '' ) ) == 'hidden':
 			log.warning( 'Overriding a hidden input value (%(name)s=%(value)s)' % self.formFields[name] )
 
-	def buildSubmissionRequest( self, action = None ):
+	def buildSubmissionRequest( self, action = None, headers = {} ):
 		"Submit the form.  Action overrides the default action specified in the form"
 		data = {}
 		log.debug( 'Form fields are: %s', self.formFields )
@@ -271,12 +219,9 @@ class FormProcessor( object ):
 		if not action:
 			action = self.formParser.formAttributes['action']
 		actionURL = getRelativeURL( action, self.FormURL )
-		#actionURL = 'http://meaborange/'
-		#actionURL = getRelativeURL( action, actionURL )
 		log.debug( 'Headers in form response were %s', self.formResponse.msg.headers )
-		submissionRequest = CookieRequest( actionURL )
+		submissionRequest = urllib2.Request( actionURL, headers = headers )
 		submissionRequest.add_header( 'Referer', self.FormURL )
-		submissionRequest.setCookies( getCookies( self.formResponse ) )
 		if self.formParser.formAttributes.get( 'enctype', '' ) == 'multipart/form-data':
 			submissionRequest.encode_multipart_formdata( data )
 		else:
@@ -287,16 +232,45 @@ class FormProcessor( object ):
 		request = self.buildSubmissionRequest()
 		return urllib2.urlopen( request )
 
-def getCookies( response ):
-	if not isinstance( response, httplib.HTTPResponse ):
-		raise ValueError, 'Expected %s instance' % httplib.HTTPResponse
-	cookieString = response.getheader( 'set-cookie' )
-	if cookieString:
-		cookieTextStrings = re.split( ',\s*', cookieString )
-		result = map( cookies.cookie, cookieTextStrings )
-	else:
-		result = []
-	return result
+class SessionOpenerDirector( urllib2.OpenerDirector ):
+	"""A class that manages cookies (and thus sessions)"""
+	def __init__( self ):
+		urllib2.OpenerDirector.__init__( self )
+		self._cookies = []
+
+	def open( self, request, data = None ):
+		if isinstance( request, str ):
+			request = urllib2.Request( request )
+		cookieHeader = self.getCookieHeader( request )
+		if cookieHeader:
+			request.add_header( 'Cookie', self.getCookieHeader( request ) )
+			log.debug( 'Cookie: %s', cookieHeader )
+		result = urllib2.OpenerDirector.open( self, request, data )
+		if isinstance( result, httplib.HTTPResponse ):
+			self.processCookies( result )
+		return result
+
+	def getCookieHeader( self, request ):
+		cookies = filter( RequestMatch( request ), self._cookies )
+		cookieStrings = map( lambda c: c.getRequestHeader(), cookies )
+		cookieDelimiter = "; "
+		return cookieDelimiter.join( cookieStrings )
+
+	def processCookies( self, headers ):
+		if isinstance( headers, httplib.HTTPResponse ):
+			headers = headers.msg
+		cookieString = headers.getheader( 'set-cookie' )
+		if cookieString:
+			cookieTextStrings = re.split( ',\s*', cookieString )
+			self._cookies.extend( map( cookies.cookie, cookieTextStrings ) )
+
+session_opener = SessionOpenerDirector()
+map( session_opener.add_handler, ( urllib2.ProxyHandler(),
+						   urllib2.HTTPDefaultErrorHandler(),
+						   urllib2.HTTPRedirectHandler(),
+						   HTTPHandler(), HTTPSHandler(),
+						   CookieHandler() ) )
+#urllib2.install_opener( session_opener )
 
 # The following classes are in used for testing the request of
 #  the above classes.
