@@ -5,7 +5,7 @@ Implements cookie support.
 This works better than the library supplied in Python.
 """
 
-import os, copy, urllib
+import os, copy, urllib, httplib
 import itertools
 import string, re
 
@@ -57,6 +57,8 @@ def getCookies( source, path = None ):
 		cookieTextStrings = filter( None, cookieTextStrings )
 		result = map( cookie, cookieTextStrings )
 		if path: map( lambda c: c.setPathIfEmpty( path ), result )
+	else:
+		result = None
 	return result
 
 def isNotCookieDelimiter(s ):
