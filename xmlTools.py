@@ -1,4 +1,6 @@
-import tools
+import tools, itertools
+import win32com.client
+import string
 
 quoteSubstitutions = ( ('"','&quot;'),
 # leave out this substitution for now
@@ -24,9 +26,39 @@ def GetXMLRepresentation( value ):
 		value = ToXMLQuotedString( value )
 	return value
 
-from datetime import datetime
+from datetime import datetime, date, time
 from time import strptime
 def ParseXMLTime( xmlTime ):
 	"Take a time string in XML format and return the value as a datetime object"
 	pattern = '%Y-%m-%dT%H:%M:%S'
 	return datetime( *strptime( xmlTime, pattern )[:6] )
+
+class XMLObject( dict ):
+	xml = win32com.client.Dispatch( 'Msxml2.DOMDocument.4.0' )
+		
+	def XMLRepr( self ):
+		nodeName = self.encodeXMLName( self.__class__.__name__ )
+		element = self.xml.createElement( nodeName )
+		for attr in self.getAttributes( ):
+			element.setAttribute( *attr )
+		return element
+			
+
+	def getAttributes( self ):
+		return itertools.imap( self.encodeAttribute, self.iteritems() )
+
+	def encodeAttribute( self, (name,val) ):
+		if type( val ) in ( datetime, date, time ):
+			val = val.isoformat()
+		return ( self.encodeXMLName( name ), str( val ) )
+
+	def encodeXMLName( self, n ):
+		return string.join( self.encodeXMLNameChars( n ), '' )
+
+	validChars = range( 0x30, 0x3A ) + range( 0x41, 0x5B ) + range( 0x61, 0x7B ) + [ ord( '-' ), ord( '_' ), ord( '.' ) ]
+	def encodeXMLNameChars( self, n ):
+		for c in n:
+			if ord( c ) in self.validChars:
+				yield c
+			else:
+				yield '_x%04x_' % ord( c )
