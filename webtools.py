@@ -7,11 +7,24 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 4 $a'[11:-2]
+__version__ = '$Revision: 5 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-06-23 12:32 $'[10:-2]
+__date__ = '$Modtime: 04-07-20 10:46 $'[10:-2]
 
 import string, re, logging, cgi
+
+class FileWriter( object ):
+	"""A Python-style file object (with a .write method) that uses the supplied
+	function to handle the writes.
+
+	>>> w = FileWriter( Response.Write )
+	>>> w.write( 'text' )
+	"""
+	def __init__( self, handler ):
+		self.__handler__ = handler
+
+	def write( self, data ):
+		self.__handler__( data )
 
 # This class should only be instanciated within an ASP session.
 class ASPForm( dict ):
