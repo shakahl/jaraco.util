@@ -14,9 +14,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 4 $a'[11:-2]
+__version__ = '$Revision: 5 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-06-23 17:26 $'[10:-2]
+__date__ = '$Modtime: 04-07-13 13:45 $'[10:-2]
 
 import string
 import smtplib, socket
@@ -26,8 +26,9 @@ class Notifier( object ):
 		self.Notify( msg )
 		
 class SMTPMailbox( Notifier ):
-	def __init__( self, address ):
+	def __init__( self, address, server = 'mailgate.sandia.gov' ):
 		self.Address = address
+		self.Server = server
 
 	def Notify( self, msg = '', importance = 'Normal' ):        
 		import smtplib
@@ -35,7 +36,7 @@ class SMTPMailbox( Notifier ):
 		toaddr = self.Address
 		Headers = { 'From': fromaddr, 'To': toaddr, 'Importance':importance, 'Subject':'Notification' }
 
-		server = smtplib.SMTP( 'mailgate.sandia.gov' )
+		server = smtplib.SMTP( self.Server )
 		server.sendmail( fromaddr, toaddr, self.FormatMessage( Headers, msg ) )
 		server.quit()
 
