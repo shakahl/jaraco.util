@@ -405,6 +405,29 @@ then converts the list elements into their SQL representation."""
 		result.Position = 0
 		return result
 
+	def GetPivotData( self, PivotIndices = ( -2, -1 ) ):
+		"""Retrieve the rowset and pivot on the last two columns as name: value pairs."""
+		if not PivotIndices == ( -2, -1 ):
+			raise NotImplementedError, 'Indices must be default in this implementation'
+		fieldNames = self.GetFieldNames()
+		map( fieldNames.__delitem__, PivotIndices )
+		currentRow = None
+		parameters = {}
+		buildRowDict = lambda r, f, p: dict( zip( f, r ) + p.items() )
+		for row in self.GetAllRows():
+			row = list( row )
+			newParam = map( row.__getitem__, PivotIndices )
+			map( row.__delitem__, PivotIndices )
+			if not currentRow == row:
+				# new row detected
+				if currentRow:
+					yield buildRowDict( currentRow, fieldNames, parameters )
+					parameters = {}
+				currentRow = row
+			parameters.__setitem__( *newParam )
+		if currentRow:
+			yield buildRowDict( currentRow, fieldNames, parameters )
+			
 class AccessDatabase( ADODatabase ):
 	connectionParameters = { }
 	provider = 'Microsoft.Jet.OLEDB.4.0'
