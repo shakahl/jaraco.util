@@ -1,9 +1,16 @@
-#
+# -*- coding: UTF-8 -*-
 
 """cookies.py
 Implements cookie support.
 This works better than the library supplied in Python.
+	
+Copyright © 2004 Sandia National Laboratories  
 """
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 11 $'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-06-23 12:19 $'[10:-2]
 
 import os, copy, urllib, httplib
 # import case-insensitive string & dictionary
