@@ -7,11 +7,12 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 6 $a'[11:-2]
+__version__ = '$Revision: 7 $'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 4-11-04 11:22 $'[10:-2]
+__date__ = '$Modtime: 9-12-04 10:06 $'[10:-2]
 
-import string, re, logging, cgi
+import re, cgi
+from logging import Handler
 
 class FileWriter( object ):
 	"""A Python-style file object (with a .write method) that uses the supplied
@@ -50,7 +51,7 @@ class ASPForm( dict ):
 		return self.values()
 
 	def __str__( self ):
-		return string.join( map( lambda x: '%s: %s\n' % x, self.items() ), '' )
+		return ''.join( map( lambda x: '%s: %s\n' % x, self.items() ) )
 
 class Validator( object ):
 	def __init__( self, expression, message ):
@@ -89,9 +90,9 @@ Additionally, the BinaryRead must not have been called yet.
 		environ[key] = str( Request.ServerVariables[key] )
 	return cgi.FieldStorage( StringIO( data ), environ = environ )
 
-class ASPResponseHandler( logging.Handler ):
+class ASPResponseHandler( Handler ):
 	def __init__( self, ResponseObject, level = 0 ):
-		logging.Handler.__init__( self, level )
+		Handler.__init__( self, level )
 		self.Response = ResponseObject
 		self.Response.Write( '''<div id="log"><button onClick="log.style.display = 'none'">Clear Log</button><pre>\n''' )
 
