@@ -163,7 +163,7 @@ then converts the list elements into their SQL representation."""
 		return '(' + string.join( list, ', ' ) + ')'
 
 	def MakeSQLFieldList( self, list ):
-		return '(' + string.join( map( lambda x: '['+x+']', list ), ', ' ) + ')'
+		return '(' + string.join( map( SQLQuote, list ), ', ' ) + ')'
 
 	def GetSQLRepr( self, object ):
 		"Get an object's SQL representation"
@@ -190,7 +190,8 @@ then converts the list elements into their SQL representation."""
 	def Insert( self, table, values ):
 		fields = self.MakeSQLFieldList( values.keys() )
 		values = self.MakeSQLList( values.values() )
-		sql = 'INSERT INTO [%(table)s] %(fields)s VALUES %(values)s;' % vars()
+		table = SQLQuote( table )
+		sql = 'INSERT INTO %(table)s %(fields)s VALUES %(values)s;' % vars()
 		if not self.Execute( sql ) == 1:
 			raise Exception, 'Error with SQL: ' + sql
 		# delete the recordset to ensure the next recordset is from the same
@@ -252,11 +253,11 @@ then converts the list elements into their SQL representation."""
 			result = ()
 		return result
 
-	def GetResultAsObjects( self ):
+	def GetResultAsObjects( self, ob = dict ):
 		"Return a sequence of dictionaries with keys as field names and values from the rows."
 		fieldNames = self.GetFieldNames()
-		makeDict = lambda l: dict( zip( fieldNames, l ) )
-		return map( makeDict, self.GetAllRows() )
+		makeOb = lambda l: ob( zip( fieldNames, l ) )
+		return map( makeOb, self.GetAllRows() )
 	
 	def BuildSelectQuery( self, fields, table, params = None, specifiers = None ):
 		if not fields or fields == '*':
@@ -268,7 +269,7 @@ then converts the list elements into their SQL representation."""
 		sql = 'SELECT'
 		if specifiers:
 			sql = string.join( ( sql, ) + specifiers )
-		sql = string.join( ( sql, fields, 'FROM', '[%s]' % table ) )
+		sql = string.join( ( sql, fields, 'FROM', SQLQuote( table ) ) )
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
 		return sql
@@ -279,7 +280,7 @@ then converts the list elements into their SQL representation."""
 		self.Execute( sql )
 
 	def Delete( self, table, params = None ):
-		sql = 'DELETE from [%s]' % table
+		sql = 'DELETE from %s' % SQLQuote( table )
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
 		self.Execute( sql )
@@ -291,17 +292,19 @@ then converts the list elements into their SQL representation."""
 
 	def MakeSQLTest( self, item ):
 		field,value = item
+		field = SQLQuote( field )
 		if value is None:
-			fmt = '[%(field)s] is NULL'
+			fmt = '%(field)s is NULL'
 		else:
 			value = self.GetSQLRepr( value )
-			fmt = '[%(field)s] = %(value)s'
+			fmt = '%(field)s = %(value)s'
 		return fmt % vars()
 	
 	def GetFieldNames( self, table = None ):
 		if table:
+			table = SQLQuote( table )
 			# run a query so as to retrieve the field names
-			sql = 'SELECT * from [%s] WHERE 0=1' % table
+			sql = 'SELECT * from %s WHERE 0=1' % table
 			self.Execute( sql )
 		getFieldName = lambda f: f.Name
 		return map( getFieldName, self.recordSet.Fields )
@@ -324,6 +327,7 @@ then converts the list elements into their SQL representation."""
 		updateParams = map( lambda p: '[%s] = %s' % p, updateParams.items() )
 		updateParams = string.join( updateParams, ', ' )
 		criteria = self.BuildTests( criteria )
+		table = SQLQuote( table )
 		sql = 'UPDATE %s SET %s WHERE %s' % (table, updateParams, criteria)
 		self.Execute( sql )
 
@@ -376,7 +380,7 @@ then converts the list elements into their SQL representation."""
 			self.connection.Properties('Current Catalog').Value = dbName
 		except pywintypes.com_error, e:
 			# sometimes, the name has to be in quotes for the initial call to set the current catalog.
-			dbName = '[%s]' % dbName
+			dbName = SQLQuote( dbName )
 			log.debug( 'Attempting to change current catalog to %s.', dbName )
 			self.connection.Properties('Current Catalog').Value = dbName
 
@@ -392,7 +396,8 @@ then converts the list elements into their SQL representation."""
 		return parameters
 
 	def GrantPermission( self, object, permission = 'SELECT', user = 'public' ):
-		query = 'GRANT %(permission)s ON [%(object)s] TO %(user)s'
+		object = SQLQuote( object )
+		query = 'GRANT %(permission)s ON %(object)s TO %(user)s'
 		self.Execute( query )
 
 	def GetUserTables( self ):
