@@ -22,9 +22,9 @@ class Time( object ):
 		else:
 			raise TypeError, 'Initialization value to Time must be a time tuple, dbiDate, or GMT seconds.'
 
-	def __repr__( self ):
+	def _SQLRepr( self ):
 		return time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", self.time )
-		return time.strftime( '#%Y/%m/%d %H:%M:%S#', self.time )
+	SQLRepr = property( _SQLRepr )	
 
 	def __cmp__( self, other ):
 		return cmp( self.time, other.time )
@@ -59,19 +59,23 @@ class Binary( str ):
 	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )	
 
 class Long( long ):
-	def __repr__( self ):
+	def _SQLRepr( self ):
 		# strip off the L at the end
 		return long.__repr__( self )[:-1]
+	SQLRepr = property( _ReprSansL )
 
 class Database( object ):
 	def __init__( self, ODBCName ):
 		self.ODBCName = ODBCName
 		self.db = odbc( self.ODBCName )
 		self.cur = self.db.cursor()
-		
-	def makeSQLLong( self, val ):
+
+	# convert any intrinsic Python types to the appropriate SQL type		
+	def doPythonTypeConversions( self, val ):
 		if type( val ) is long:
 			return Long( val )
+		if type( val ) is time.struct_time:
+			return Time( val )
 		else:
 			return val
 		
