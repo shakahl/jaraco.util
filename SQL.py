@@ -54,7 +54,8 @@ class Time( object ):
 		return cmp( self.time, other )
 
 	def ConvertPyTimeToPythonTime( self, pyt ):
-		result = time.strptime( repr(pyt), '<PyTime:%m/%d/%Y %I:%M:%S %p>' )
+		fmtString = '%Y-%m-%d %H:%M:%S'
+		result = time.strptime( pyt.Format( fmtString ), fmtString )
 		# make the time 'naive' by clearing the DST bit.
 		return time.struct_time( result[:-1]+(0,) )
 
@@ -121,7 +122,7 @@ def GetSQLRepr( object ):
 		elif isinstance( object, basestring ):
 			# convert it to a SQL.String and get the repr
 			result = String( object ).SQLRepr
-		elif type( object ) in ( time.struct_time, datetime.datetime, datetime.date ):
+		elif isinstance( object, ( time.struct_time, datetime.datetime, datetime.date, pywintypes.TimeType ) ):
 			# convert it to a SQL.Time and get the repr
 			result = Time( object ).SQLRepr
 		elif object is None:
