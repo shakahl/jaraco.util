@@ -11,9 +11,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 55 $a'[11:-2]
+__version__ = '$Revision: 56 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 9-12-04 13:14 $'[10:-2]
+__date__ = '$Modtime: 9-12-04 13:16 $'[10:-2]
 
 import types, time, datetime
 import string, re, sys, logging, binascii
@@ -48,6 +48,8 @@ class Binary( str ):
 	ASCII = property( _GetASCIIRepresentation )
 
 	def CreateFromASCIIRepresentation( s ):
+		if re.match( '0x', s ):
+			s = s[2:]
 		return Binary( binascii.a2b_hex( s ) )
 
 	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )
