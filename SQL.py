@@ -144,6 +144,8 @@ class Database:
 			raise dbi.progError, (message, self.lastQuery)
 		except dbi.dataError, message:
 			raise dbi.dataError, (message, self.lastQuery)
+		except dbi.integrityError, message:
+			raise dbi.integrityError, (message, self.lastQuery)
 
 	def Update( self, table, criteria, updateParams ):
 		updateParams = [ "[%s] = %s" % ( key, `value` ) for key, value in params.items() ]
