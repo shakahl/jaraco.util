@@ -11,13 +11,13 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 53 $a'[11:-2]
+__version__ = '$Revision: 54 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 11-11-04 13:48 $'[10:-2]
+__date__ = '$Modtime: 29-11-04 17:21 $'[10:-2]
 
 import types, time, datetime
 import string, re, sys, logging
-import operator
+import operator, itertools
 import tools
 import pywintypes
 import encodings.ascii
@@ -70,21 +70,6 @@ class String( unicode ):
 		return result
 	SQLRepr = property( _SQLRepr )
 
-def SQLQuote( name ):
-	"take a SQL field name and quote it for use in a query"
-	return '[%s]' % name
-
-def MakeSQLQuotedList( list ):
-	list = map( SQLQuote, list )
-	return ', '.join( list )
-
-def MakeSQLList( list ):
-	list = map( GetSQLRepr, list )
-	return '(' + string.join( list, ', ' ) + ')'
-
-def MakeSQLFieldList( list ):
-	return '(' + string.join( map( SQLQuote, list ), ', ' ) + ')'
-
 def GetSQLRepr( object ):
 	"Get an object's SQL representation"
 	if hasattr( object, 'SQLRepr' ):
@@ -131,6 +116,22 @@ class ADODatabase( object ):
 		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
 		self.connect()
 
+	def Quote( self, name ):
+		"take a SQL field name and quote it for use in a query"
+		return '[%s]' % name
+
+	def BuildSQLQuotedList( self, list ):
+		"Build a list of quoted objects (such as fields in a query)"
+		list = map( self.Quote, list )
+		return ', '.join( list )
+
+	def BuildSQLList( self, list ):
+		list = map( GetSQLRepr, list )
+		return '(%s)' % ', '.join( list )
+
+	def BuildSQLFieldList( self, list ):
+		return '(%s)' % self.BuildSQLQuotedList( list )
+
 	def connect( self ):
 		if self.connection.State:
 			self.connection.Close()
@@ -143,30 +144,17 @@ class ADODatabase( object ):
 			object.Properties( property ).Value = value
 	_setProperties = staticmethod( _setProperties )
 
-	def MakeSQLList( self, list ):
-		"""This method converts the list of column names into a tuple, and
-then converts the list elements into their SQL representation."""
-		list = map( GetSQLRepr, list )
-		return '(' + string.join( list, ', ' ) + ')'
-
-	def MakeSQLFieldList( self, list ):
-		return '(' + string.join( map( SQLQuote, list ), ', ' ) + ')'
-
 	def GetSQLRepr( self, object ):
 		"Get an object's SQL representation -- deprecated, but kept for compatability."
 		return GetSQLRepr( object )
 	
 	def Insert( self, table, values ):
-		fields = self.MakeSQLFieldList( values.keys() )
-		values = self.MakeSQLList( values.values() )
-		table = SQLQuote( table )
+		fields = self.BuildSQLFieldList( values.keys() )
+		values = self.BuildSQLList( values.values() )
+		table = self.Quote( table )
 		sql = 'INSERT INTO %(table)s %(fields)s VALUES %(values)s;' % vars()
 		if not self.Execute( sql ) == 1:
 			raise Exception, 'Error with SQL: ' + sql
-		# delete the recordset to ensure the next recordset is from the same
-		#  connection (especially important when checking for last identity)
-		# (deprecated: moved to Execute method)
-		#del self.recordSet
 
 	def GetLastID( self ):
 		sql = "SELECT @@IDENTITY;"
@@ -228,17 +216,19 @@ then converts the list elements into their SQL representation."""
 		makeOb = lambda l: ob( zip( fieldNames, l ) )
 		return map( makeOb, self.GetAllRows() )
 	
-	def BuildSelectQuery( self, fields, table, params = None, specifiers = None ):
+	def BuildSelectQuery( self, fields, tables, params = None, specifiers = None ):
 		if not fields or fields == '*':
 			fields = '*'
-		elif isinstance( fields, basestring ):
-			fields = MakeSQLQuotedList( [ fields ] )
-		elif isinstance( fields, ( types.ListType, types.TupleType ) ):
-			fields = MakeSQLQuotedList( fields )
+		else:
+			if not isinstance( fields, ( list, tuple ) ):
+				fields = [ fields ]
+			fields = self.BuildSQLQuotedList( fields )
 		sql = 'SELECT'
 		if specifiers:
 			sql = string.join( ( sql, ) + specifiers )
-		sql = string.join( ( sql, fields, 'FROM', SQLQuote( table ) ) )
+		if not isinstance( tables, ( list, tuple ) ):
+			tables = [ tables ]
+		sql = string.join( ( sql, fields, 'FROM', self.BuildSQLQuotedList( tables ) ) )
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
 		return sql
@@ -249,7 +239,7 @@ then converts the list elements into their SQL representation."""
 		return self.Execute( sql )
 
 	def Delete( self, table, params = None ):
-		sql = 'DELETE from %s' % SQLQuote( table )
+		sql = 'DELETE from %s' % self.Quote( table )
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
 		self.Execute( sql )
@@ -264,12 +254,12 @@ then converts the list elements into their SQL representation."""
 
 	def MakeSQLTest( self, item ):
 		field,value = item
-		field = SQLQuote( field )
+		field = self.Quote( field )
 		if value is None:
 			fmt = '%(field)s is NULL'
 		elif isinstance( value, ( tuple, list ) ):
 			fmt = '%(field)s in %(value)s'
-			value = self.MakeSQLList( value )
+			value = self.BuildSQLList( value )
 		else:
 			value = GetSQLRepr( value )
 			fmt = '%(field)s = %(value)s'
@@ -277,7 +267,7 @@ then converts the list elements into their SQL representation."""
 	
 	def GetFieldNames( self, table = None ):
 		if table:
-			table = SQLQuote( table )
+			table = self.Quote( table )
 			# run a query so as to retrieve the field names
 			sql = 'SELECT * from %s WHERE 0=1' % table
 			self.Execute( sql )
@@ -302,7 +292,7 @@ then converts the list elements into their SQL representation."""
 		updateParams = map( lambda p: '[%s] = %s' % p, updateParams.items() )
 		updateParams = string.join( updateParams, ', ' )
 		criteria = self.BuildTests( criteria )
-		table = SQLQuote( table )
+		table = self.Quote( table )
 		sql = 'UPDATE %s SET %s WHERE %s' % (table, updateParams, criteria)
 		self.Execute( sql )
 
@@ -355,7 +345,7 @@ then converts the list elements into their SQL representation."""
 			self.connection.Properties('Current Catalog').Value = dbName
 		except pywintypes.com_error, e:
 			# sometimes, the name has to be in quotes for the initial call to set the current catalog.
-			dbName = SQLQuote( dbName )
+			dbName = self.Quote( dbName )
 			log.debug( 'Attempting to change current catalog to %s.', dbName )
 			self.connection.Properties('Current Catalog').Value = dbName
 
@@ -371,7 +361,7 @@ then converts the list elements into their SQL representation."""
 		return parameters
 
 	def GrantPermission( self, object, permission = 'SELECT', user = 'public' ):
-		object = SQLQuote( object )
+		object = self.Quote( object )
 		query = 'GRANT %(permission)s ON %(object)s TO %(user)s'
 		self.Execute( query )
 
@@ -417,6 +407,19 @@ then converts the list elements into their SQL representation."""
 		if currentRow:
 			yield buildRowDict( currentRow, fieldNames, parameters )
 
+	def GetAllRowsIter( self ):
+		while not self.recordSet.EOF:
+			result = self.recordSet.GetRows( 1 )
+			# transpose the data
+			result = zip( *result )[0]
+			yield result
+
+	def GetResultAsObjectsIter( self, ob = dict ):
+		"Return a sequence of dictionaries with keys as field names and values from the rows."
+		fieldNames = self.GetFieldNames()
+		makeOb = lambda l: ob( zip( fieldNames, l ) )
+		return itertools.imap( makeOb, self.GetAllRows() )
+
 class AccessDatabase( ADODatabase ):
 	connectionParameters = { }
 	provider = 'Microsoft.Jet.OLEDB.4.0'
@@ -426,17 +429,18 @@ class ODBCDatabase( ADODatabase ):
 	
 	def __init__( self, spec_params ):
 		params = tools.odict( self.defaultParams )
-		if isinstance( spec_params, basestring ):
-			# assume spec_params is an ODBC name
-			odbc_name = spec_params
-			params = tools.odict( { 'DSN': odbc_name } )
-		else:
-			params.update( spec_params )
+		if not isinstance( spec_params, dict ):
+			spec_params = self.GetSingleParam( spec_params )
+		params.update( spec_params )
 		connectionString = self.BuildConnectionString( params )
 		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
 		log.debug( 'connect string is %s.', connectionString )
 		self.connection.Open( connectionString )
 
+	def GetSingleParam( self, param ):
+		# assume spec_params is an ODBC data source name
+		return tools.odict( { 'DSN': param } )
+		
 	def BuildConnectionString( self, params ):
 		return ';'.join( map( '='.join, params.items() ) )
 
