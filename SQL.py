@@ -109,6 +109,7 @@ def MakeSQLFieldList( list ):
 	return '(' + string.join( map( SQLQuote, list ), ', ' ) + ')'
 
 def GetSQLRepr( object ):
+	"Get an object's SQL representation"
 	if hasattr( object, 'SQLRepr' ):
 		result = object.SQLRepr
 	else:
@@ -118,11 +119,15 @@ def GetSQLRepr( object ):
 			# strip off the 'L' at the end
 			result = object.__repr__( self )[:-1]
 		elif isinstance( object, basestring ):
+			# convert it to a SQL.String and get the repr
 			result = String( object ).SQLRepr
 		elif type( object ) in ( time.struct_time, datetime.datetime, datetime.date ):
+			# convert it to a SQL.Time and get the repr
 			result = Time( object ).SQLRepr
 		elif object is None:
 			result = 'NULL'
+		elif isinstance( object, bool ):
+			result = repr( int( object ) )
 		else:
 			result = repr( object )
 	log.debug( 'SQL representation for %s is %s.' % ( object, result ) )
@@ -161,34 +166,16 @@ class ADODatabase( object ):
 	def MakeSQLList( self, list ):
 		"""This method converts the list of column names into a tuple, and
 then converts the list elements into their SQL representation."""
-		list = map( self.GetSQLRepr, list )
+		list = map( GetSQLRepr, list )
 		return '(' + string.join( list, ', ' ) + ')'
 
 	def MakeSQLFieldList( self, list ):
 		return '(' + string.join( map( SQLQuote, list ), ', ' ) + ')'
 
 	def GetSQLRepr( self, object ):
-		"Get an object's SQL representation"
-		if hasattr( object, 'SQLRepr' ):
-			result = object.SQLRepr
-		else:
-			# object doesn't have an explicit SQL representation.  Infer representation based
-			#  on the python type.  If no inference is made, use the python representation.
-			if type( object ) is types.LongType:
-				# strip off the 'L' at the end
-				result = object.__repr__( )[:-1]
-			elif isinstance( object, basestring ):
-				# convert it to a SQL.String and get the repr
-				result = String( object ).SQLRepr
-			elif type( object ) in ( time.struct_time, datetime.datetime, datetime.date ):
-				# convert it to a SQL.Time and get the repr
-				result = Time( object ).SQLRepr
-			else:
-				result = repr( object )
-		log.debug( 'SQL representation for %s is %s.' % ( object, result ) )
-		log.debug( 'type( %s ) is %s.' % ( object, type( object ) ) )
-		return result
-
+		"Get an object's SQL representation -- deprecated, but kept for compatability."
+		return GetSQLRepr( object )
+	
 	def Insert( self, table, values ):
 		fields = self.MakeSQLFieldList( values.keys() )
 		values = self.MakeSQLList( values.values() )
@@ -298,7 +285,7 @@ then converts the list elements into their SQL representation."""
 		if value is None:
 			fmt = '%(field)s is NULL'
 		else:
-			value = self.GetSQLRepr( value )
+			value = GetSQLRepr( value )
 			fmt = '%(field)s = %(value)s'
 		return fmt % vars()
 	
@@ -325,7 +312,7 @@ then converts the list elements into their SQL representation."""
 		return result
 
 	def Update( self, table, criteria, updateParams ):
-		updateParams = tools.DictMap( self.GetSQLRepr, updateParams )
+		updateParams = tools.DictMap( GetSQLRepr, updateParams )
 		updateParams = map( lambda p: '[%s] = %s' % p, updateParams.items() )
 		updateParams = string.join( updateParams, ', ' )
 		criteria = self.BuildTests( criteria )
