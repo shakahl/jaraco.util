@@ -8,14 +8,16 @@ for retrieving the objects.
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 1 $'[11:-2]
+__version__ = '$Revision: 2 $'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 8-09-04 18:21 $'[10:-2]
+__date__ = '$Modtime: 8-09-04 19:21 $'[10:-2]
 
 import xmlTools, tools, SQL
 
 import re
 
+import logging
+log = logging.getLogger( __name__ )
 
 class SimpleObject( xmlTools.XMLObject ):
 	pkPattern = re.compile( "Violation of PRIMARY KEY constraint '.*'\. Cannot insert duplicate key in object '.*'\." )
@@ -119,7 +121,7 @@ that are supplementary, and returns a list for each."""
 	
 	def insert( self ):
 		primaryData, supplementaryData = self._SegregateData_( )
-		result = BaseObject.insert( self, primaryData )
+		result = SimpleObject.insert( self, primaryData )
 		map( self.__StoreAttribute__, supplementaryData.items() )
 
 	def update_database( self ):
@@ -195,3 +197,6 @@ that are supplementary, and returns a list for each."""
 		if removeNulls:
 			getdb().Delete( objectClass.attributeTableName, { 'Name': fields, 'Value': None } )
 	MakeSupplementaryFields = staticmethod( MakeSupplementaryFields )
+
+# exceptions
+class FetchError( Exception ): pass
