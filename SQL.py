@@ -87,7 +87,7 @@ class String( unicode ):
 		try:
 			result = "'%s'" % str( result )
 		except UnicodeEncodeError:
-			result = "N'%s'" % str( result )
+			result = u"N'%s'" % result
 		return result
 	SQLRepr = property( _SQLRepr )
 
