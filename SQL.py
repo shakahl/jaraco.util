@@ -36,7 +36,7 @@ to SQL queries."""
 			raise TypeError, 'Initialization value was not a valid time object.'
 
 	def _SQLRepr( self ):
-		return tools.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", self.time )
+		return tools.strftime( "{ Ts '%Y-%m-%d %H:%M:%S.%s' }", self.time )
 	SQLRepr = property( _SQLRepr )	
 
 	def __repr__( self ):
@@ -49,9 +49,14 @@ to SQL queries."""
 
 	def ConvertPyTimeToPythonTime( self, pyt ):
 		fmtString = '%Y-%m-%d %H:%M:%S'
-		result = time.strptime( pyt.Format( fmtString ), fmtString )
-		# make the time 'naive' by clearing the DST bit.
-		return time.struct_time( result[:-1]+(0,) )
+		result = tools.strptime( pyt.Format( fmtString ), fmtString )
+		# get milliseconds and microseconds.  The only way to do this is
+		#  to use the __float__ attribute of the time, which is in days.
+		microsecondsPerDay = tools.secondsPerDay * 1000000
+		microseconds = float( pyt ) * microsecondsPerDay
+		microsecond = int( microseconds % 1000000 )
+		result = result.replace( microsecond = microsecond )
+		return result
 
 import re, operator
 class Binary( str ):
