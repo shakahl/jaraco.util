@@ -93,12 +93,20 @@ class String( unicode ):
 		return result
 	SQLRepr = property( _SQLRepr )
 
+def SQLQuote( name ):
+	"take a SQL field name and quote it for use in a query"
+	return '[%s]' % name
+
+def MakeSQLQuotedList( list ):
+	list = map( SQLQuote, list )
+	return ', '.join( list )
+
 def MakeSQLList( list ):
 	list = map( GetSQLRepr, list )
 	return '(' + string.join( list, ', ' ) + ')'
 
 def MakeSQLFieldList( list ):
-	return '(' + string.join( map( lambda x: '['+x+']', list ), ', ' ) + ')'
+	return '(' + string.join( map( SQLQuote, list ), ', ' ) + ')'
 
 def GetSQLRepr( object ):
 	if hasattr( object, 'SQLRepr' ):
@@ -250,10 +258,10 @@ then converts the list elements into their SQL representation."""
 	def BuildSelectQuery( self, fields, table, params = None, specifiers = None ):
 		if not fields or fields == '*':
 			fields = '*'
-		elif type(fields) is types.StringType:
-			fields = self.MakeSQLFieldList( [ fields ] )
-		elif type(fields) is types.ListType:
-			fields = self.MakeSQLFieldList( fields )
+		elif isinstance( fields, basestring ):
+			fields = MakeSQLQuotedList( [ fields ] )
+		elif isinstance( fields, ( types.ListType, types.TupleType ) ):
+			fields = MakeSQLQuotedList( fields )
 		sql = 'SELECT'
 		if specifiers:
 			sql = string.join( ( sql, ) + specifiers )
