@@ -29,6 +29,8 @@ class Time( object ):
 			value = self.ConvertPyTimeToPythonTime( value )
 		if type( value ) is datetime.datetime:
 			value = value.utctimetuple()
+		if type( value ) is datetime.date:
+			value = value.timetuple()
 		if type( value ) in ( types.TupleType, time.struct_time ):
 			self.time = time.struct_time( value )
 		elif type( value ) in ( types.FloatType, types.IntType, types.LongType ):
@@ -91,7 +93,15 @@ class String( unicode ):
 		return result
 	SQLRepr = property( _SQLRepr )
 
-import win32com.client # to get ADO objects
+import win32com.client
+# Ensure that ADOs are available (either version 2.8 or 2.7)
+try:
+	# Microsoft ActiveX Data Objects 2.8 Library
+	win32com.client.gencache.EnsureModule('{2A75196C-D9EB-4129-B803-931327F72D5C}', 0, 2, 8)
+except pywintypes.com_error:
+	# Microsoft ActiveX Data Objects 2.7 Library
+	win32com.client.gencache.EnsureModule('{EF53050B-882E-4776-B643-EDA472E8E3F2}', 0, 2, 7)
+
 class ADODatabase( object ):
 	# this method converts the list of column names into a tuple, and
 	#  then removes the 's, converting the column names into a SQL list.
@@ -113,8 +123,8 @@ class ADODatabase( object ):
 				result = object.__repr__( self )[:-1]
 			elif isinstance( object, basestring ):
 				result = String( object ).SQLRepr
-			elif type( object ) is time.struct_time:
-				result = time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", object )
+			elif type( object ) in ( time.struct_time, datetime.datetime, datetime.date ):
+				result = Time( object ).SQLRepr
 			else:
 				result = repr( object )
 		log.debug( 'SQL representation for %s is %s.' % ( object, result ) )
@@ -189,15 +199,6 @@ class ADODatabase( object ):
 		makeDict = lambda l: dict( zip( fieldNames, l ) )
 		return map( makeDict, self.GetAllRows() )
 	
-	def Select( self, *queryArgs ):
-		sql = self.BuildSelectQuery( *queryArgs )
-		self.Execute( sql )
-
-	def SelectXML( self, *queryArgs ):
-		sql = self.BuildSelectQuery( *queryArgs )
-		sql = sql + ' For XML Auto'
-		self.Execute( sql )
-
 	def BuildSelectQuery( self, fields, table, params = None, specifiers = None ):
 		if not fields or fields == '*':
 			fields = '*'
@@ -212,6 +213,11 @@ class ADODatabase( object ):
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
 		return sql
+
+	def Select( self, *queryArgs ):
+		__doc__ = self.BuildSelectQuery.__doc__
+		sql = self.BuildSelectQuery( *queryArgs )
+		self.Execute( sql )
 
 	def Delete( self, table, params = None ):
 		sql = 'DELETE from [%s]' % table
@@ -268,13 +274,6 @@ class ADODatabase( object ):
 		else:
 			log.info( 'Recordset is empty at call to GetSingletonResult.' )
 			result = None
-		return result
-
-	def GetXMLResult( self ):
-		if self.recordSet.EOF:
-			result = ''
-		else:
-			result = string.replace( self.recordSet.GetString(), '\r', '' )
 		return result
 
 	def FlushRecordset( self ):
@@ -348,19 +347,78 @@ class ODBCDatabase( ADODatabase ):
 		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
 		self.connection.Open( ODBCName )
 
+	def SelectXML( self, *queryArgs ):
+		sql = self.BuildSelectQuery( *queryArgs )
+		sql = sql + ' For XML Auto'
+		self.Execute( sql )
+
+	def GetXMLResult( self ):
+		if self.recordSet.EOF:
+			result = ''
+		else:
+			result = string.replace( self.recordSet.GetString(), '\r', '' )
+		return result
+
 class SQLServerDatabase( ADODatabase ):
+	provider = 'SQLOLEDB'
+	connectionParameters = {}
+	# use Windows integrated security by default
+	connectionParameters['Integrated Security'] = 'SSPI'
 	def __init__( self, parameters={} ):
+		self.connectionParameters.update( parameters )
 		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
-		self.connection.Provider = 'sqloledb'
-		self.connection.Properties( 'Integrated Security' ).Value = 'SSPI'
-		self.connection.Open( self.MakeConnectionString( parameters ) )
+		self.connect()
+
+	def connect( self ):
+		if self.connection.State:
+			self.connection.Close()
+		self.connection.Provider = self.provider
+		self.__class__._setProperties( self.connection, self.connectionParameters )
+		self.connection.Open()
+
+	def _setProperties( object, properties ):
+		for property, value in properties.items():
+			object.Properties( property ).Value = value
+	_setProperties = staticmethod( _setProperties )
 
 	def Attach( self, dbName, files ):
 		query = "exec sp_attach_db @dbname='%s'"
 		filesString = string.join( files, ', ' )
 		query = string.join( ( query, filesString ), ', ' )
 		self.Execute( query )
-	
+
+	def ExecuteToStream( self, command ):
+		result = win32com.client.Dispatch( 'ADODB.Stream' )
+		result.Open()
+
+		self.__class__._setProperties( command, { 'Output Stream': result } )
+		command.Execute( None, Options = win32com.client.constants.adExecuteStream )
+
+		result.Position = 0
+		return result
+
+	def SelectXML( self, *queryArgs ):
+		__doc__ = ADODatabase.Select.__doc__
+		sql = self.BuildSelectQuery( *queryArgs )
+		sql = sql + ' For XML Auto'
+		command = self.BuildCommand( sql )
+		return self.ExecuteToStream( command )
+
+	def BuildCommand( self, query ):
+		command = win32com.client.Dispatch( 'ADODB.Command' )
+		command.ActiveConnection = self.connection
+		command.CommandText = query
+		return command
+
+class SQLXMLDatabase( SQLServerDatabase ):
+	provider = 'SQLXMLOLEDB'
+	connectionParameters = {}
+	connectionParameters.update( SQLServerDatabase.connectionParameters )
+	connectionParameters['Data Provider'] = 'SQLOLEDB'
+
+	def Execute( self, *args ):
+		return self.ExecuteToStream( *args ).ReadText()
+
 # mix-in class for HTML generation in Database classes
 class HTMLGenerator( object ):
 	def GetAsHTMLTable( self, query = None ):
@@ -402,4 +460,3 @@ class HTMLGenerator( object ):
 		else:
 			result = str( value )
 		return result
-	
