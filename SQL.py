@@ -125,10 +125,18 @@ class Database:
 		self.Execute( sql )
 
 	def BuildTests( self, params ):
-		tests = [ "[%s] = %s" % ( key, `value` ) for key,value in params.items() ]
+		tests = map( self.MakeSQLTest, params.items() )
 		tests = string.join( tests, ' and ' )
 		return tests
 
+	def MakeSQLTest( self, item ):
+		field,value = item
+		if value is None:
+			fmt = '[%(field)s] is NULL'
+		else:
+			fmt = '[%(field)s] = %(value)s'
+		return fmt % vars()
+	
 	def GetFieldNames( self, table = None ):
 		if table:
 			sql = 'SELECT * from [%s] WHERE 0' % table
