@@ -7,9 +7,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 5 $a'[11:-2]
+__version__ = '$Revision: 6 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-07-20 10:46 $'[10:-2]
+__date__ = '$Modtime: 4-11-04 11:22 $'[10:-2]
 
 import string, re, logging, cgi
 
@@ -25,6 +25,8 @@ class FileWriter( object ):
 
 	def write( self, data ):
 		self.__handler__( data )
+
+class UploadError( RuntimeError ): pass
 
 # This class should only be instanciated within an ASP session.
 class ASPForm( dict ):
@@ -68,7 +70,18 @@ Additionally, the BinaryRead must not have been called yet.
 """
 	from StringIO import StringIO
 	bytes = Request.TotalBytes
-	data, bytesRead = Request.BinaryRead( bytes )
+	try:
+		data, bytesRead = Request.BinaryRead( bytes )
+	except pythoncom.com_error, ( hr, msg, exc, arg ):
+		if exc:
+			wcode, source, text, helpFile, helpId, scode = exc
+			# in IIS 6, there is a limit to the size of uploads.  If a file larger than
+			#  the value specified in AspMaxRequestEntityAllowed is sent, BinaryRead
+			#  will throw an exception with the scode set to 0x80004005.
+			if scode == 0x80004005:
+				raise UploadError, ('File size is too large', bytes )
+		# anything that wasn't handled explicitly should be re-raised!
+		raise
 	if bytesRead != bytes:
 		raise RuntimeError
 	environ = {}
