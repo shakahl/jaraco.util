@@ -150,15 +150,32 @@ class ModifiedTimeFilter( FileFilter ):
 		return last_mod >= self.cutoff
 
 class PatternFilter( FileFilter ):
-	def __init__( self, pattern ):
-		self.pattern = pattern
+	def __init__( self, filePattern = None, rePattern = None ):
+		if filePattern and rePattern:
+			raise TypeError, 'PatternFilter() takes exactly 1 argument (2 given).'
+		if not filePattern and not rePattern:
+			raise TypeError, 'PatternFilter() takes exactly 1 argument (0 given).'
+		if filePattern:
+			self.pattern = self.ConvertFilePattern( filePattern )
+		if rePattern:
+			self.pattern = rePattern
+
+	def ConvertFilePattern( p ):
+		"""
+		converts a filename specification (such as c:\*.*) to an equivelent regular expression
+		>>> PatternFilter.ConvertFilePattern( 'c:\\*' )
+		'c:\\\\.*'
+		"""
+		import string
+		subs = ( ( '\\', '\\\\' ), ( '.', '\\.' ), ( '*', '.*' ), ( '?', '.' ) )
+		for old, new in subs:
+			p = string.replace( p, old, new )
+		return p
+	ConvertFilePattern = staticmethod( ConvertFilePattern )
 
 	def __call__( self, filepath ):
-		if self.pattern:
-			filename = os.path.basename( filepath )
-			return re.match( self.pattern, filename )
-		else:
-			return True
+		filename = os.path.basename( filepath )
+		return operator.truth( re.match( self.pattern, filename ) )
 
 class AggregateFilter( FileFilter ):
 	def __init__( self, *filters ):
