@@ -8,9 +8,9 @@ for retrieving the objects.
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 3 $'[11:-2]
+__version__ = '$Revision: 4 $'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 4-10-04 13:57 $'[10:-2]
+__date__ = '$Modtime: 20-10-04 16:55 $'[10:-2]
 
 import xmlTools, tools, SQL
 
@@ -26,11 +26,13 @@ class SimpleObject( xmlTools.XMLObject ):
 	
 	def __init__( self, *args ):
 		self.__LoadFieldNames__()
-		if not( len( args ) == 1 and isinstance( args[0], ( dict, tuple, list ) ) ):
+		try:
+			xmlTools.XMLObject.__init__( self, *args )
+		except TypeError, ValueError:
 			# parameters are not your usual dict initializers, so assume they correlate to
 			#  the field names.
 			args = ( zip( self.fieldNames, args ), )
-		xmlTools.XMLObject.__init__( self, *args )
+			xmlTools.XMLObject.__init__( self, *args )
 
 	def __repr__( self ):
 		return '%s( %s )' % ( self.__class__.__name__, xmlTools.XMLObject.__repr__( self ) )
