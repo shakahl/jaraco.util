@@ -2,7 +2,7 @@
 
 "cookies.py"
 
-import os, copy
+import os, copy, urllib
 import itertools
 import string, re
 
@@ -66,7 +66,7 @@ class cookie( dict ):
 
 	def getRequestHeader( self ):
 		"returns the cookie as can be used in an HTTP Request"
-		return '='.join( ( self['name'], self['value'] ) )
+		return '='.join( ( self['name'], urllib.quote( self['value'] ) ) )
 
 	def isSecure( self ):
 		return eval( string.capwords( self.get( 'secure', 'False' ) ) )
