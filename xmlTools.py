@@ -1,5 +1,5 @@
 import tools, itertools
-import win32com.client
+import xml.dom.minidom
 import string
 
 quoteSubstitutions = ( ('"','&quot;'),
@@ -34,14 +34,14 @@ def ParseXMLTime( xmlTime ):
 	return datetime( *strptime( xmlTime, pattern )[:6] )
 
 class XMLObject( dict ):
-	xml = win32com.client.Dispatch( 'Msxml2.DOMDocument.4.0' )
-		
+	xml = xml.dom.minidom.getDOMImplementation()
+	
 	def XMLRepr( self ):
 		nodeName = self.encodeXMLName( self.__class__.__name__ )
-		element = self.xml.createElement( nodeName )
+		element = self.xml.createDocument( '', nodeName, '' ).documentElement
 		for attr in self.getAttributes( ):
 			element.setAttribute( *attr )
-		return element
+		return element.toxml()
 			
 
 	def getAttributes( self ):
