@@ -2,6 +2,9 @@ import tools, itertools
 import xml.dom.minidom
 import string
 
+import logging
+log = logging.getLogger( __name__ )
+
 quoteSubstitutions = ( ('"','&quot;'),
 # leave out this substitution for now
 #					   ("'",'&apos;')
@@ -62,3 +65,20 @@ class XMLObject( dict ):
 				yield c
 			else:
 				yield '_x%04x_' % ord( c )
+
+def loadXMLObjects( filename, objectModule ):
+	doc = xml.dom.minidom.parse( open( filename, 'r' ) )
+	return getXMLObjects( doc.getElementsByTagName( '*' ), objectModule )
+
+def getXMLObjects( nodeSet, objectModule ):
+	for objectNode in nodeSet:
+		try:
+			objectClass = getattr( objectModule, objectNode.nodeName )
+			yield objectClass( objectNode.attributes.items() )
+		except AttributeError: pass # class does not exist
+
+def getChildrenByType( node, type ):
+	return filter( lambda n: n.nodeType == type, node.childNodes )
+
+def getChildElements( node ):
+	return getChildrenByType( node, node.ELEMENT_NODE )
