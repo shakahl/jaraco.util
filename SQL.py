@@ -388,6 +388,20 @@ then converts the list elements into their SQL representation."""
 		self.Select( 'name', 'sysobjects', {'type':'U'} )
 		return self.GetDataAsList()
 
+	def ExecuteToStream( self, command ):
+		result = win32com.client.Dispatch( 'ADODB.Stream' )
+		result.Open()
+
+		self.__class__._setProperties( command, { 'Output Stream': result } )
+		try:
+			adExecuteStream = win32com.client.constants.adExecuteStream
+		except AttributeError, attribute:
+			adExecuteStream = 1024
+		command.Execute( None, Options = adExecuteStream )
+
+		result.Position = 0
+		return result
+
 class AccessDatabase( ADODatabase ):
 	connectionParameters = { }
 	provider = 'Microsoft.Jet.OLEDB.4.0'
@@ -408,20 +422,6 @@ class ODBCDatabase( ADODatabase ):
 			result = ''
 		else:
 			result = string.replace( self.recordSet.GetString(), '\r', '' )
-		return result
-
-	def ExecuteToStream( self, command ):
-		result = win32com.client.Dispatch( 'ADODB.Stream' )
-		result.Open()
-
-		self.__class__._setProperties( command, { 'Output Stream': result } )
-		try:
-			adExecuteStream = win32com.client.constants.adExecuteStream
-		except AttributeError, attribute:
-			adExecuteStream = 1024
-		command.Execute( None, Options = adExecuteStream )
-
-		result.Position = 0
 		return result
 
 class SQLServerDatabase( ADODatabase ):
