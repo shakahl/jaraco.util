@@ -1,7 +1,7 @@
 # Module SQL defines SQL routines and classes for an ODBC link to
 #  SQL databases.
 
-import types, time, string
+import types, time, string, re
 
 # Currently, I use the odbc class included with Python.  Consider using
 #  mxodbc or some other ODBC
@@ -54,11 +54,7 @@ class Binary( str ):
 		s = isHex.group(2)
 		if not len( s ) % 2 == 0:
 			raise ValueError, 'String must be of even length'
-		even = range( 0, len( s ), 2 )
-		odd = range( 1, len( s ), 2 )
-		even = map( s.__getitem__, even )
-		odd = map( s.__getitem__, odd )
-		bytes = map( operator.add, even, odd )
+		bytes = re.findall( '(?s).{2}', s )
 		toBin = lambda byteStr: chr( long( byteStr, 16 ) )
 		return Binary( string.join( map( toBin, bytes ), '' ) )
 
