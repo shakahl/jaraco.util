@@ -250,7 +250,7 @@ class SessionOpenerDirector( urllib2.OpenerDirector ):
 			request.add_header( 'Cookie', self.getCookieHeader( request ) )
 			log.debug( 'Cookie: %s', cookieHeader )
 		response = urllib2.OpenerDirector.open( self, request, data )
-		path = urlparse.urlparse( request.get_full_url() )[2]
+		path = urlparse( request.get_full_url() )[2]
 		self.processCookies( response, path )
 		return response
 
