@@ -36,7 +36,9 @@ to SQL queries."""
 			raise TypeError, 'Initialization value was not a valid time object.'
 
 	def _SQLRepr( self ):
-		return self.time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }" )
+		# would you believe that strftime won't take a year before 1900?
+		year = '%04d' % self.time.year
+		return self.time.strftime( "{ Ts '%%s-%m-%d %H:%M:%S' }" ) % year
 	SQLRepr = property( _SQLRepr )	
 
 	def __repr__( self ):
