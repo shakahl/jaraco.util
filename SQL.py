@@ -238,4 +238,41 @@ class Database( object ):
 
 	def AddObjects( self, obs ):
 		map( self.AddObject, obs )
+
+	def GetAllRows( self ):
+		return self.cur.fetchall()
+
+# mix-in class for HTML generation in Database classes
+class HTMLGenerator( object ):
+	def GetAsHTMLTable( self, query = None ):
+		if query:
+			self.Execute( query )
+		import win32com.client
+		self.htmldoc = win32com.client.Dispatch( 'Msxml2.DOMDocument.4.0' )
+		table = self.htmldoc.createElement( 'table' )
+		table.setAttribute( 'class', 'dataDisplay' )
+		self.tableElement = self.htmldoc.createElement( 'thead' )
+		self.elementTag = 'th'
+		self.AppendRow( self.GetFieldNames() )
+		table.appendChild( self.tableElement )
+		self.tableElement = self.htmldoc.createElement( 'tbody' )
+		self.elementTag = 'td'
+		map( self.AppendRow, self.GetAllRows() )
+		table.appendChild( self.tableElement )
+
+		result = table.xml
+		del self.htmldoc, self.tableElement
+		return result
+
+	def AppendElement( self, value ):
+		elem = self.htmldoc.createElement( self.elementTag )
+		if value is not None:
+			txt = self.htmldoc.createTextNode( value )
+			elem.appendChild( txt )
+		self.currentElement.appendChild( elem )
+
+	def AppendRow( self, row ):
+		self.currentElement = self.htmldoc.createElement( 'tr' )
+		map( self.AppendElement, row )
+		self.tableElement.appendChild( self.currentElement )
 		
