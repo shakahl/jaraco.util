@@ -123,8 +123,13 @@ class cookie( object ):
 			self.__parameters['path'] = path
 
 	def __str__( self ):
-		parameters = '; '.join( map( '='.join, [ ( self.__name, self.__value ) ] + self.__parameters.items() ) )
-		return 'Cookie: ' + parameters
+		return 'Cookie: ' + self.__parameterString()
+
+	def __repr__( self ):
+		return '<%s %s>' % ( self.__class__.__name__, self.__parameterString() )
+
+	def __parameterString( self ):
+		return '; '.join( map( '='.join, [ ( self.__name, self.__value ) ] + self.__parameters.items() ) )
 
 class Container( object ):
 	"An object for storing cookies as a web browser would."
@@ -153,3 +158,6 @@ class Container( object ):
 			self.__cookies[ self.__cookies.index( cookie ) ] = cookie
 		else:
 			self.__cookies.append( cookie )
+
+	def __repr__( self ):
+		return repr( self.__cookies )
