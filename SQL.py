@@ -15,13 +15,18 @@ class Time:
 	def __init__( self, value ):
 		if type( value ) in ( types.TupleType, time.struct_time ):
 			self.time = value
-		elif type( value ) is types.FloatType:
+		elif type( value ) in ( types.FloatType, types.IntType, types.LongType ):
 			self.time = time.gmtime( value )
+		elif type( value ) is type( dbi.dbiDate(0) ):
+			self.time = time.localtime( value )
 		else:
-			raise TypeError, 'Initialization value to Time must be a time tuple or GMT seconds.'
+			raise TypeError, 'Initialization value to Time must be a time tuple, dbiDate, or GMT seconds.'
 
 	def __repr__( self ):
 		return time.strftime( '#%Y/%m/%d %H:%M:%S#', self.time )
+
+	def __cmp__( self, other ):
+		return cmp( self.time, other.time )
 
 class Database:
 	def __init__( self, ODBCName ):
@@ -83,6 +88,19 @@ class Database:
 		self.Select( None, table, values )
 		return self.cur.fetchone()
 
+	def GetDataAsDictionary( self, keyField = 0, valueField = 1 ):
+		getFirstItem = lambda x: x[0]
+		fieldNames = map( getFirstItem, self.cur.description )
+		if type( keyField ) is types.StringType:
+			keyField = fieldNames.index( keyField )
+		if type( valueField ) is types.StringType:
+			valueField = fieldNames.index( valueField )
+		data = self.cur.fetchall()
+		result = {}
+		for row in data:
+			result[ row[ keyField ] ] = row[ valueField ]
+		return result
+	
 	def Select( self, fields, table, params = None):
 		if not fields or fields == '*':
 			fields = '*'
@@ -119,6 +137,8 @@ class Database:
 			return self.cur.execute( query )
 		except dbi.progError, message:
 			raise dbi.progError, (message, self.lastQuery)
+		except dbi.dataError, message:
+			raise dbi.dataError, (message, self.lastQuery)
 
 	def Update( self, table, criteria, updateParams ):
 		updateParams = [ "[%s] = %s" % ( key, `value` ) for key, value in params.items() ]
