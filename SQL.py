@@ -22,6 +22,11 @@ class Time:
 		return time.strftime( '#%Y/%m/%d %H:%M:%S#', self.time )
 
 class Database:
+	def __init__( self, ODBCName ):
+		self.ODBCName = ODBCName
+		self.db = odbc( self.ODBCName )
+		self.cur = self.db.cursor()
+		
 	# this method converts the list of column names into a tuple, and
 	#  then removes the 's, converting the column names into a SQL list.
 	def MakeSQLList( self, list ):
