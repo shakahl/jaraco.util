@@ -11,9 +11,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 51 $a'[11:-2]
+__version__ = '$Revision: 52 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-07-13 14:27 $'[10:-2]
+__date__ = '$Modtime: 04-07-21 11:57 $'[10:-2]
 
 import types, time, datetime
 import string, re, sys, logging
@@ -394,7 +394,7 @@ then converts the list elements into their SQL representation."""
 		return result
 
 	def GetPivotData( self, PivotIndices = ( -2, -1 ) ):
-		"""Retrieve the rowset and pivot on the last two columns as name: value pairs."""
+		"""Retrieve the rowset and pivot on the last two columns as name/value pairs."""
 		if not PivotIndices == ( -2, -1 ):
 			raise NotImplementedError, 'Indices must be default in this implementation'
 		fieldNames = self.GetFieldNames()
@@ -482,13 +482,15 @@ class SQLServerDatabase( ADODatabase ):
 			return self.GetSingletonResult()
 			
 class SQLXMLDatabase( SQLServerDatabase ):
+	"A class for SQL-XML data.  Requires that SQLXML 3.0 be installed"
 	provider = 'SQLXMLOLEDB'
 	connectionParameters = {}
 	connectionParameters.update( SQLServerDatabase.connectionParameters )
 	connectionParameters['Data Provider'] = 'SQLOLEDB'
 
-	def Execute( self, *args ):
-		return self.ExecuteToStream( *args ).ReadText()
+	def ExecuteToStream( self, command ):
+		"Execute the command and return the textual XML result."
+		return SQLServerDatabase.ExecuteToStream( self, command ).ReadText()
 
 # mix-in class for HTML generation in Database classes
 class HTMLGenerator( object ):
