@@ -418,7 +418,11 @@ class SQLServerDatabase( ADODatabase ):
 		result.Open()
 
 		self.__class__._setProperties( command, { 'Output Stream': result } )
-		command.Execute( None, Options = win32com.client.constants.adExecuteStream )
+		try:
+			adExecuteStream = win32com.client.constants.adExecuteStream
+		except AttributeError, attribute:
+			adExecuteStream = 1024
+		command.Execute( None, Options = adExecuteStream )
 
 		result.Position = 0
 		return result
