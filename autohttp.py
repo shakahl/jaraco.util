@@ -23,29 +23,31 @@ def splitHostPort( host ):
 class AbstractHTTPHandler( object ):
 	# override do_open because the default one uses deprecated HTTP
 	#  class
-    def do_open(self, http_class, req):
-        host = req.get_host()
-        if not host:
-            raise URLError('no host given')
+	def do_open(self, http_class, req):
+		host = req.get_host()
+		if not host:
+			raise URLError('no host given')
 
-        connection = http_class( host ) # will parse host:port
-        if req.has_data():
-            method = 'POST'
-        else:
-            method = 'GET'
-        connection.request( method,
-                            req.get_selector(),
-                            req.get_data(),
-                            headers=req.headers )
+		connection = http_class( host ) # will parse host:port
+		if req.has_data():
+			method = 'POST'
+			if 'Content-Type' not in req.headers:
+				req.add_header( 'Content-Type', 'application/x-www-form-urlencoded' )
+		else:
+			method = 'GET'
+		connection.request( method,
+							req.get_selector(),
+							req.get_data(),
+							headers=req.headers )
 
-        response = connection.getresponse()
-        code, msg, hdrs = response.status, response.reason, response.msg
-        fp = response.fp
-        if code == 200:
-            return response
-        else:
-            return self.parent.error(req.get_type(), req, fp, code, msg, hdrs)
-	
+		response = connection.getresponse()
+		code, msg, hdrs = response.status, response.reason, response.msg
+		fp = response.fp
+		if code == 200:
+			return response
+		else:
+			return self.parent.error(req.get_type(), req, fp, code, msg, hdrs)
+
 class HTTPHandler( AbstractHTTPHandler, urllib2.HTTPHandler ):
 	def http_open( self, req ):
 		return self.do_open( httplib.HTTPConnection, req )
@@ -217,13 +219,13 @@ class CookieRequest( urllib2.Request ):
 		self._cookies.append( cookie )
 		self.add_header( 'Cookie', self._buildCookieHeader() )
 
-	def _setCookies( self, cookies ):
+	def setCookies( self, cookies ):
+		assert isinstance( cookies, list )
 		self._cookies = cookies
 		if self._cookies:
 			self.add_header( 'Cookie', self._buildCookieHeader() )
 		else:
-			del self.headers['Cookie']
-	cookies = property( fset=_setCookies )
+			self.headers.pop( 'Cookie', None )
 
 	def _buildCookieHeader( self ):
 		cookies = filter( self.cookieMatch, self._cookies )
@@ -274,7 +276,7 @@ class FormProcessor( object ):
 		log.debug( 'Headers in form response were %s', self.formResponse.msg.headers )
 		submissionRequest = CookieRequest( actionURL )
 		submissionRequest.add_header( 'Referer', self.FormURL )
-		submissionRequest.cookies = getCookies( self.formResponse )
+		submissionRequest.setCookies( getCookies( self.formResponse ) )
 		if self.formParser.formAttributes.get( 'enctype', '' ) == 'multipart/form-data':
 			submissionRequest.encode_multipart_formdata( data )
 		else:
@@ -291,7 +293,10 @@ def getCookies( response ):
 	cookieString = response.getheader( 'set-cookie' )
 	if cookieString:
 		cookieTextStrings = re.split( ',\s*', cookieString )
-		return map( cookies.cookie, cookieTextStrings )
+		result = map( cookies.cookie, cookieTextStrings )
+	else:
+		result = []
+	return result
 
 # The following classes are in used for testing the request of
 #  the above classes.
@@ -309,3 +314,8 @@ class echoHandler( SocketServer.StreamRequestHandler ):
 class submissionTester( SocketServer.TCPServer ):
 	def __init__( self ):
 		SocketServer.TCPServer.__init__( self, ('', 80), echoHandler )
+
+def logRequest( log, request ):
+	log.info( 'Requesting %s from %s.', request.get_selector(), request.get_host() )
+	log.debug( 'Headers are %s', request.headers )
+	log.debug( 'Data is %s', request.get_data() )
