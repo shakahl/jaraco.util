@@ -1,5 +1,16 @@
-# fstools.py:
-#  tools for working with files and file systems
+# -*- coding: UTF-8 -*-
+
+"""fstools.py:
+	tools for working with files and file systems
+	
+Copyright © 2004 Sandia National Laboratories  
+"""
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 3 $'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-06-23 12:22 $'[10:-2]
+
 import os
 
 # return a filename possibly with a number appended to it so that it is
