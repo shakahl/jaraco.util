@@ -279,7 +279,7 @@ then converts the list elements into their SQL representation."""
 		field = SQLQuote( field )
 		if value is None:
 			fmt = '%(field)s is NULL'
-		elif hasattr( value, '__iter__' ):
+		elif isinstance( value, ( tuple, list ) ):
 			fmt = '%(field)s in %(value)s'
 			value = self.MakeSQLList( value )
 		else:
