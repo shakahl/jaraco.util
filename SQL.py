@@ -428,7 +428,7 @@ then converts the list elements into their SQL representation."""
 				parameters.__setitem__( *newParam )
 		if currentRow:
 			yield buildRowDict( currentRow, fieldNames, parameters )
-			
+
 class AccessDatabase( ADODatabase ):
 	connectionParameters = { }
 	provider = 'Microsoft.Jet.OLEDB.4.0'
@@ -488,6 +488,11 @@ class SQLServerDatabase( ADODatabase ):
 		self.Execute( query )
 		self.connection.CommandTimeout = oldTimeout
 
+	def GetIdentityColumn( self, tableName ):
+		query = "SELECT name from syscolumns where [id] = OBJECT_ID( '%(tableName)s' ) and ( [status] & 0x80 != 0 )" % vars()
+		if self.Execute( query ):
+			return self.GetSingletonResult()
+			
 class SQLXMLDatabase( SQLServerDatabase ):
 	provider = 'SQLXMLOLEDB'
 	connectionParameters = {}
