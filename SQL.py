@@ -26,6 +26,12 @@ class Time( object ):
 		return time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", self.time )
 	SQLRepr = property( _SQLRepr )	
 
+	def __repr__( self ):
+		return repr( self.time )
+	
+	def __str__( self ):
+		return time.asctime( self.time )
+
 	def __cmp__( self, other ):
 		return cmp( self.time, other.time )
 
@@ -62,7 +68,7 @@ class Long( long ):
 	def _SQLRepr( self ):
 		# strip off the L at the end
 		return long.__repr__( self )[:-1]
-	SQLRepr = property( _ReprSansL )
+	SQLRepr = property( _SQLRepr )
 
 class Database( object ):
 	def __init__( self, ODBCName ):
@@ -82,8 +88,9 @@ class Database( object ):
 	# this method converts the list of column names into a tuple, and
 	#  then removes the 's, converting the column names into a SQL list.
 	def MakeSQLList( self, list ):
-		list = map( self.makeSQLLong, list )
-		return '(' + string.join( map( self.GetSQLRepr, list ), ', ' ) + ')'
+		list = map( self.doPythonTypeConversions, list )
+		list = map( self.GetSQLRepr, list )
+		return '(' + string.join( list, ', ' ) + ')'
 
 	def MakeSQLFieldList( self, list ):
 		return '(' + string.join( map( lambda x: '['+x+']', list ), ', ' ) + ')'
