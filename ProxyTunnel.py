@@ -1,6 +1,24 @@
-# stuff
+# ProxyTunnel.py
 
-import httplib, urllib2, urllib
+"""ProxyTunnel.py
+This modules defines classes to override proxy functionality on Python
+2.3 due to its limitation (non-support) of https via a proxy server.
+
+This module uses the tunnel method to traverse a proxy.  It first connects
+to the proxy server via HTTP, and requests a tunnel via the CONNECT
+command.
+
+Once the connect succeeds, the handler sets the .sock attribute of the
+request to the socket of the tunnel, which can then be used to establish
+an HTTP or HTTPS connection to the other end of the tunnel.
+"""
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 3 $'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-04-08 11:33 $'[10:-2]
+
+import httplib, urllib2, urllib, socket
 import autohttp
 
 class TunnelResponse( httplib.HTTPResponse ):
