@@ -1,3 +1,20 @@
+# -*- coding: UTF-8 -*-
+
+"""EmailForwarder
+A service that when coupled with Microsoft Windows Server
+2003 e-mail service will forward messages based on an aliases
+file in /etc/aliases -based format.
+
+aliases.txt should be placed in the mailroot folder
+	
+Copyright © 2004 Sandia National Laboratories  
+"""
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 2 $'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-06-23 12:21 $'[10:-2]
+
 import win32service, win32serviceutil, win32event
 import email, smtplib, os, sys
 import etcalias, tools, FileChange

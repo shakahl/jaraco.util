@@ -1,3 +1,20 @@
+# -*- coding: UTF-8 -*-
+
+"""IPTools
+Tools for IP communication.
+
+Objects:
+	PortScanner: scans a range of ports
+	PortListener: listens on a port
+	PortRangeListener: listens on a range of ports
+	
+Copyright © 2004 Sandia National Laboratories  
+"""
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 2 $a'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-06-23 12:24 $'[10:-2]
 
 import threading, socket, sys, operator
 
