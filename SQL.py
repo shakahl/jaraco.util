@@ -1,7 +1,8 @@
 # Module SQL defines SQL routines and classes for an ODBC link to
 #  SQL databases.
 
-import types, time, string, re, sys
+import types, time, datetime
+import string, re, sys
 import operator
 import log
 import pywintypes # for TimeType
@@ -22,7 +23,9 @@ class Time( object ):
 	def __init__( self, value ):
 		# accomodate the time type returned by ADODB.Connection
 		if type( value ) is pywintypes.TimeType:
-			value = int( value )
+			value = self.ConvertPyTimeToPythonTime( value )
+		if type( value ) is datetime.datetime:
+			value = value.utctimetuple()
 		if type( value ) in ( types.TupleType, time.struct_time ):
 			self.time = time.struct_time( value )
 		elif type( value ) in ( types.FloatType, types.IntType, types.LongType ):
@@ -44,6 +47,11 @@ class Time( object ):
 		if type( other ) is Time:
 			other = other.time
 		return cmp( self.time, other )
+
+	def ConvertPyTimeToPythonTime( self, pyt ):
+		result = time.strptime( repr(pyt), '<PyTime:%m/%d/%Y %I:%M:%S %p>' )
+		# make the time 'naive' by clearing the DST bit.
+		return time.struct_time( result[:-1]+(0,) )
 
 import re, operator
 class Binary( str ):
@@ -70,13 +78,18 @@ class Binary( str ):
 
 	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )	
 
-import win32com.client # to get ADO objects
-class Database( object ):
-	def __init__( self, ODBCName ):
-		self.ODBCName = ODBCName
-		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
-		self.connection.Open( ODBCName )
+class String( unicode ):
+	def _SQLRepr( self ):
+		result = self.replace( "'", "''" )
+		try:
+			result = "'%s'" % str( result )
+		except UnicodeEncodeError:
+			result = "N'%s'" % str( result )
+		return result
+	SQLRepr = property( _SQLRepr )
 
+import win32com.client # to get ADO objects
+class ADODatabase( object ):
 	# this method converts the list of column names into a tuple, and
 	#  then removes the 's, converting the column names into a SQL list.
 	def MakeSQLList( self, list ):
@@ -95,13 +108,14 @@ class Database( object ):
 			if type( object ) is types.LongType:
 				# strip off the 'L' at the end
 				result = object.__repr__( self )[:-1]
-			if type( object ) is types.UnicodeType:
-				# SQL representation uses N'string' (where N stands for national).
-				result = "N'%s'" % object
-			if type( object ) is time.struct_time:
+			elif isinstance( object, basestring ):
+				result = String( object ).SQLRepr
+			elif type( object ) is time.struct_time:
 				result = time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", object )
 			else:
 				result = repr( object )
+		log.processMessage( 'SQL representation for %s is %s.' % ( object, result ), 'SQL.Database', log.DEBUG )
+		log.processMessage( 'type( %s ) is %s.' % ( object, type( object ) ), 'SQL.Database', log.DEBUG )
 		return result
 
 	def Insert( self, table, values ):
@@ -192,7 +206,7 @@ class Database( object ):
 		return sql
 
 	def Delete( self, table, params = None ):
-		sql = 'DELETE * from [%s]' % table
+		sql = 'DELETE from [%s]' % table
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
 		self.Execute( sql )
@@ -249,7 +263,11 @@ class Database( object ):
 		return result
 
 	def GetXMLResult( self ):
-		return string.replace( self.recordSet.GetString(), '\r', '' )
+		if self.recordSet.EOF:
+			result = ''
+		else:
+			result = string.replace( self.recordSet.GetString(), '\r', '' )
+		return result
 
 	def FlushRecordset( self ):
 		# clear out any existing recordSet, or we run into a situation where we're
@@ -270,6 +288,36 @@ class Database( object ):
 	def RollbackTransaction( self, name = None ):
 		self.FlushRecordset()
 		self.connection.CommitTrans()
+
+	def ExecuteFile( self, filepath, encoding='utf-16' ):
+		text = file( filepath, 'r' ).read().decode( encoding )
+		# split the file into batches of code, segregated
+		#  by 'GO' commands.  This is similar to how Query
+		#  Analyzer executes a file.
+		#  (?mi) means multi-line, case insensitive
+		#  ^ means go should appear at the beginning of the line
+		#  $ means nothing else should be on the line
+		#  \s* means any amount of whitespace
+		batches = re.split( '(?mi)^\s*GO\s*$', text )
+		# filter out any empty strings or strings with only whitespace
+		batches = filter( None, map( string.strip, batches ) )
+		map( self.Execute, batches )
+
+	def UseDatabase( self, dbName ):
+		self.connection.Properties('Current Catalog').Value = dbName
+
+class ODBCDatabase( ADODatabase ):
+	def __init__( self, ODBCName ):
+		self.ODBCName = ODBCName
+		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
+		self.connection.Open( ODBCName )
+
+class SQLServerDatabase( ADODatabase ):
+	def __init__( self ):
+		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
+		self.connection.Provider = 'sqloledb'
+		self.connection.Properties( 'Integrated Security' ).Value = 'SSPI'
+		self.connection.Open()
 	
 # mix-in class for HTML generation in Database classes
 class HTMLGenerator( object ):
