@@ -17,7 +17,7 @@ class WaitableTimer:
 		if not timeoutSeconds:
 			timeoutMilliseconds = win32event.INFINITE
 		else:
-			timeoutMilliseconds = timeoutSeconds * 1000
+			timeoutMilliseconds = int( timeoutSeconds * 1000 )
 		win32event.WaitForSingleObject( self.SignalEvent, timeoutMilliseconds )
 
 	def _SignalLoop_( self, dueTime, period ):
@@ -37,8 +37,8 @@ class WaitableTimer:
 		#we're done here, just quit
 
 	def _Wait_( self, seconds ):
-		if seconds > 0:
-			milliseconds = seconds*1000
+		milliseconds = int( seconds*1000 )
+		if milliseconds > 0:
 			res = win32event.WaitForSingleObject( self.StopEvent, milliseconds )
 			if res == win32event.WAIT_OBJECT_0: raise Exception
 			if res == win32event.WAIT_TIMEOUT: pass
