@@ -1,12 +1,7 @@
 # Module SQL defines SQL routines and classes for an ODBC link to
 #  SQL databases.
 
-import types, time, string, re
-
-# Currently, I use the odbc class included with Python.  Consider using
-#  mxodbc or some other ODBC
-from odbc import odbc
-import dbi
+import types, time, string, re, sys
 
 # Time is a time object used to correctly handle time with respect
 #  to SQL queries.  Ideally, this should be replaced by dbi.<some time object>
@@ -66,11 +61,12 @@ class Long( long ):
 		return long.__repr__( self )[:-1]
 	SQLRepr = property( _SQLRepr )
 
+import win32com.client # to get ADO objects
 class Database( object ):
 	def __init__( self, ODBCName ):
 		self.ODBCName = ODBCName
-		self.db = odbc( self.ODBCName )
-		self.cur = self.db.cursor()
+		self.db = win32com.client.Dispatch( 'ADODB.Connection' )
+		self.db.Open( ODBCName )
 
 	# convert any intrinsic Python types to the appropriate SQL type		
 	def doPythonTypeConversions( self, val ):
@@ -99,49 +95,19 @@ class Database( object ):
 
 	def Insert( self, table, values ):
 		fields = self.MakeSQLFieldList( values.keys() )
-		sql = 'INSERT INTO [%s] %s VALUES %s' % ( table, fields, self.MakeSQLList( values.values() ) )
-		result = 0
-		while not result:
-			try:
-				result = self.Execute( sql )
-				if result != 1:
-					raise DBException, 'Error with SQL: ' + sql
-			except dbi.opError, message:
-				if( message.find( 'currently locked by user' ) ):
-					print 'Database locked, sleeping for 10 seconds'
-					time.sleep(10)
-					continue
-				else:
-					raise dbi.opError, message
-
-	# Get the unique ID from the table of the form ( 'ID', 'Name' ) named
-	#  '<Category> Types'.  If specified, create it if it doesn't exist (default).
-	def GetTypeID( self, category, value, create = 1 ):
-		params = {}
-		params[ 'field' ] = 'Name'
-		params[ 'table' ] = '%s Types' % category
-		params[ 'id' ] = 'ID'
-		params[ 'value' ] = value
-
-		querySQL = "SELECT [%(id)s] from [%(table)s] where [%(field)s] = '%(value)s' " % params
-		self.Execute( querySQL )
-		result = self.cur.fetchone()
-		if result:
-			return result[0]
-		if create:
-			self.Insert( params[ 'table' ], { params[ 'field' ]: params[ 'value' ] } )
-			return self.GetLastID()
+		values = self.MakeSQLList( values.values() )
+		sql = 'INSERT INTO [%(table)s] %(fields)s VALUES %(values)s' % vars()
+		if not self.Execute( sql ) == 1:
+			raise DBException, 'Error with SQL: ' + sql
 
 	def GetLastID( self ):
 		sql = "SELECT @@Identity"
 		self.Execute( sql )
-		result = self.cur.fetchone()
-		if result:
-			return result[0] # else return None
+		return self.GetSingletonResult()
 
 	def Exists( self, table, values ):
-		self.Select( None, table, values )
-		return self.cur.fetchone()
+		self.Select( 'Count(*)', table, values )
+		return self.GetSingletonResult()
 
 	def GetFieldIndex( self, field ):
 		fieldNames = self.GetFieldNames()
@@ -155,24 +121,27 @@ class Database( object ):
 		return result
 
 	def GetDataAsDictionary( self, keyField = 0, valueField = 1 ):
-		keyField = self.GetFieldIndex( keyField )
-		valueField = self.GetFieldIndex( valueField )
-		data = self.cur.fetchall()
+		data = self.db.GetRows( -1, 0, (keyField, valueField) )
 		# transpose the data
 		data = apply( zip, data )
-		# get pairs of items to turn into a dictionary
-		items = zip( data[ keyField ], data[ valueField ] )
-		result = dict( items )
-		return result
+		# make into a dictionary
+		data = dict( data )
+		return data
 
 	def GetDataAsList( self, field = 0 ):
-		field = self.GetFieldIndex( field )
-		data = self.cur.fetchall()
-		# transpose the data
-		data = apply( zip, data )
-		return data[ field ]
+		data = self.db.GetRows( -1, 0, field )
+		return data[ 0 ]
 	
-	def Select( self, fields, table, params = None, specifiers = None ):
+	def Select( self, *queryArgs ):
+		sql = apply( self.BuildSelectQuery, queryArgs )
+		self.Execute( sql )
+
+	def SelectXML( self, *queryArgs ):
+		sql = apply( self.BuildSelectQuery, queryArgs )
+		sql = sql + ' For XML Auto'
+		self.Execute( sql )
+
+	def BuildSelectQuery( self, fields, table, params = None, specifiers = None ):
 		if not fields or fields == '*':
 			fields = '*'
 		elif type(fields) is types.StringType:
@@ -185,7 +154,7 @@ class Database( object ):
 		sql = string.join( ( sql, fields, 'FROM', '[%s]' % table ) )
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
-		self.Execute( sql )
+		return sql
 
 	def Delete( self, table, params = None ):
 		sql = 'DELETE * from [%s]' % table
@@ -209,38 +178,35 @@ class Database( object ):
 	
 	def GetFieldNames( self, table = None ):
 		if table:
-			sql = 'SELECT * from [%s] WHERE 0' % table
+			# run a query so as to retrieve the field names
+			sql = 'SELECT * from [%s] WHERE 0=1' % table
 			self.Execute( sql )
-		getFirstItem = lambda x: x[0]
-		return map( getFirstItem, self.cur.description )
+		getFieldName = lambda f: f.Name
+		return map( getFieldName, self.recordSet.Fields )
 
 	def Execute( self, query ):
 		self.lastQuery = query
-		# execute the query.  If we get a program error, include the query with the message
 		try:
-			return self.cur.execute( query )
-		except dbi.progError, message:
-			raise dbi.progError, (message, self.lastQuery)
-		except dbi.dataError, message:
-			raise dbi.dataError, (message, self.lastQuery)
-		except dbi.integrityError, message:
-			raise dbi.integrityError, (message, self.lastQuery)
+			# execute the query.
+			self.recordSet, result = self.db.Execute( query )
+		except:
+			raise sys.exc_type, ( sys.exc_value, self.lastQuery )
+		# result is the number of records affected
+		return result
 
 	def Update( self, table, criteria, updateParams ):
-		updateParams = [ "[%s] = %s" % ( key, `value` ) for key, value in params.items() ]
+		updateParams = map( lambda p: '[%s] = %s' % ( p[0], `p[1]` ), updateParams.items() )
 		updateParams = string.join( updateParams, ', ' )
 		criteria = self.BuildTests( criteria )
 		sql = 'UPDATE %s SET %s WHERE %s' % (table, updateParams, criteria)
 		self.Execute( sql )
 
-	def AddObject( self, ob ):
-		ob.AddToDB( self )
+	def GetSingletonResult( self ):
+		if not self.recordSet.EOF:
+			return self.recordSet.GetRows(1)[0][0]
 
-	def AddObjects( self, obs ):
-		map( self.AddObject, obs )
-
-	def GetAllRows( self ):
-		return self.cur.fetchall()
+	def GetXMLResult( self ):
+		return string.replace( self.recordSet.GetString(), '\r', '' )
 
 # mix-in class for HTML generation in Database classes
 class HTMLGenerator( object ):
