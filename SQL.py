@@ -11,12 +11,12 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 54 $a'[11:-2]
+__version__ = '$Revision: 55 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 29-11-04 17:21 $'[10:-2]
+__date__ = '$Modtime: 9-12-04 13:14 $'[10:-2]
 
 import types, time, datetime
-import string, re, sys, logging
+import string, re, sys, logging, binascii
 import operator, itertools
 import tools
 import pywintypes
@@ -43,20 +43,12 @@ class Binary( str ):
 	SQLRepr = property( _SQLRepr )
 	
 	def _GetASCIIRepresentation( self ):
-		return string.join( map( lambda n: '%02x' % n, map( ord, self ) ), '' )
+		return binascii.b2a_hex( self )
 
 	ASCII = property( _GetASCIIRepresentation )
 
 	def CreateFromASCIIRepresentation( s ):
-		isHex = re.match( '(0x)?([0-9a-fA-F]*)$', s )
-		if not isHex:
-			raise ValueError, 'String is not hex characters'
-		s = isHex.group(2)
-		if not len( s ) % 2 == 0:
-			raise ValueError, 'String must be of even length'
-		bytes = re.findall( '(?s).{2}', s )
-		toBin = lambda byteStr: chr( long( byteStr, 16 ) )
-		return Binary( string.join( map( toBin, bytes ), '' ) )
+		return Binary( binascii.a2b_hex( s ) )
 
 	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )
 
