@@ -13,6 +13,13 @@ class WaitableTimer:
 	def Stop( self ):
 		win32event.SetEvent( self.StopEvent )
 
+	def WaitForSignal( self, timeoutSeconds = None ):
+		if not timeoutSeconds:
+			timeoutMilliseconds = win32event.INFINITE
+		else:
+			timeoutMilliseconds = timeoutSeconds * 1000
+		win32event.WaitForSingleObject( self.SignalEvent, timeoutMilliseconds )
+
 	def _SignalLoop_( self, dueTime, period ):
 		if not dueTime and not period:
 			raise ValueError, "dueTime or period must be non-zero"
@@ -37,3 +44,6 @@ class WaitableTimer:
 			if res == win32event.WAIT_TIMEOUT: pass
 		win32event.SetEvent( self.SignalEvent )
 
+	def getEvenDueTime( self, period ):
+		now = time.time()
+		return now - ( now % period )
