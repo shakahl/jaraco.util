@@ -5,7 +5,7 @@ import types, time, datetime
 import string, re, sys, logging
 import operator
 import tools
-import pywintypes # for TimeType
+import pywintypes
 import encodings.ascii
 
 log = logging.getLogger( 'SQL' )
@@ -19,44 +19,7 @@ class ExecuteException( Exception ):
 	def __str__( self ):
 		return '%s (%s)' % ( str( self.orig ), self.query )
 
-class Time( object ):
-	"""Time is a time object used to correctly handle time with respect
-to SQL queries."""
-	def __init__( self, value ):
-		# accomodate the time type returned by ADODB.Connection
-		if type( value ) is pywintypes.TimeType:
-			value = self.ConvertPyTimeToPythonTime( value )
-		if isinstance( value, ( types.FloatType, types.IntType, types.LongType ) ):
-			value = time.gmtime( value )
-		if isinstance( value, ( types.TupleType, time.struct_time ) ):
-			value = datetime.datetime( *value[:6] )
-		if isinstance( value, ( datetime.datetime, datetime.date ) ):
-			self.time = value
-		else:
-			raise TypeError, 'Initialization value was not a valid time object.'
-
-	def _SQLRepr( self ):
-		return tools.strftime( "{ Ts '%Y-%m-%d %H:%M:%S.%s' }", self.time )
-	SQLRepr = property( _SQLRepr )	
-
-	def __repr__( self ):
-		return repr( self.time )
-	
-	def __cmp__( self, other ):
-		if isinstance( other, Time ):
-			other = other.time
-		return cmp( self.time, other )
-
-	def ConvertPyTimeToPythonTime( self, pyt ):
-		fmtString = '%Y-%m-%d %H:%M:%S'
-		result = tools.strptime( pyt.Format( fmtString ), fmtString )
-		# get milliseconds and microseconds.  The only way to do this is
-		#  to use the __float__ attribute of the time, which is in days.
-		microsecondsPerDay = tools.secondsPerDay * 1000000
-		microseconds = float( pyt ) * microsecondsPerDay
-		microsecond = int( microseconds % 1000000 )
-		result = result.replace( microsecond = microsecond )
-		return result
+DefaultTimeZone = None
 
 import re, operator
 class Binary( str ):
@@ -122,8 +85,11 @@ def GetSQLRepr( object ):
 			# convert it to a SQL.String and get the repr
 			result = String( object ).SQLRepr
 		elif isinstance( object, ( time.struct_time, datetime.datetime, datetime.date, pywintypes.TimeType ) ):
-			# convert it to a SQL.Time and get the repr
-			result = Time( object ).SQLRepr
+			# convert it to a datetime.datetime and get the repr
+			dt = tools.ConstructDatetime( object )
+			if DefaultTimeZone and dt.tzinfo:
+				dt = dt.astimezone( DefaultTimeZone )
+			result = tools.strftime( "{ Ts '%Y-%m-%d %H:%M:%S.%s' }", dt )
 		elif object is None:
 			result = 'NULL'
 		elif isinstance( object, bool ):
