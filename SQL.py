@@ -312,7 +312,7 @@ class ADODatabase( object ):
 		map( self.Execute, batches )
 
 	def UseDatabase( self, dbName ):
-		self.connection.Properties('Current Catalog').Value = dbName
+		self.connection.Properties('Current Catalog').Value = '[%s]' % dbName
 
 	def GetNextRowAsDictionary( self ):
 		fieldNames = self.GetFieldNames()
