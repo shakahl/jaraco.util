@@ -19,37 +19,31 @@ class ExecuteException( Exception ):
 	def __str__( self ):
 		return '%s (%s)' % ( str( self.orig ), self.query )
 
-# Time is a time object used to correctly handle time with respect
-#  to SQL queries.  Ideally, this should be replaced by the same
-#  time object as is returned by a SQL query.
 class Time( object ):
+	"""Time is a time object used to correctly handle time with respect
+to SQL queries."""
 	def __init__( self, value ):
 		# accomodate the time type returned by ADODB.Connection
 		if type( value ) is pywintypes.TimeType:
 			value = self.ConvertPyTimeToPythonTime( value )
-		if type( value ) is datetime.datetime:
-			value = value.utctimetuple()
-		if type( value ) is datetime.date:
-			value = value.timetuple()
-		if type( value ) in ( types.TupleType, time.struct_time ):
-			self.time = time.struct_time( value )
-		elif type( value ) in ( types.FloatType, types.IntType, types.LongType ):
-			self.time = time.gmtime( value )
+		if isinstance( value, ( types.FloatType, types.IntType, types.LongType ) ):
+			value = time.gmtime( value )
+		if isinstance( value, ( types.TupleType, time.struct_time ) ):
+			value = datetime.datetime( *value[:6] )
+		if isinstance( value, ( datetime.datetime, datetime.date ) ):
+			self.time = value
 		else:
-			raise TypeError, 'Initialization value to Time must be a time tuple, GMT seconds, or ADODB.time'
+			raise TypeError, 'Initialization value was not a valid time object.'
 
 	def _SQLRepr( self ):
-		return time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", self.time )
+		return self.time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }" )
 	SQLRepr = property( _SQLRepr )	
 
 	def __repr__( self ):
 		return repr( self.time )
 	
-	def __str__( self ):
-		return time.asctime( self.time )
-
 	def __cmp__( self, other ):
-		if type( other ) is Time:
+		if isinstance( other, Time ):
 			other = other.time
 		return cmp( self.time, other )
 
