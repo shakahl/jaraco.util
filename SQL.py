@@ -2,20 +2,32 @@
 #  SQL databases.
 
 import types, time, string, re, sys
+import log
+import pywintypes # for TimeType
+
+class ExecuteException( Exception ):
+	def __init__( self, original_exc, query ):
+		self.orig = original_exc
+		self.query = query
+		Exception.__init__( self )
+
+	def __str__( self ):
+		return '%s (%s)' % ( str( self.orig ), self.query )
 
 # Time is a time object used to correctly handle time with respect
-#  to SQL queries.  Ideally, this should be replaced by dbi.<some time object>
-#  or the mxODBC equivalent.
+#  to SQL queries.  Ideally, this should be replaced by the same
+#  time object as is returned by a SQL query.
 class Time( object ):
 	def __init__( self, value ):
+		# accomodate the time type returned by ADODB.Connection
+		if type( value ) is pywintypes.TimeType:
+			value = int( value )
 		if type( value ) in ( types.TupleType, time.struct_time ):
 			self.time = time.struct_time( value )
 		elif type( value ) in ( types.FloatType, types.IntType, types.LongType ):
 			self.time = time.gmtime( value )
-		elif type( value ) is type( dbi.dbiDate(0) ):
-			self.time = time.localtime( value )
 		else:
-			raise TypeError, 'Initialization value to Time must be a time tuple, dbiDate, or GMT seconds.'
+			raise TypeError, 'Initialization value to Time must be a time tuple, GMT seconds, or ADODB.time'
 
 	def _SQLRepr( self ):
 		return time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", self.time )
@@ -65,8 +77,8 @@ import win32com.client # to get ADO objects
 class Database( object ):
 	def __init__( self, ODBCName ):
 		self.ODBCName = ODBCName
-		self.db = win32com.client.Dispatch( 'ADODB.Connection' )
-		self.db.Open( ODBCName )
+		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
+		self.connection.Open( ODBCName )
 
 	# convert any intrinsic Python types to the appropriate SQL type		
 	def doPythonTypeConversions( self, val ):
@@ -96,14 +108,20 @@ class Database( object ):
 	def Insert( self, table, values ):
 		fields = self.MakeSQLFieldList( values.keys() )
 		values = self.MakeSQLList( values.values() )
-		sql = 'INSERT INTO [%(table)s] %(fields)s VALUES %(values)s' % vars()
+		sql = 'INSERT INTO [%(table)s] %(fields)s VALUES %(values)s;' % vars()
 		if not self.Execute( sql ) == 1:
-			raise DBException, 'Error with SQL: ' + sql
+			raise Exception, 'Error with SQL: ' + sql
+		# delete the recordset to ensure the next recordset is from the same
+		#  connection (especially important when checking for last identity)
+		# (deprecated: moved to Execute method)
+		#del self.recordSet
 
 	def GetLastID( self ):
-		sql = "SELECT @@Identity"
+		sql = "SELECT @@IDENTITY;"
 		self.Execute( sql )
-		return self.GetSingletonResult()
+		result = self.GetSingletonResult()
+		log.processMessage( 'Last ID was %s' % result, 'SQL.Database', log.DEBUG )
+		return result
 
 	def Exists( self, table, values ):
 		self.Select( 'Count(*)', table, values )
@@ -121,16 +139,24 @@ class Database( object ):
 		return result
 
 	def GetDataAsDictionary( self, keyField = 0, valueField = 1 ):
-		data = self.db.GetRows( -1, 0, (keyField, valueField) )
-		# transpose the data
-		data = apply( zip, data )
-		# make into a dictionary
-		data = dict( data )
-		return data
+		if not self.recordSet.EOF:
+			data = self.recordSet.GetRows( -1, 0, (keyField, valueField) )
+			# transpose the data
+			data = apply( zip, data )
+			# make into a dictionary
+			data = dict( data )
+			result = data
+		else:
+			result = {}
+		return result
 
 	def GetDataAsList( self, field = 0 ):
-		data = self.db.GetRows( -1, 0, field )
-		return data[ 0 ]
+		if not self.recordSet.EOF:
+			data = self.recordSet.GetRows( -1, 0, field )
+			result = data[ 0 ]
+		else:
+			result = ()
+		return result
 	
 	def Select( self, *queryArgs ):
 		sql = apply( self.BuildSelectQuery, queryArgs )
@@ -186,11 +212,16 @@ class Database( object ):
 
 	def Execute( self, query ):
 		self.lastQuery = query
+		log.processMessage( 'Executing query "%s".' % query, 'SQL.Database', log.DEBUG )
 		try:
+			# clear out any existing recordSet, or we run into a situation where we're
+			#  in a sub-connection and things behave differently.
+			if hasattr( self, 'recordSet' ): del self.recordSet
 			# execute the query.
-			self.recordSet, result = self.db.Execute( query )
+			self.recordSet, result = self.connection.Execute( query )
 		except:
-			raise sys.exc_type, ( sys.exc_value, self.lastQuery )
+			raise ExecuteException( sys.exc_value, self.lastQuery )
+		log.processMessage( 'Query result is %d.' % result, 'SQL.Database', log.DEBUG )
 		# result is the number of records affected
 		return result
 
@@ -203,10 +234,33 @@ class Database( object ):
 
 	def GetSingletonResult( self ):
 		if not self.recordSet.EOF:
-			return self.recordSet.GetRows(1)[0][0]
+			result = self.recordSet.Fields(0).Value
+			self.recordSet.Close()
+		else:
+			log.processMessage( 'Recordset is empty at call to GetSingletonResult.', 'SQL.Database', log.WARNING )
+			raise Exception, 'Recordset is empty at call to GetSingletonResult.'
+		return result
 
 	def GetXMLResult( self ):
 		return string.replace( self.recordSet.GetString(), '\r', '' )
+
+	def BeginTransaction( self, name = None ):
+		query = 'BEGIN TRANSACTION'
+		if name: query = string.join( ( query, name ) )
+		self.Execute( query )
+		del self.recordSet
+
+	def CommitTransaction( self, name = None ):
+		query = 'COMMIT TRANSACTION'
+		if name: query = string.join( ( query, name ) )
+		self.Execute( query )
+		del self.recordSet
+
+	def RollbackTransaction( self, name = None ):
+		query = 'ROLLBACK TRANSACTION'
+		if name: query = string.join( ( query, name ) )
+		self.Execute( query )
+		del self.recordSet
 
 # mix-in class for HTML generation in Database classes
 class HTMLGenerator( object ):
