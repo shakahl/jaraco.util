@@ -2,6 +2,7 @@
 #  SQL databases.
 
 import types, time, string, re, sys
+import operator
 import log
 import pywintypes # for TimeType
 
@@ -40,7 +41,9 @@ class Time( object ):
 		return time.asctime( self.time )
 
 	def __cmp__( self, other ):
-		return cmp( self.time, other.time )
+		if type( other ) is Time:
+			other = other.time
+		return cmp( self.time, other )
 
 import re, operator
 class Binary( str ):
@@ -67,12 +70,6 @@ class Binary( str ):
 
 	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )	
 
-class Long( long ):
-	def _SQLRepr( self ):
-		# strip off the L at the end
-		return long.__repr__( self )[:-1]
-	SQLRepr = property( _SQLRepr )
-
 import win32com.client # to get ADO objects
 class Database( object ):
 	def __init__( self, ODBCName ):
@@ -80,19 +77,9 @@ class Database( object ):
 		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
 		self.connection.Open( ODBCName )
 
-	# convert any intrinsic Python types to the appropriate SQL type		
-	def doPythonTypeConversions( self, val ):
-		if type( val ) is long:
-			return Long( val )
-		if type( val ) is time.struct_time:
-			return Time( val )
-		else:
-			return val
-		
 	# this method converts the list of column names into a tuple, and
 	#  then removes the 's, converting the column names into a SQL list.
 	def MakeSQLList( self, list ):
-		list = map( self.doPythonTypeConversions, list )
 		list = map( self.GetSQLRepr, list )
 		return '(' + string.join( list, ', ' ) + ')'
 
@@ -100,10 +87,22 @@ class Database( object ):
 		return '(' + string.join( map( lambda x: '['+x+']', list ), ', ' ) + ')'
 
 	def GetSQLRepr( self, object ):
-		try:
-			return object.SQLRepr
-		except AttributeError:
-			return repr( object )
+		if hasattr( object, 'SQLRepr' ):
+			result = object.SQLRepr
+		else:
+			# object doesn't have an explicit SQL representation.  Infer representation based
+			#  on the python type.  If no inference is made, use the python representation.
+			if type( object ) is types.LongType:
+				# strip off the 'L' at the end
+				result = object.__repr__( self )[:-1]
+			if type( object ) is types.UnicodeType:
+				# SQL representation uses N'string' (where N stands for national).
+				result = "N'%s'" % object
+			if type( object ) is time.struct_time:
+				result = time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", object )
+			else:
+				result = repr( object )
+		return result
 
 	def Insert( self, table, values ):
 		fields = self.MakeSQLFieldList( values.keys() )
@@ -125,7 +124,7 @@ class Database( object ):
 
 	def Exists( self, table, values ):
 		self.Select( 'Count(*)', table, values )
-		return self.GetSingletonResult()
+		return operator.truth( self.GetSingletonResult() )
 
 	def GetFieldIndex( self, field ):
 		fieldNames = self.GetFieldNames()
@@ -246,7 +245,7 @@ class Database( object ):
 			result = self.recordSet.Fields(0).Value
 		else:
 			log.processMessage( 'Recordset is empty at call to GetSingletonResult.', 'SQL.Database', log.WARNING )
-			raise Exception, 'Recordset is empty at call to GetSingletonResult.'
+			result = None
 		return result
 
 	def GetXMLResult( self ):
