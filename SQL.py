@@ -11,15 +11,10 @@ import dbi
 # Time is a time object used to correctly handle time with respect
 #  to SQL queries.  Ideally, this should be replaced by dbi.<some time object>
 #  or the mxODBC equivalent.
-class Time:
+class Time( object ):
 	def __init__( self, value ):
-		# the following three lines is a workaround to support Python 2.1 until 2.2 gets
-		#  to be stable
-		pythonTimeTypes = ( types.TupleType, )
-		if hasattr( time, 'struct_time' ):
-			pythonTimeTypes = ( types.TupleType, time.struct_time )
-		if type( value ) in pythonTimeTypes:
-			self.time = value
+		if type( value ) in ( types.TupleType, time.struct_time ):
+			self.time = time.struct_time( value )
 		elif type( value ) in ( types.FloatType, types.IntType, types.LongType ):
 			self.time = time.gmtime( value )
 		elif type( value ) is type( dbi.dbiDate(0) ):
@@ -28,24 +23,72 @@ class Time:
 			raise TypeError, 'Initialization value to Time must be a time tuple, dbiDate, or GMT seconds.'
 
 	def __repr__( self ):
+		return time.strftime( "{ Ts '%Y-%m-%d %H:%M:%S' }", self.time )
 		return time.strftime( '#%Y/%m/%d %H:%M:%S#', self.time )
 
 	def __cmp__( self, other ):
 		return cmp( self.time, other.time )
 
-class Database:
+import re, operator
+class Binary( str ):
+	def _SQLRepr( self ):
+		return '0x' + self.ASCII
+
+	SQLRepr = property( _SQLRepr )
+	
+	def _GetASCIIRepresentation( self ):
+		return string.join( map( lambda n: '%02x' % n, map( ord, self ) ), '' )
+
+	ASCII = property( _GetASCIIRepresentation )
+
+	def CreateFromASCIIRepresentation( s ):
+		isHex = re.match( '(0x)?([0-9a-fA-F]*)$', s )
+		if not isHex:
+			raise ValueError, 'String is not hex characters'
+		s = isHex.group(2)
+		if not len( s ) % 2 == 0:
+			raise ValueError, 'String must be of even length'
+		even = range( 0, len( s ), 2 )
+		odd = range( 1, len( s ), 2 )
+		even = map( s.__getitem__, even )
+		odd = map( s.__getitem__, odd )
+		bytes = map( operator.add, even, odd )
+		toBin = lambda byteStr: chr( long( byteStr, 16 ) )
+		return Binary( string.join( map( toBin, bytes ), '' ) )
+
+	CreateFromASCIIRepresentation = staticmethod( CreateFromASCIIRepresentation )	
+
+class Long( long ):
+	def __repr__( self ):
+		# strip off the L at the end
+		return long.__repr__( self )[:-1]
+
+class Database( object ):
 	def __init__( self, ODBCName ):
 		self.ODBCName = ODBCName
 		self.db = odbc( self.ODBCName )
 		self.cur = self.db.cursor()
 		
+	def makeSQLLong( self, val ):
+		if type( val ) is long:
+			return Long( val )
+		else:
+			return val
+		
 	# this method converts the list of column names into a tuple, and
 	#  then removes the 's, converting the column names into a SQL list.
 	def MakeSQLList( self, list ):
-		return '(' + string.join( map( repr, list ), ', ' ) + ')'
+		list = map( self.makeSQLLong, list )
+		return '(' + string.join( map( self.GetSQLRepr, list ), ', ' ) + ')'
 
 	def MakeSQLFieldList( self, list ):
 		return '(' + string.join( map( lambda x: '['+x+']', list ), ', ' ) + ')'
+
+	def GetSQLRepr( self, object ):
+		try:
+			return object.SQLRepr
+		except AttributeError:
+			return repr( object )
 
 	def Insert( self, table, values ):
 		fields = self.MakeSQLFieldList( values.keys() )
