@@ -11,9 +11,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 52 $a'[11:-2]
+__version__ = '$Revision: 53 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-07-21 11:57 $'[10:-2]
+__date__ = '$Modtime: 11-11-04 13:48 $'[10:-2]
 
 import types, time, datetime
 import string, re, sys, logging
@@ -422,10 +422,23 @@ class AccessDatabase( ADODatabase ):
 	provider = 'Microsoft.Jet.OLEDB.4.0'
 
 class ODBCDatabase( ADODatabase ):
-	def __init__( self, ODBCName ):
-		self.ODBCName = ODBCName
+	defaultParams = tools.odict()
+	
+	def __init__( self, spec_params ):
+		params = tools.odict( self.defaultParams )
+		if isinstance( spec_params, basestring ):
+			# assume spec_params is an ODBC name
+			odbc_name = spec_params
+			params = tools.odict( { 'DSN': odbc_name } )
+		else:
+			params.update( spec_params )
+		connectionString = self.BuildConnectionString( params )
 		self.connection = win32com.client.Dispatch( 'ADODB.Connection' )
-		self.connection.Open( ODBCName )
+		log.debug( 'connect string is %s.', connectionString )
+		self.connection.Open( connectionString )
+
+	def BuildConnectionString( self, params ):
+		return ';'.join( map( '='.join, params.items() ) )
 
 	def SelectXML( self, *queryArgs ):
 		sql = self.BuildSelectQuery( *queryArgs )
