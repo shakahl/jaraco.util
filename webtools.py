@@ -1,5 +1,16 @@
-# webtools.py
-#  classes for supporting web processing
+# -*- coding: UTF-8 -*-
+
+"""webtools
+	Classes for supporting web data processing.
+	
+Copyright © 2004 Sandia National Laboratories  
+"""
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 4 $a'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-06-23 12:32 $'[10:-2]
+
 import string, re, logging, cgi
 
 # This class should only be instanciated within an ASP session.
