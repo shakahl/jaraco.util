@@ -8,9 +8,9 @@ Copyright © 2004 Sandia National Laboratories
 from distutils.core import setup
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 1 $'[11:-2]
-__vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 15-12-04 15:39 $'[10:-2]
+__version__ = '$Rev: 1 $'[6:-2]
+__svnauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Date: 15-12-04 15:39 $'[7:-2]
 
 setup ( name = 'GeneralPurpose',
 		version = '1.0',

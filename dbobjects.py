@@ -8,9 +8,9 @@ for retrieving the objects.
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 4 $'[11:-2]
-__vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 20-10-04 16:55 $'[10:-2]
+__version__ = '$Rev: 4 $'[6:-2]
+__svnauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Date: 20-10-04 16:55 $'[7:-2]
 
 import xmlTools, tools, SQL
 

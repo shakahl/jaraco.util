@@ -7,9 +7,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 7 $'[11:-2]
-__vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-06-23 12:17 $'[10:-2]
+__version__ = '$Rev: 7 $'[6:-2]
+__svnauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Date: 04-06-23 12:17 $'[7:-2]
 
 import httplib, mimetypes
 from urlparse import urlparse, urlunparse, urljoin

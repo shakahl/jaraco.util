@@ -9,8 +9,8 @@ Copyright © 2004 Sandia National Laboratories
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
 __version__ = '$Revision: 3 $a'[11:-2]
-__vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-06-23 12:31 $'[10:-2]
+__svnauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Date: 04-06-23 12:31 $'[7:-2]
 
 import os, logging
 import win32com.client, win32con
