@@ -1,3 +1,16 @@
+# -*- coding: UTF-8 -*-
+
+"""TableParser
+	Objects for parsing an HTML file with tables in it.
+
+Copyright © 2004 Sandia National Laboratories  
+"""
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 6 $a'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-06-23 12:30 $'[10:-2]
+
 import htmllib, formatter, types
 import logging
 

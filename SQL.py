@@ -1,5 +1,19 @@
-# Module SQL defines SQL routines and classes for an ODBC link to
-#  SQL databases.
+# -*- coding: UTF-8 -*-
+
+"""SQL
+
+	SQL Routines and classes for connecting to a SQL-based database.
+
+	Currently, supports ADO databases (including ODBC), and native SQL
+Server databases.
+	
+Copyright © 2004 Sandia National Laboratories  
+"""
+
+__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__version__ = '$Revision: 50 $a'[11:-2]
+__vssauthor__ = '$Author: Jaraco $'[9:-2]
+__date__ = '$Modtime: 04-06-23 12:28 $'[10:-2]
 
 import types, time, datetime
 import string, re, sys, logging
