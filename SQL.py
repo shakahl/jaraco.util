@@ -93,6 +93,32 @@ class String( unicode ):
 		return result
 	SQLRepr = property( _SQLRepr )
 
+def MakeSQLList( list ):
+	list = map( GetSQLRepr, list )
+	return '(' + string.join( list, ', ' ) + ')'
+
+def MakeSQLFieldList( list ):
+	return '(' + string.join( map( lambda x: '['+x+']', list ), ', ' ) + ')'
+
+def GetSQLRepr( object ):
+	if hasattr( object, 'SQLRepr' ):
+		result = object.SQLRepr
+	else:
+		# object doesn't have an explicit SQL representation.  Infer representation based
+		#  on the python type.  If no inference is made, use the python representation.
+		if type( object ) is types.LongType:
+			# strip off the 'L' at the end
+			result = object.__repr__( self )[:-1]
+		elif isinstance( object, basestring ):
+			result = String( object ).SQLRepr
+		elif type( object ) in ( time.struct_time, datetime.datetime, datetime.date ):
+			result = Time( object ).SQLRepr
+		else:
+			result = repr( object )
+	log.debug( 'SQL representation for %s is %s.' % ( object, result ) )
+	log.debug( 'type( %s ) is %s.' % ( object, type( object ) ) )
+	return result
+
 import win32com.client
 # Ensure that ADOs are available (either version 2.8 or 2.7)
 try:
