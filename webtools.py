@@ -62,6 +62,7 @@ class ASPResponseHandler( logging.Handler ):
 		s = self.format( record ) + '\n'
 		s = cgi.escape( s )
 		self.Response.Write( s )
+		self.flush()
 
 	def flush( self ):
 		self.Response.Flush()
