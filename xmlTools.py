@@ -1,5 +1,6 @@
 import tools, itertools
 import xml.dom.minidom
+from xml.parsers.expat import ExpatError
 import string
 
 import logging
@@ -40,12 +41,11 @@ class XMLObject( dict ):
 	xml = xml.dom.minidom.getDOMImplementation()
 	
 	def XMLRepr( self ):
-		nodeName = self.encodeXMLName( self.__class__.__name__ )
-		element = self.xml.createDocument( '', nodeName, '' ).documentElement
-		for attr in self.getAttributes( ):
-			element.setAttribute( *attr )
-		return element.toxml()
-			
+		return self.getFragment().toxml()
+
+	def _nodeName_( self ):
+		return self.encodeXMLName( self.__class__.__name__ )
+	_nodeName_ = property( _nodeName_ )
 
 	def getAttributes( self ):
 		return itertools.imap( self.encodeAttribute, self.iteritems() )
@@ -66,6 +66,13 @@ class XMLObject( dict ):
 			else:
 				yield '_x%04x_' % ord( c )
 
+	def getFragment( self ):
+		doc = self.xml.createDocument( None, 'root', None )
+		element = doc.createElement( self._nodeName_ )
+		for attr in self.getAttributes( ):
+			element.setAttribute( *attr )
+		return element
+
 def loadXMLObjects( filename, objectModule ):
 	doc = xml.dom.minidom.parse( open( filename, 'r' ) )
 	return getXMLObjects( doc.getElementsByTagName( '*' ), objectModule )
@@ -82,3 +89,19 @@ def getChildrenByType( node, type ):
 
 def getChildElements( node ):
 	return getChildrenByType( node, node.ELEMENT_NODE )
+
+def saveXMLObjects( filename, objects, root = 'root' ):
+	f = open( filename, 'a+' )
+	try:
+		doc = xml.dom.minidom.parse( f )
+	except ExpatError:
+		DOM = xml.dom.minidom.getDOMImplementation()
+		doc = DOM.createDocument( None, root, None )
+	xmlNodes = map( lambda o: o.getFragment(), objects )
+	map( doc.documentElement.appendChild, xmlNodes )
+	f.seek(0)
+	f.write( doc.toprettyxml() )
+	f.close()
+	
+	
+	
