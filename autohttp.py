@@ -20,6 +20,26 @@ def splitHostPort( host ):
 		port = None
 	return host, port
 
+class RequestMatch( object ):
+	"An object that when called will return true of the cookie matches the request"
+	def __init__( self, request ):
+		self.request = request
+
+	def __call__( self, cookie ):		
+		"Return true if the given cookie matches this request"
+		r = self.request
+		host, port = splitHostPort( r.get_host() )
+		selector = r.get_selector()
+		scheme = r.get_type()
+		result = True
+		if cookie.get( 'domain', host ) not in host:
+			result = False
+		if cookie.get( 'path', selector ) not in selector:
+			result = False
+		if cookie.isSecure() and not scheme == 'https':
+			result = False
+		return result
+		
 class CookieHandler( urllib2.BaseHandler ):
 	"""This handler will ensure that on a redirect, any cookies in the redirect request
 	will be processed.  Normally, the OpenerDirector is responsible for handling
@@ -68,25 +88,6 @@ class HTTPSHandler( AbstractHTTPHandler, urllib2.HTTPSHandler ):
 
 opener = urllib2.build_opener( HTTPHandler, HTTPSHandler )
 urllib2.install_opener( opener )
-
-class RequestMatch( object ):
-	def __init__( self, request ):
-		self.request = request
-
-	def __call__( self, cookie ):		
-		"Return true if the given cookie matches this request"
-		r = self.request
-		host, port = splitHostPort( r.get_host() )
-		selector = r.get_selector()
-		scheme = r.get_type()
-		result = True
-		if cookie.get( 'domain', host ) not in host:
-			result = False
-		if cookie.get( 'path', selector ) not in selector:
-			result = False
-		if cookie.isSecure() and not scheme == 'https':
-			result = False
-		return result
 
 class MultipartHandler( object ):
 	"A mix-in object for a Request for handling multi-part forms"
@@ -236,7 +237,10 @@ class SessionOpenerDirector( urllib2.OpenerDirector ):
 	"""A class that manages cookies (and thus sessions)"""
 	def __init__( self ):
 		urllib2.OpenerDirector.__init__( self )
-		self._cookies = []
+		self.reset()
+
+	def reset( self ):
+		self._cookies = cookies.Container()
 
 	def open( self, request, data = None ):
 		if isinstance( request, str ):
@@ -245,24 +249,16 @@ class SessionOpenerDirector( urllib2.OpenerDirector ):
 		if cookieHeader:
 			request.add_header( 'Cookie', self.getCookieHeader( request ) )
 			log.debug( 'Cookie: %s', cookieHeader )
-		result = urllib2.OpenerDirector.open( self, request, data )
-		if isinstance( result, httplib.HTTPResponse ):
-			self.processCookies( result )
-		return result
+		response = urllib2.OpenerDirector.open( self, request, data )
+		path = urlparse.urlparse( request.get_full_url() )[2]
+		self.processCookies( response, path )
+		return response
+
+	def processCookies( self, response, path ):
+		self._cookies.add( cookies.getCookies( response, path ) )
 
 	def getCookieHeader( self, request ):
-		cookies = filter( RequestMatch( request ), self._cookies )
-		cookieStrings = map( lambda c: c.getRequestHeader(), cookies )
-		cookieDelimiter = "; "
-		return cookieDelimiter.join( cookieStrings )
-
-	def processCookies( self, headers ):
-		if isinstance( headers, httplib.HTTPResponse ):
-			headers = headers.msg
-		cookieString = headers.getheader( 'set-cookie' )
-		if cookieString:
-			cookieTextStrings = re.split( ',\s*', cookieString )
-			self._cookies.extend( map( cookies.cookie, cookieTextStrings ) )
+		return self._cookies.get_request_header( RequestMatch( request ) )
 
 session_opener = SessionOpenerDirector()
 map( session_opener.add_handler, ( urllib2.ProxyHandler(),
@@ -270,24 +266,29 @@ map( session_opener.add_handler, ( urllib2.ProxyHandler(),
 						   urllib2.HTTPRedirectHandler(),
 						   HTTPHandler(), HTTPSHandler(),
 						   CookieHandler() ) )
-#urllib2.install_opener( session_opener )
+# To use the session opener, run the following:
+#  urllib2.install_opener( session_opener )
 
 # The following classes are in used for testing the request of
 #  the above classes.
 import SocketServer, sys
 class echoHandler( SocketServer.StreamRequestHandler ):
 	def handle( self ):
-		while 1:
-			result = self.rfile.readline()
-			sys.stdout.write( result )
-			if string.strip( result ) == '':
-				break
-		while 1:
-			sys.stdout.write( self.rfile.read(1))
+		from email.Parser import Parser
+		# read the request line
+		request = self.rfile.readline()
+		sys.stdout.write( request )
+		# use the e-mail class to read out the headers
+		msg = Parser().parse( self.rfile, headersonly = True )
+		# read out any data in the request
+		if msg.has_key( 'Content-Length' ):
+			msg.set_payload( self.rfile.read( int( msg['Content-Length'] ) ) )
+		sys.stdout.write( msg.as_string() )
+		sys.stdout.write( '\n***\n' )
 		
 class submissionTester( SocketServer.TCPServer ):
-	def __init__( self ):
-		SocketServer.TCPServer.__init__( self, ('', 80), echoHandler )
+	def __init__( self, port = 80 ):
+		SocketServer.TCPServer.__init__( self, ( '', port ), echoHandler )
 
 def logRequest( log, request ):
 	log.info( 'Requesting %s from %s.', request.get_selector(), request.get_host() )
