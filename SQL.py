@@ -232,7 +232,7 @@ then converts the list elements into their SQL representation."""
 	def Select( self, *queryArgs ):
 		__doc__ = self.BuildSelectQuery.__doc__
 		sql = self.BuildSelectQuery( *queryArgs )
-		self.Execute( sql )
+		return self.Execute( sql )
 
 	def Delete( self, table, params = None ):
 		sql = 'DELETE from %s' % SQLQuote( table )
