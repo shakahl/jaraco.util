@@ -1,5 +1,6 @@
 # fstools.py:
 #  tools for working with files and file systems
+import os
 
 # return a filename possibly with a number appended to it so that it is
 #  unique in the directory
