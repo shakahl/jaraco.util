@@ -2,6 +2,7 @@ import os, sys, time
 from threading import Thread
 import traceback
 from stat import *
+import log
 
 # win32* requires ActivePython by Mark Hammond (thanks Mark!)
 from win32file import *
@@ -12,10 +13,12 @@ from win32con import FILE_NOTIFY_CHANGE_LAST_WRITE
 
 class ChangedSinceFilter( object ):
 	def __init__( self, cutoff ):
-		self.cutoff = cutoff
+		# truncate the time to the second.
+		self.cutoff = int( cutoff )
 
 	def __call__( self, filepath ):
 		last_mod = os.stat( filepath )[ST_MTIME]
+		log.processMessage( '%s last modified at %s.' % ( filepath, time.asctime( time.localtime( last_mod ) ) ), priority = log.DEBUG )
 		return last_mod >= self.cutoff
 
 class FileChangeNotifierException( Exception ):
@@ -47,6 +50,8 @@ class FileChangeNotifier( Thread ):
 
 		self.QuitEvent = CreateEvent( None, 0, 0, None )
 
+		self.watchSubtree = 0		
+
 	def Quit( self ):
 		SetEvent( self.QuitEvent )
 
@@ -74,7 +79,10 @@ class FileChangeNotifier( Thread ):
 				if result == WAIT_OBJECT_0 + 0:
 					# something has changed.  Check all of the files
 					# that match the filter.
+					nextCheckTime = time.time()
+					log.processMessage( 'Looking for all files changed after %s' % time.asctime( time.localtime( self.lastCheckedTime ) ), priority = log.DEBUG )
 					self.ProcessChangedFiles( )
+					self.lastCheckedTime = nextCheckTime
 					# reset the handle to the change notification and repeat
 					FindNextChangeNotification( hChange )
 
@@ -89,19 +97,34 @@ class FileChangeNotifier( Thread ):
 		
 		FindCloseChangeNotification( hChange )        
 
-	def ProcessChangedFiles( self ):
-		nextCheckTime = time.time()
-		fileSpec = os.path.join( self.root, self.filter )
-		# FindFiles returns tuples... The 9th element is the filename: extract it
-		files = apply( zip, FindFiles( fileSpec ) )[8]
+	def ProcessChangedFiles( self, path = None ):
+		if not path:
+			path = self.root
+		fileSpec = os.path.join( path, self.filter )
+		log.processMessage( 'Looking for changed files matching %s' % fileSpec, priority = log.DEBUG )
+		files = FindFiles( fileSpec )
+		if files:
+			# FindFiles returns tuples... The 9th element is the filename: extract it
+			files = apply( zip, files )[8]
+		# create a function for prepending the path
+		prepender = lambda x: os.path.join( path, x )
 		# add the path to the filenames
-		files = map( os.path.join, [ self.root ]*len( files ), files )
+		files = map( prepender, files )
 		# filter out the ones that haven't changed
 		changed = filter( ChangedSinceFilter( self.lastCheckedTime ), files )
+		log.processMessage( 'These files have changed: %s' % changed, priority = log.DEBUG )
 		# handle the ones that have
 		map( self.Handle, changed )
-		self.lastCheckedTime = nextCheckTime
+		if self.watchSubtree:
+			directories = map( prepender, os.listdir( path ) )
+			directories = filter( os.path.isdir, directories )
+			map( self.ProcessChangedFiles, directories )
 
+	def WatchSubtree( self, choice = 1 ):
+		self.watchSubtree = choice
+
+# the status handler is a sample handler object that will
+#  announce that a file has changed.
 class StatusHandler( object ):
 	def __init__( self, output = sys.stdout ):
 		self.output = output
