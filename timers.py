@@ -31,7 +31,8 @@ class WaitableTimer:
 
 	def _Wait_( self, seconds ):
 		if seconds > 0:
-			res = win32event.WaitForSingleObject( self.StopEvent, seconds )
+			milliseconds = seconds*1000
+			res = win32event.WaitForSingleObject( self.StopEvent, milliseconds )
 			if res == win32event.WAIT_OBJECT_0: raise Exception
 			if res == win32event.WAIT_TIMEOUT: pass
 		win32event.SetEvent( self.SignalEvent )
