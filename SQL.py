@@ -13,7 +13,12 @@ import dbi
 #  or the mxODBC equivalent.
 class Time:
 	def __init__( self, value ):
-		if type( value ) in ( types.TupleType, time.struct_time ):
+		# the following three lines is a workaround to support Python 2.1 until 2.2 gets
+		#  to be stable
+		pythonTimeTypes = ( types.TupleType, )
+		if hasattr( time, 'struct_time' ):
+			pythonTimeTypes = ( types.TupleType, time.struct_time )
+		if type( value ) in pythonTimeTypes:
 			self.time = value
 		elif type( value ) in ( types.FloatType, types.IntType, types.LongType ):
 			self.time = time.gmtime( value )
