@@ -134,6 +134,7 @@ class Database:
 		if value is None:
 			fmt = '[%(field)s] is NULL'
 		else:
+			value = `value`
 			fmt = '[%(field)s] = %(value)s'
 		return fmt % vars()
 	
@@ -161,3 +162,9 @@ class Database:
 		criteria = self.BuildTests( criteria )
 		sql = 'UPDATE %s SET %s WHERE %s' % (table, updateParams, criteria)
 		self.Execute( sql )
+
+	def AddObject( self, ob ):
+		ob.AddToDB( self )
+
+	def AddObjects( self, obs ):
+		map( self.AddObject, obs )
