@@ -121,6 +121,8 @@ def GetSQLRepr( object ):
 			result = String( object ).SQLRepr
 		elif type( object ) in ( time.struct_time, datetime.datetime, datetime.date ):
 			result = Time( object ).SQLRepr
+		elif object is None:
+			result = 'NULL'
 		else:
 			result = repr( object )
 	log.debug( 'SQL representation for %s is %s.' % ( object, result ) )
