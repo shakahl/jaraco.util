@@ -313,9 +313,14 @@ class ADODatabase( object ):
 
 	def UseDatabase( self, dbName ):
 		'Connect the current catalog in SQL server to dbName'
-		# apparently, the name has to be in quotes for the initial call to set the current catalog.
-		dbName = '[%s]' % dbName
-		self.connection.Properties('Current Catalog').Value = dbName
+		try:
+			log.debug( 'Attempting to change current catalog to %s.', dbName )
+			self.connection.Properties('Current Catalog').Value = dbName
+		except pywintypes.com_error, e:
+			# sometimes, the name has to be in quotes for the initial call to set the current catalog.
+			dbName = '[%s]' % dbName
+			log.debug( 'Attempting to change current catalog to %s.', dbName )
+			self.connection.Properties('Current Catalog').Value = dbName
 
 	def GetNextRowAsDictionary( self ):
 		fieldNames = self.GetFieldNames()
