@@ -11,9 +11,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 50 $a'[11:-2]
+__version__ = '$Revision: 51 $a'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-06-23 12:28 $'[10:-2]
+__date__ = '$Modtime: 04-07-13 14:27 $'[10:-2]
 
 import types, time, datetime
 import string, re, sys, logging
@@ -255,7 +255,10 @@ then converts the list elements into their SQL representation."""
 		self.Execute( sql )
 
 	def BuildTests( self, params ):
-		tests = map( self.MakeSQLTest, params.items() )
+		if isinstance( params, dict ):
+			tests = map( self.MakeSQLTest, params.items() )
+		elif isinstance( params, ( list, tuple ) ):
+			tests = params
 		tests = string.join( tests, ' AND ' )
 		return tests
 
