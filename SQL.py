@@ -150,6 +150,16 @@ class Database( object ):
 			result = {}
 		return result
 
+	def GetAllRows( self ):
+		if not self.recordSet.EOF:
+			data = self.recordSet.GetRows( -1, 0 )
+			# transpose the data
+			data = apply( zip, data )
+			result = data
+		else:
+			result = ()
+		return result
+
 	def GetDataAsList( self, field = 0 ):
 		if not self.recordSet.EOF:
 			data = self.recordSet.GetRows( -1, 0, field )
@@ -224,7 +234,8 @@ class Database( object ):
 		return result
 
 	def Update( self, table, criteria, updateParams ):
-		updateParams = map( lambda p: '[%s] = %s' % ( p[0], `p[1]` ), updateParams.items() )
+		updateParams = tools.DictMap( self.GetSQLRepr, updateParams )
+		updateParams = map( lambda p: '[%s] = %s' % p, updateParams.items() )
 		updateParams = string.join( updateParams, ', ' )
 		criteria = self.BuildTests( criteria )
 		sql = 'UPDATE %s SET %s WHERE %s' % (table, updateParams, criteria)
