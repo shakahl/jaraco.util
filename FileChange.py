@@ -7,9 +7,9 @@ Copyright © 2004 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Revision: 7 $'[11:-2]
+__version__ = '$Revision: 8 $'[11:-2]
 __vssauthor__ = '$Author: Jaraco $'[9:-2]
-__date__ = '$Modtime: 04-06-23 12:22 $'[10:-2]
+__date__ = '$Modtime: 17-11-04 17:18 $'[10:-2]
 
 import os, sys, time, re, operator
 from threading import Thread
@@ -83,7 +83,7 @@ class PatternFilter( FileFilter ):
 	ConvertFilePattern = staticmethod( ConvertFilePattern )
 
 	def __call__( self, file ):
-		return operator.truth( re.match( self.pattern, file ) )
+		return operator.truth( re.match( self.pattern, file, re.I ) )
 
 class AggregateFilter( FileFilter ):
 	"""
@@ -114,7 +114,7 @@ class Notifier( object ):
 		# assign the root, verify it exists
 		self.root = root
 		if not os.path.isdir( self.root ):
-			raise FileChangeNotifierException( 'Root directory "%s" does not exist' % self.root )
+			raise NotifierException( 'Root directory "%s" does not exist' % self.root )
 		self.filters = filters
 
 		self.watchSubtree = False
@@ -135,7 +135,7 @@ class Notifier( object ):
 
 		# make sure it worked; if not, bail
 		if self.hChange == INVALID_HANDLE_VALUE:
-			raise FileChangeNotifierException, 'Could not set up directory change notification'
+			raise NotifierException, 'Could not set up directory change notification'
 
 	def _FilteredWalk( path, fileFilter ):
 		"""static method that calls os.walk, but filters out anything that doesn't match the filter"""
