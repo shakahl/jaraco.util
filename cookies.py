@@ -47,20 +47,17 @@ def getCookies( source, path = None ):
 	>>> getCookies( [ 'A=B', 'C=D' ] )
 	[{'name': 'A', 'value': 'B'}, {'name': 'C', 'value': 'D'}]
 	"""
+	result = []
 	if isinstance( source, httplib.HTTPResponse ):
 		source = source.msg
 	if isinstance( source, httplib.HTTPMessage ):
-		source = source.getheader( 'Set-Cookie' )
+		source = source.getheaders( 'Set-Cookie' )
 	if isinstance( source, ( list, tuple ) ):
-		result = []
 		map( result.extend, map( getCookies, source, ( path, )*len(source) ) )
 	elif isinstance( source, str ):
-		cookieTextStrings = re.split( ',\s*', source )
-		cookieTextStrings = filter( None, cookieTextStrings )
-		result = map( cookie, cookieTextStrings )
-		if path: map( lambda c: c.setPathIfEmpty( path ), result )
-	else:
-		result = []
+		c = cookie( source )
+		c.setPathIfEmpty( path )
+		result.append( c )
 	return result
 
 def isNotCookieDelimiter(s ):
