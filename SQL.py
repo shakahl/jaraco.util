@@ -143,27 +143,46 @@ class Database( object ):
 		self.Select( None, table, values )
 		return self.cur.fetchone()
 
-	def GetDataAsDictionary( self, keyField = 0, valueField = 1 ):
-		getFirstItem = lambda x: x[0]
-		fieldNames = map( getFirstItem, self.cur.description )
-		if type( keyField ) is types.StringType:
-			keyField = fieldNames.index( keyField )
-		if type( valueField ) is types.StringType:
-			valueField = fieldNames.index( valueField )
-		data = self.cur.fetchall()
-		result = {}
-		for row in data:
-			result[ row[ keyField ] ] = row[ valueField ]
+	def GetFieldIndex( self, field ):
+		fieldNames = self.GetFieldNames()
+		if type( field ) is types.IntType:
+			result = field
+		elif type( field ) is types.StringType:
+			# note: should this be a case-insensitive search?
+			result = fieldNames.index( field )
+		else:
+			raise TypeError, 'Field index must be a number or field name, not %s' % type( field )
 		return result
+
+	def GetDataAsDictionary( self, keyField = 0, valueField = 1 ):
+		keyField = self.GetFieldIndex( keyField )
+		valueField = self.GetFieldIndex( valueField )
+		data = self.cur.fetchall()
+		# transpose the data
+		data = apply( zip, data )
+		# get pairs of items to turn into a dictionary
+		items = zip( data[ keyField ], data[ valueField ] )
+		result = dict( items )
+		return result
+
+	def GetDataAsList( self, field = 0 ):
+		field = self.GetFieldIndex( field )
+		data = self.cur.fetchall()
+		# transpose the data
+		data = apply( zip, data )
+		return data[ field ]
 	
-	def Select( self, fields, table, params = None):
+	def Select( self, fields, table, params = None, specifiers = None ):
 		if not fields or fields == '*':
 			fields = '*'
 		elif type(fields) is types.StringType:
 			fields = self.MakeSQLFieldList( [ fields ] )
 		elif type(fields) is types.ListType:
 			fields = self.MakeSQLFieldList( fields )
-		sql = 'SELECT %s from [%s]' % (fields, table)
+		sql = 'SELECT'
+		if specifiers:
+			sql = string.join( ( sql, ) + specifiers )
+		sql = string.join( ( sql, fields, 'FROM', '[%s]' % table ) )
 		if params:
 			sql = string.join( ( sql, 'WHERE', self.BuildTests( params ) ) )
 		self.Execute( sql )
@@ -176,7 +195,7 @@ class Database( object ):
 
 	def BuildTests( self, params ):
 		tests = map( self.MakeSQLTest, params.items() )
-		tests = string.join( tests, ' and ' )
+		tests = string.join( tests, ' AND ' )
 		return tests
 
 	def MakeSQLTest( self, item ):
@@ -192,7 +211,8 @@ class Database( object ):
 		if table:
 			sql = 'SELECT * from [%s] WHERE 0' % table
 			self.Execute( sql )
-		return [ x[0] for x in self.cur.description ]
+		getFirstItem = lambda x: x[0]
+		return map( getFirstItem, self.cur.description )
 
 	def Execute( self, query ):
 		self.lastQuery = query
@@ -218,3 +238,4 @@ class Database( object ):
 
 	def AddObjects( self, obs ):
 		map( self.AddObject, obs )
+		
