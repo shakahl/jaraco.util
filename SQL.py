@@ -203,6 +203,8 @@ then converts the list elements into their SQL representation."""
 		self.Execute( sql )
 		result = self.GetSingletonResult()
 		log.debug( 'Last ID was %s' % result )
+		if result:
+			result = int( result )
 		return result
 
 	def Exists( self, table, values ):
@@ -251,6 +253,7 @@ then converts the list elements into their SQL representation."""
 		return result
 
 	def GetResultAsObjects( self ):
+		"Return a sequence of dictionaries with keys as field names and values from the rows."
 		fieldNames = self.GetFieldNames()
 		makeDict = lambda l: dict( zip( fieldNames, l ) )
 		return map( makeDict, self.GetAllRows() )
