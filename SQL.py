@@ -424,7 +424,8 @@ then converts the list elements into their SQL representation."""
 					yield buildRowDict( currentRow, fieldNames, parameters )
 					parameters = {}
 				currentRow = row
-			parameters.__setitem__( *newParam )
+			if not None in newParam:
+				parameters.__setitem__( *newParam )
 		if currentRow:
 			yield buildRowDict( currentRow, fieldNames, parameters )
 			
