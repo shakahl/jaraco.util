@@ -107,3 +107,32 @@ class ASPResponseHandler( Handler ):
 
 	def End( self ):
 		self.Response.Write( '</pre></div>\n' )
+
+from xml.dom import minidom
+class HTMLTable( object ):
+	def __init__( self ):
+		xml = minidom.getDOMImplementation()
+		doc = xml.createDocument( None, 'root', None )
+		self.element = doc.createElement( 'table' )
+
+	def AddRow( self, seq, type='td' ):
+		doc = self.element.ownerDocument
+		row = doc.createElement( 'tr' )
+		for col, arg in enumerate( seq ):
+			elem = doc.createElement( type )
+			if isinstance( arg, basestring ):
+				arg = doc.createTextNode( arg )
+			elem.appendChild( arg )
+			row.appendChild( elem )
+		self.element.appendChild( row )
+
+	def AddHeaderRow( self, seq ):
+		self.AddRow( seq, 'th' )
+
+def HTMLLink( ref, s ):
+	xml = minidom.getDOMImplementation()
+	doc = xml.createDocument( None, 'root', None )
+	elem = doc.createElement( 'a' )
+	elem.setAttribute( 'href', ref )
+	elem.appendChild( doc.createTextNode( s ) )
+	return elem
