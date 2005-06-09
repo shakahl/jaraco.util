@@ -129,6 +129,7 @@ class ADODatabase( object ):
 	def connect( self ):
 		if self.connection.State:
 			self.connection.Close()
+		log.debug( 'Connecting using %s with parameters %s', self.provider, self.connectionParameters )
 		self.connection.Provider = self.provider
 		self.__class__._setProperties( self.connection, self.connectionParameters )
 		self.connection.Open()
