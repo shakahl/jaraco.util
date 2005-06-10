@@ -18,6 +18,9 @@ __date__ = '$Date: 04-06-23 12:24 $'[7:-2]
 
 import threading, socket, sys, operator
 
+import logging
+log = logging.getLogger( 'IP Tools' )
+
 class PortScanner( object ):
 	def __init__( self ):
 		self.ranges = [ range( 1, 1024 ) ]
@@ -28,6 +31,47 @@ class PortScanner( object ):
 
 	def AddRange( self, *r ):
 		self.ranges.append( range( *r ) )
+
+class ScanThread( threading.Thread ):
+	def __init__( self, address ):
+		threading.Thread.__init__( self )
+		self.address = address
+		
+	def run( self ):
+		s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+		try:
+			s.connect( self.address )
+			s.close()
+			self.result = True
+		except socket.error:
+			self.result = False
+
+	def __str__( self ):
+		try:
+			if self.result:
+				result = '%(address)s connection established.' % vars( self )
+			else:
+				result = '%(address)s connection failed.' % vars( self )
+		except AttributeError:
+			result = '%(address)s no result obtained.'
+		return result
+
+def portscan( host, ports = range( 1024 ), frequency = 20 ):
+	makeAddress = lambda port: ( host, port )
+	addresses = map( makeAddress, ports )
+	testers = map( ScanThread, addresses )
+	for tester in testers:
+		tester.start()
+		time.sleep( 1.0/frequency )
+	map( lambda x: x.join(), testers )
+	for tester in testers:
+		try:
+			if tester.result:
+				log.info( '%(address)s connection established.', vars( tester ) )
+			else:
+				log.debug( '%(address)s connection failed', vars( tester ) )
+		except AttributeError:
+			log.error( '%(address)s no result acquired.', vars( tester ) )
 
 class PortListener( threading.Thread ):
 	def __init__( self, port ):
