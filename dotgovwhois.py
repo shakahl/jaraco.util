@@ -79,6 +79,7 @@ class dotgovparser( HTMLParser ):
 
 class MyWriter( DumbWriter ):
 	def send_flowing_data( self, data ):
+		# convert non-breaking spaces to regular spaces
 		data = data.replace( '\xa0', ' ' )
 		DumbWriter.send_flowing_data( self, data )
 		
