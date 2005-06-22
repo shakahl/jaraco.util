@@ -16,9 +16,9 @@ Copyright © 2005 Sandia National Laboratories
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
-__version__ = '$Rev:  $'[6:-2]
-__svnauthor__ = '$Author:  $'[9:-2]
-__date__ = '$Date:  $'[7:-2]
+__version__ = '$Rev$'[6:-2]
+__svnauthor__ = '$Author$'[9:-2]
+__date__ = '$Date$'[7:-2]
 
 import cookielib, urllib2, os, re
 from ClientForm import ParseResponse, ItemNotFoundError
