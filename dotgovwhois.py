@@ -20,15 +20,25 @@ __version__ = '$Rev$'[6:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
-import cookielib, urllib2, os, re
+import urllib2, os, re
 from ClientForm import ParseResponse, ItemNotFoundError
+
+try:
+	raise ImportError
+	import cookielib
+	urlopen = urllib2.urlopen
+except ImportError:
+	from ClientCookie import urlopen
 
 def init( ):
 	"""Initialize HTTP functionality to support cookies, which are necessary
 	to use the HTTP interface."""
-	cj = cookielib.CookieJar()
-	opener = urllib2.build_opener( urllib2.HTTPCookieProcessor(cj) )
-	urllib2.install_opener( opener )
+	try:
+		cj = cookielib.CookieJar()
+		opener = urllib2.build_opener( urllib2.HTTPCookieProcessor(cj) )
+		urllib2.install_opener( opener )
+	except NameError:
+		pass
 
 def GetFunctions( query ):
 	if re.search( r'\.ar$', query ): return doARQuery, ARParser
@@ -37,7 +47,7 @@ def GetFunctions( query ):
 argentina = ( '.com.ar', '.gov.ar', '.int.ar', '.mil.ar', '.net.ar', '.org.ar' )
 def doARQuery( query ):
 	pageURL = 'http://www.nic.ar/consdom.html'
-	form = ParseResponse( urllib2.urlopen( pageURL ) )[0]
+	form = ParseResponse( urlopen( pageURL ) )[0]
 	form['nombre'] = query[ :query.find( '.' ) ]
 	try:
 		domain = query[ query.find( '.' ) : ]
@@ -47,12 +57,12 @@ def doARQuery( query ):
 	req = form.click()
 	#req.data = 'nombre=%s&dominio=.com.ar' % query
 	req.add_header( 'referer', pageURL )
-	resp = urllib2.urlopen( req )
+	resp = urlopen( req )
 	return resp.read()
 
 def doGovQuery( query ):
 	"Perform an whois query on the dotgov server."
-	url = urllib2.urlopen( 'http://dotgov.gov/whois.aspx' )
+	url = urlopen( 'http://dotgov.gov/whois.aspx' )
 	forms = ParseResponse( url )
 	assert len( forms ) == 1
 	form = forms[0]
@@ -65,13 +75,13 @@ def doGovQuery( query ):
 		# agree.aspx page.
 		return doGovQuery( query )
 	form['who_search'] = query
-	resp = urllib2.urlopen( forms[0].click() )
+	resp = urlopen( forms[0].click() )
 	return resp.read()
 
 def Agree( form ):
 	"agree to the dotgov agreement"
 	agree_req = form.click()
-	u2 = urllib2.urlopen( agree_req )
+	u2 = urlopen( agree_req )
 	resp = u2.read()
 
 from htmllib import HTMLParser
