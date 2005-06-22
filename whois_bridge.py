@@ -26,7 +26,6 @@ from htmllib import HTMLParser
 from formatter import NullFormatter, DumbWriter, AbstractFormatter
 
 try:
-	raise ImportError
 	import cookielib
 	urlopen = urllib2.urlopen
 except ImportError:
