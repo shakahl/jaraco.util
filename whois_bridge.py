@@ -64,7 +64,7 @@ class WhoisHandler( object ):
 		that matches the query"""
 		query = query.lower()
 		handlers = filter( WhoisHandler._IsWhoisHandler_, globals( ).values() )
-		matches = filter( lambda c: re.search( c.services, query ), handlers )
+		matches = filter( lambda c: re.search( c.services, query, re.IGNORECASE ), handlers )
 		if not len( matches ) == 1:
 			if len( matches ) == 0: error = 'Domain for %s is not serviced by this server.'
 			else: error = 'Server error, ambiguous nic server resolution for %s.'
@@ -158,6 +158,12 @@ class GovWhoisHandler( WhoisHandler ):
 			# switch back to the NullFormatter
 			if not isinstance( self.formatter, NullFormatter ):
 				self.formatter = NullFormatter( )
+
+class SourceWhoisHandler( WhoisHandler ):
+	services = r'^source$'
+	def LoadHTTP( self ): pass
+	def ParseResponse( self, s_out ):
+		s_out.write( open( __file__ ).read() )
 
 class MyWriter( DumbWriter ):
 	def send_flowing_data( self, data ):
