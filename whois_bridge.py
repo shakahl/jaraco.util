@@ -24,6 +24,9 @@ import urllib2, os, re
 from ClientForm import ParseResponse, ItemNotFoundError
 from htmllib import HTMLParser
 from formatter import NullFormatter, DumbWriter, AbstractFormatter
+import logging
+
+log = logging.getLogger( __name__ )
 
 try:
 	import cookielib
@@ -162,29 +165,103 @@ class MyWriter( DumbWriter ):
 		data = data.replace( '\xa0', ' ' )
 		DumbWriter.send_flowing_data( self, data )
 		
-from SocketServer import TCPServer, ThreadingMixIn, BaseRequestHandler, StreamRequestHandler
+from SocketServer import ThreadingTCPServer, BaseRequestHandler, StreamRequestHandler, socket
 
 class Handler( StreamRequestHandler ):
 	def handle( self ):
 		query = self.rfile.readline().strip()
-		print self.client_address, 'requests', query
+		log.info( '%s requests %s', self.client_address, query )
 		handler = WhoisHandler.GetHandler( query )
 		try:
 			handler = WhoisHandler.GetHandler( query )
 			handler.LoadHTTP()
 			handler.ParseResponse( self.wfile )
-			print self.client_address, 'success'
+			log.info( '%s success', self.client_address )
 		except urllib2.URLError:
-			self.wfile.write( 'Could not contact whois HTTP service.\n' )
+			msg = 'Could not contact whois HTTP service.'
+			self.wfile.write( msg + '\n' )
+			log.exception( msg )
 		except ValueError, e:
-			print e
+			log.warning( 'Error with query: %s', e )
 			self.wfile.write( '%s\n' % e )
 
-class Listener( ThreadingMixIn, TCPServer ):
+class Listener( ThreadingTCPServer ):
 	def __init__( self ):
-		TCPServer.__init__( self, ( '', 43 ), Handler )
+		ThreadingTCPServer.__init__( self, ( '', 43 ), Handler )
+
+	def serve_forever( self ):
+		try:
+			while self.handle_request(): pass
+		except socket.error, e:
+			log.exception( 'socket error %s', e )
+
+	def handle_request( self ):
+		ThreadingTCPServer.handle_request( self )
+		# check the socket to see if it's closed
+		self.socket.fileno()
+
+def serve():
+		init()
+		l = Listener()
+		l.serve_forever()
+		
+try:
+	import win32service, win32serviceutil, win32event
+
+	class TheService( win32serviceutil.ServiceFramework ):
+		_svc_name_ = 'whois_bridge'
+		_svc_display_name_ = 'Whois HTTP Bridge'
+
+		def __init__( self, args ):
+			win32serviceutil.ServiceFramework.__init__( self, args )
+
+		def SvcStop( self ):
+			self.ReportServiceStatus( win32service.SERVICE_STOP_PENDING )
+			self.listener.server_close()
+
+		def SvcDoRun( self ):
+			import servicemanager
+
+			self.setupLogging()			
+
+			log.info( '%s service is starting.', self._svc_display_name_ )
+			servicemanager.LogMsg(
+				servicemanager.EVENTLOG_INFORMATION_TYPE,
+				servicemanager.PYS_SERVICE_STARTED,
+				(self._svc_name_, '' )
+				)
+
+			self.run()
+
+			servicemanager.LogMsg(
+				servicemanager.EVENTLOG_INFORMATION_TYPE,
+				servicemanager.PYS_SERVICE_STOPPED,
+				( self._svc_name_, '' )
+				)
+			log.info( '%s service is stopped.', self._svc_display_name_ )
+
+		def run( self ):
+			init()
+			self.listener = Listener()
+			self.listener.serve_forever()
+
+		def setupLogging( self ):
+			import tools, sys
+			logfile = os.path.join( os.environ['WINDIR'], 'system32', 'LogFiles', self._svc_display_name_, 'events.log' )
+			handler = tools.TimestampFileHandler( logfile )
+			handlerFormat = '[%(asctime)s] - %(levelname)s - [%(name)s] %(message)s'
+			handler.setFormatter( logging.Formatter( handlerFormat ) )
+			logging.root.addHandler( handler )
+			# if I don't redirect stdoutput and stderr, when the stdio flushes,
+			#  an exception will be thrown and the service will bail
+			sys.stdout = tools.LogFileWrapper( 'stdout' )
+			sys.stderr = tools.LogFileWrapper( 'stderr' )
+			logging.root.level = logging.INFO
+			
+	def main():
+		win32serviceutil.HandleCommandLine( TheService )
+except ImportError:
+	main = serve
 
 if __name__ == '__main__':
-	init()
-	l = Listener()
-	l.serve_forever()
+	main()
