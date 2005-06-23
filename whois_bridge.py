@@ -166,12 +166,18 @@ class MyWriter( DumbWriter ):
 		DumbWriter.send_flowing_data( self, data )
 		
 from SocketServer import ThreadingTCPServer, BaseRequestHandler, StreamRequestHandler, socket
+from select import select
 
 class Handler( StreamRequestHandler ):
 	def handle( self ):
+		try:
+			self._handle()
+		except:
+			log.exception( 'unhandled exception' )
+
+	def _handle( self ):
 		query = self.rfile.readline().strip()
 		log.info( '%s requests %s', self.client_address, query )
-		handler = WhoisHandler.GetHandler( query )
 		try:
 			handler = WhoisHandler.GetHandler( query )
 			handler.LoadHTTP()
@@ -182,23 +188,31 @@ class Handler( StreamRequestHandler ):
 			self.wfile.write( msg + '\n' )
 			log.exception( msg )
 		except ValueError, e:
-			log.warning( 'Error with query: %s', e )
+			log.info( '%s response %s', self.client_address, e )
 			self.wfile.write( '%s\n' % e )
+
+class ConnectionClosed( Exception ): pass
 
 class Listener( ThreadingTCPServer ):
 	def __init__( self ):
 		ThreadingTCPServer.__init__( self, ( '', 43 ), Handler )
 
-	def serve_forever( self ):
+	def serve_until_closed( self ):
 		try:
-			while self.handle_request(): pass
-		except socket.error, e:
-			log.exception( 'socket error %s', e )
+			while True: self.handle_request()
+		except ConnectionClosed:
+			pass
 
-	def handle_request( self ):
-		ThreadingTCPServer.handle_request( self )
-		# check the socket to see if it's closed
-		self.socket.fileno()
+	def get_request( self ):
+		# use select here because select will throw an exception if the socket
+		#  is closed.  Simply blocking on accept will block even if the socket
+		#  object is closed.
+		try:
+			select( ( self.socket, ), (), () )
+		except socket.error, e:
+			if e[1].lower() == 'bad file descriptor':
+				raise ConnectionClosed
+		return ThreadingTCPServer.get_request( self )
 
 def serve():
 		init()
@@ -243,7 +257,7 @@ try:
 		def run( self ):
 			init()
 			self.listener = Listener()
-			self.listener.serve_forever()
+			self.listener.serve_until_closed()
 
 		def setupLogging( self ):
 			import tools, sys
