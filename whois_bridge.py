@@ -44,10 +44,6 @@ def init( ):
 	except NameError:
 		pass
 
-def GetHandler( query ):
-	if re.search( r'\.ar$', query.lower() ): return doARQuery, ARParser
-	if re.search( r'(\.fed\.us|\.gov)$', query.lower() ): return doGovQuery, GovParser
-
 class WhoisHandler( object ):
 	"""WhoisHandler is an abstract class for defining whois interfaces for
 	web-based nic servers.
@@ -111,6 +107,19 @@ class ArgentinaWhoisHandler( WhoisHandler ):
 		def end_tr( self ):
 			self.formatter.add_line_break()
 
+class CoZaWhoisHandler( WhoisHandler ):
+	services = r'\.co\.za$'
+	
+	def LoadHTTP( self ):
+		query = self._query
+		pageURL = 'http://whois.co.za/'
+		form = ParseResponse( urlopen( pageURL ) )[0]
+		form['Domain'] = query[ :query.find( '.' ) ]
+		req = form.click()
+		resp = urlopen( req )
+		self._response = resp.read()
+
+	_parser = HTMLParser
 
 class GovWhoisHandler( WhoisHandler ):
 	services = r'(\.fed\.us|\.gov)$'
