@@ -172,7 +172,16 @@ class SourceWhoisHandler( WhoisHandler ):
 	services = r'^source$'
 	def LoadHTTP( self ): pass
 	def ParseResponse( self, s_out ):
-		s_out.write( open( __file__ ).read() )
+		filename = os.path.splitext( __file__ )[0] + '.py'
+		s_out.write( open( filename ).read() )
+
+if None:
+	class DebugHandler( WhoisHandler ):
+		services = r'^debug (.*)$'
+		def LoadHTTP( self ): pass
+		def ParseResponse( self, s_out ):
+			match = re.match( self.services, self._query )
+			s_out.write( 'result: %s' % eval( match.group(1) ) )
 
 class MyWriter( DumbWriter ):
 	def send_flowing_data( self, data ):
