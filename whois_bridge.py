@@ -175,11 +175,12 @@ class SourceWhoisHandler( WhoisHandler ):
 		filename = os.path.splitext( __file__ )[0] + '.py'
 		s_out.write( open( filename ).read() )
 
-if None:
-	class DebugHandler( WhoisHandler ):
-		services = r'^debug (.*)$'
-		def LoadHTTP( self ): pass
-		def ParseResponse( self, s_out ):
+class DebugHandler( WhoisHandler ):
+	services = r'^debug (.*)$'
+	authorized_addresses = [ '127.0.0.1' ]
+	def LoadHTTP( self ): pass
+	def ParseResponse( self, s_out ):
+		if self.client_address[0] in self.authorized_addresses:
 			match = re.match( self.services, self._query )
 			s_out.write( 'result: %s' % eval( match.group(1) ) )
 
@@ -204,6 +205,7 @@ class Handler( StreamRequestHandler ):
 		log.info( '%s requests %s', self.client_address, query )
 		try:
 			handler = WhoisHandler.GetHandler( query )
+			handler.client_address = self.client_address
 			handler.LoadHTTP()
 			handler.ParseResponse( self.wfile )
 			log.info( '%s success', self.client_address )
