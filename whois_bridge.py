@@ -183,6 +183,7 @@ class DebugHandler( WhoisHandler ):
 		if self.client_address[0] in self.authorized_addresses:
 			match = re.match( self.services, self._query )
 			s_out.write( 'result: %s' % eval( match.group(1) ) )
+del DebugHandler # disable the debug handler
 
 class MyWriter( DumbWriter ):
 	def send_flowing_data( self, data ):
