@@ -16,7 +16,7 @@ __version__ = '$Revision$a'[11:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
-import threading, socket, sys, operator
+import threading, socket, sys, operator, time
 
 import logging
 log = logging.getLogger( 'IP Tools' )
@@ -56,6 +56,9 @@ class ScanThread( threading.Thread ):
 			result = '%(address)s no result obtained.'
 		return result
 
+def portscan_hosts( hosts, *args, **kargs ):
+	map( lambda h: portscan( h, *args, **kargs ), hosts )
+	
 def portscan( host, ports = range( 1024 ), frequency = 20 ):
 	makeAddress = lambda port: ( host, port )
 	addresses = map( makeAddress, ports )
