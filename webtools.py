@@ -136,3 +136,46 @@ def HTMLLink( ref, s ):
 	elem.setAttribute( 'href', ref )
 	elem.appendChild( doc.createTextNode( s ) )
 	return elem
+
+import urllib2, ClientForm, cookielib
+
+cj = cookielib.CookieJar()
+cookie_handler = urllib2.HTTPCookieProcessor( cj )
+default_opener = urllib2.build_opener( cookie_handler )
+
+class PageGetter( object ):
+	"set url to the target url or set request to the urllib2.Request object"
+	def __init__( self, **attrs ):
+		self.__dict__.update( attrs )
+		self.__dict__.setdefault( '_opener', default_opener )
+
+	def GetRequest( self ):
+		return getattr( self, 'request', urllib2.Request( self.url ) )
+
+	def Fetch( self ):
+		return self._opener.open( self.GetRequest() )
+
+	def Process( self ):
+		resp = self.Fetch()
+		forms = ClientForm.ParseResponse( resp )
+		form = self.SelectForm( forms )
+		self.FillForm( form )
+		return form.click()
+
+	def SelectForm( self, forms ):
+		sel = self.__dict__.get( 'form_selector', 0 )
+		if not isinstance( sel, int ):
+			# assume the selector is the name of the form
+			forms = dict( map( lambda f: ( f.name, f ), forms ) )
+		return forms[sel]
+
+	def FillForm( self, form ):
+		for name, value in self.form_items.items():
+			if callable( value ):
+				value = value()
+			form[name] = value
+
+	def __call__( self, next ):
+		# process the form and set the request for the next object
+		next.request = self.Process()
+

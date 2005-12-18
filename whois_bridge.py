@@ -24,7 +24,10 @@ import urllib2, os, re
 from ClientForm import ParseResponse, ItemNotFoundError
 from htmllib import HTMLParser
 from formatter import NullFormatter, DumbWriter, AbstractFormatter
+from webtools import PageGetter
+from urllib import basejoin
 import logging
+from StringIO import StringIO
 
 log = logging.getLogger( __name__ )
 
@@ -167,6 +170,66 @@ class GovWhoisHandler( WhoisHandler ):
 			# switch back to the NullFormatter
 			if not isinstance( self.formatter, NullFormatter ):
 				self.formatter = NullFormatter( )
+
+mozilla_headers = {
+	'referer': 'http://www.nic.bo/buscar.php',
+	'accept': 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+	'accept-encoding': 'gzip,deflate',
+	'user-agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8) Gecko/20051111 Firefox/1.5',
+	'accept-charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+	'accept-language': 'en-us,en;q=0.5',
+}
+
+class BoliviaPageGetter( PageGetter ):
+	url = 'http://www.nic.bo/'
+#	def GetRequest( self ):
+#		request = super( self.__class__, self ).GetRequest()
+#		map( request.add_header, mozilla_headers.keys(), mozilla_headers.values() )
+#		return request
+	
+class BoliviaWhoisHandler( WhoisHandler ):
+	services = r'\.bo$'
+	class _parser( HTMLParser ):
+		def anchor_end( self ):
+			if self.anchor:
+				self.handle_data( '[%s]' % self.anchor )
+				self.anchor = None
+
+	def LoadHTTP( self ):
+		name, domain = self._query.split( '.', 1 )
+		domain = '.' + domain
+		getter = BoliviaPageGetter()
+		getter.form_items = { 'subdominio': [ domain ], 'dominio': name }
+		getter.request = getter.Process()
+		self._response = getter.Fetch().read()
+		del getter.request
+		
+		# now that we've submitted the request, we've got a response.
+		# Unfortunately, this page returns 'available' or 'not available'
+		# If it's not available, we need to know who owns it.
+		if re.search( 'Dominio %s registrado' % self._query, self._response ):
+			getter.url = basejoin( getter.url, 'informacion.php' )
+			self._response = getter.Fetch().read()
+		
+	def ParseResponse( self, s_out ):
+		from xml.dom.ext.reader import HtmlLib
+		from xml.dom.ext import XHtmlPrint
+		from xml import xpath
+		doc = HtmlLib.FromHtml( self._response )
+
+		# the following path refers to where the salient content
+		#  of the response can be found.
+		nodePath = '//TABLE/TR/TD[STRONG]/DIV[P]'
+	
+		try:
+			node = xpath.Evaluate( nodePath, doc.documentElement )[0]
+			# Now we have the data we're looking for.  Put it in _response
+			# and proccess that normally.
+			result = StringIO()
+			XHtmlPrint( node, result, encoding="iso-8859-1" )
+			self._response = result.getvalue()
+		except IndexError: pass
+		return super( self.__class__, self ).ParseResponse( s_out )
 
 class SourceWhoisHandler( WhoisHandler ):
 	services = r'^source$'
