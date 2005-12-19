@@ -13,7 +13,7 @@ __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 setup ( name = 'GeneralPurpose',
-		version = '1.0.1',
+		version = '1.0.2',
 		description = 'General Purpose Modules',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@sandia.gov',

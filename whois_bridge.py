@@ -28,6 +28,10 @@ from webtools import PageGetter
 from urllib import basejoin
 import logging
 from StringIO import StringIO
+# the following requires pyxml
+from xml.dom.ext.reader import HtmlLib
+from xml.dom.ext import XHtmlPrint
+from xml import xpath
 
 log = logging.getLogger( __name__ )
 
@@ -83,6 +87,23 @@ class WhoisHandler( object ):
 		response = re.sub( r'<(\w+)/>', r'<\1 />', self._response )
 		writer = MyWriter( s_out )
 		self._parser( AbstractFormatter( writer ) ).feed( response )
+
+	def ParseXPath( self, nodePath ):
+		"""Parse self._response for nodePath where nodePath is
+		an xpath query specifying where the salient content of
+		the response can be found."""
+		doc = HtmlLib.FromHtml( self._response )
+
+		try:
+			result = xpath.Evaluate( nodePath, doc.documentElement )
+			assert len( result ) == 1
+			node = result[0]
+			# Now we have the data we're looking for.  Put it in _response
+			# and proccess that normally.
+			result = StringIO()
+			XHtmlPrint( node, result, encoding="iso-8859-1" )
+			self._response = result.getvalue()
+		except IndexError: pass
 
 class ArgentinaWhoisHandler( WhoisHandler ):
 	services = r'\.ar$'
@@ -212,25 +233,34 @@ class BoliviaWhoisHandler( WhoisHandler ):
 			self._response = getter.Fetch().read()
 		
 	def ParseResponse( self, s_out ):
-		from xml.dom.ext.reader import HtmlLib
-		from xml.dom.ext import XHtmlPrint
-		from xml import xpath
 		doc = HtmlLib.FromHtml( self._response )
 
-		# the following path refers to where the salient content
-		#  of the response can be found.
-		nodePath = '//TABLE/TR/TD[STRONG]/DIV[P]'
-	
-		try:
-			node = xpath.Evaluate( nodePath, doc.documentElement )[0]
-			# Now we have the data we're looking for.  Put it in _response
-			# and proccess that normally.
-			result = StringIO()
-			XHtmlPrint( node, result, encoding="iso-8859-1" )
-			self._response = result.getvalue()
-		except IndexError: pass
+		self.ParseXPath( '//TABLE/TR/TD[STRONG]/DIV[P]' )
+
 		return super( self.__class__, self ).ParseResponse( s_out )
 
+class GreecePageGetter( PageGetter ):
+	url = 'https://grweb.ics.forth.gr/Whois?lang=en'
+
+class GreeceWhoisHandler( WhoisHandler ):
+	services = r'.gr$'
+	_parser = HTMLParser
+	def LoadHTTP( self ):
+		getter = GreecePageGetter( form_items = { 'domainName': self._query } )
+		# process the form and get the next request
+		getter.request = getter.Process()
+		self._response = getter.Fetch().read()
+
+	def ParseResponse( self, s_out ):
+		# the following line is a hack to fix the HTML bug
+		# in the web page where they don't put quotes around the face
+		# attribute value, even though it has spaces in it
+		self._response = re.sub( r'(<font.*face=)([^"]+?)(>)', r'\1"\2"\3', self._response )
+	
+		self.ParseXPath( '//TD/FONT' )
+
+		return super( self.__class__, self ).ParseResponse( s_out )
+	
 class SourceWhoisHandler( WhoisHandler ):
 	services = r'^source$'
 	def LoadHTTP( self ): pass
