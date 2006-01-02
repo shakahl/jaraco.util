@@ -12,7 +12,8 @@ __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 import re, cgi
-from logging import Handler
+from logging import Handler, getLogger
+log = getLogger( __file__ )
 
 class FileWriter( object ):
 	"""A Python-style file object (with a .write method) that uses the supplied
@@ -150,7 +151,8 @@ class PageGetter( object ):
 		self.__dict__.setdefault( '_opener', default_opener )
 
 	def GetRequest( self ):
-		return getattr( self, 'request', urllib2.Request( self.url ) )
+		req = getattr( self, 'request', None ) or urllib2.Request( getattr( self, 'url' ) )
+		return req
 
 	def Fetch( self ):
 		return self._opener.open( self.GetRequest() )
@@ -163,7 +165,8 @@ class PageGetter( object ):
 		return form.click()
 
 	def SelectForm( self, forms ):
-		sel = self.__dict__.get( 'form_selector', 0 )
+		sel = getattr( self, 'form_selector', 0 )
+		log.info( 'selecting form %s', sel )
 		if not isinstance( sel, int ):
 			# assume the selector is the name of the form
 			forms = dict( map( lambda f: ( f.name, f ), forms ) )
@@ -178,4 +181,5 @@ class PageGetter( object ):
 	def __call__( self, next ):
 		# process the form and set the request for the next object
 		next.request = self.Process()
+		return next
 
