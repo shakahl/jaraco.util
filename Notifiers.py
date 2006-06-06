@@ -32,7 +32,11 @@ class SMTPMailbox( Notifier ):
 
 	def Notify( self, msg = '', importance = 'Normal' ):        
 		import smtplib
-		fromaddr = 'SMTP Notifier <notifier@%s>' % socket.getfqdn()
+		machine_name = socket.getfqdn()
+		if '.srn.sandia.gov' in machine_name:
+			fromaddr= 'SMTP Notifier <noreply@sandia.gov>'
+		else:
+			fromaddr = 'SMTP Notifier <notifier@%s>' % machine_name
 		toaddr = self.Address
 		Headers = { 'From': fromaddr, 'To': toaddr, 'Importance':importance, 'Subject':'Notification' }
 
