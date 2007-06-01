@@ -33,11 +33,14 @@ class PortScanner( object ):
 		self.ranges.append( range( *r ) )
 
 class ScanThread( threading.Thread ):
+	allTesters = []
+	
 	def __init__( self, address ):
 		threading.Thread.__init__( self )
 		self.address = address
 		
 	def run( self ):
+		ScanThread.allTesters.append(self)
 		s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
 		try:
 			s.connect( self.address )
@@ -45,37 +48,41 @@ class ScanThread( threading.Thread ):
 			self.result = True
 		except socket.error:
 			self.result = False
+		
+		self.report()
 
 	def __str__( self ):
-		try:
-			if self.result:
-				result = '%(address)s connection established.' % vars( self )
-			else:
-				result = '%(address)s connection failed.' % vars( self )
-		except AttributeError:
-			result = '%(address)s no result obtained.'
-		return result
+		resultMsg = {
+			True: '%(address)s connection established.',
+			False: '%(address)s connection failed.',
+			None: '%(address)s no result obtained.' }
+		resultMsg = resultMsg[getattr(self,'result',None)]
+		return resultMsg % vars( self )
+		
+	def report( self ):
+		log_method = {
+			True: log.info,
+			False: log.debug,
+			None: log.error }
+		log_method = log_method[getattr(self,'result',None)]
+		log_method( str( self ) )
+
+	def waitForTestersToFinish():
+		map( lambda x: x.join(), ScanThread.allTesters )
+	waitForTestersToFinish = staticmethod(waitForTestersToFinish)
 
 def portscan_hosts( hosts, *args, **kargs ):
 	map( lambda h: portscan( h, *args, **kargs ), hosts )
-	
+
 def portscan( host, ports = range( 1024 ), frequency = 20 ):
 	makeAddress = lambda port: ( host, port )
 	addresses = map( makeAddress, ports )
 	testers = map( ScanThread, addresses )
 	for tester in testers:
+		log.debug('starting tester')
 		tester.start()
 		time.sleep( 1.0/frequency )
-	map( lambda x: x.join(), testers )
-	for tester in testers:
-		try:
-			if tester.result:
-				log.info( '%(address)s connection established.', vars( tester ) )
-			else:
-				log.debug( '%(address)s connection failed', vars( tester ) )
-		except AttributeError:
-			log.error( '%(address)s no result acquired.', vars( tester ) )
-
+		
 class PortListener( threading.Thread ):
 	def __init__( self, port ):
 		threading.Thread.__init__( self )
