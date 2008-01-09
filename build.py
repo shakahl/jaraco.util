@@ -2,7 +2,7 @@
 
 """ Setup script for building General Purpose Module distribution
 
-Copyright © 2004-2006 Jason R. Coombs
+Copyright © 2004-2008 Jason R. Coombs
 """
 
 from distutils.core import setup
@@ -13,10 +13,10 @@ __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 setup ( name = 'GeneralPurpose',
-		version = '1.0.3',
+		version = '2.0',
 		description = 'General Purpose Modules',
 		author = 'Jason R. Coombs',
-		author_email = 'jaraco@sandia.gov',
+		author_email = 'jaraco@jaraco.com',
 		packages = [''],
 		package_dir = { '':'.' },
 		script_args = ( 'bdist_wininst', )
