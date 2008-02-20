@@ -2,7 +2,7 @@
 
 """ Setup script for building General Purpose Module distribution
 
-Copyright © 2004-2008 Jason R. Coombs
+Copyright Â© 2004-2008 Jason R. Coombs
 """
 
 from distutils.core import setup
