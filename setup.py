@@ -28,4 +28,16 @@ setup ( name = 'jaraco-util',
 			"Intended Audience :: Developers",
 			"Programming Language :: Python",
 		],
-		)
+		entry_points = {
+			'console_scripts': [
+				'whois_bridge = whois_bridge:main',
+				],
+		},
+		install_requires=[
+			'clientform>=0.2.7',
+			'pyxml>=0.8.4',
+		],
+		dependency_links = [
+			"http://www.jaraco.com/ASP/eggs",
+		]
+	)
