@@ -197,9 +197,9 @@ class FormProcessor( object ):
 	"""Proccesses an HTML Form in an automated fashion
 	Call in this manner:
 	>>> f = FormProcessor()
-	>>> f.loadForm( 'http://www.mysite.org/path' )
+	>>> f.loadForm( 'http://www.mysite.org/path' ) # doctest: +SKIP
 	Then set the form fields that you want filled in.
-	>>> f.submit()
+	>>> f.submit() # doctest: +SKIP
 	After doing this, f will have a submission object which is an HTTPConnection
 	which has posted the form results.
 """

@@ -39,5 +39,9 @@ setup ( name = 'jaraco-util',
 		],
 		dependency_links = [
 			"http://www.jaraco.com/ASP/eggs",
-		]
+		],
+		tests_require=[
+			'nose>=0.10',
+		],
+		test_suite = "nose.collector",
 	)

@@ -50,9 +50,9 @@ def getCookies( source, path = None ):
 	headers, and returns a list of cookies in those headers.
 	source may be an httplib.HTTPResponse or httplib.HTTPMessage or a list of Set-Cookie headers or a Set-Cookie header.
 	>>> getCookies( 'A=B, C=D' )
-	[{'name': 'A', 'value': 'B'}, {'name': 'C', 'value': 'D'}]
+	[<cookie A=B, C=D>]
 	>>> getCookies( [ 'A=B', 'C=D' ] )
-	[{'name': 'A', 'value': 'B'}, {'name': 'C', 'value': 'D'}]
+	[<cookie A=B>, <cookie C=D>]
 	"""
 	result = []
 	if isinstance( source, httplib.HTTPResponse ):
@@ -63,7 +63,7 @@ def getCookies( source, path = None ):
 		map( result.extend, map( getCookies, source, ( path, )*len(source) ) )
 	elif isinstance( source, str ):
 		c = cookie( source )
-		c.setPathIfEmpty( path )
+		path and c.setPathIfEmpty( path )
 		result.append( c )
 	return result
 
