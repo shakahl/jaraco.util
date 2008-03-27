@@ -3,10 +3,10 @@
 """webtools
 	Classes for supporting web data processing.
 	
-Copyright © 2004 Sandia National Laboratories  
+Copyright © 2004-2008 Jason R. Coombs
 """
 
-__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
 __version__ = '$Rev$'[6:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
@@ -15,12 +15,12 @@ import re, cgi
 from logging import Handler, getLogger
 log = getLogger( __file__ )
 
-class FileWriter( object ):
+class FileWriter(object):
 	"""A Python-style file object (with a .write method) that uses the supplied
 	function to handle the writes.
 
-	>>> w = FileWriter( Response.Write )
-	>>> w.write( 'text' )
+	>>> w = FileWriter(Response.Write) #doctest:+SKIP
+	>>> w.write('text') #doctest:+SKIP
 	"""
 	def __init__( self, handler ):
 		self.__handler__ = handler

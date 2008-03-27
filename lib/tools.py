@@ -33,10 +33,10 @@ def CoerceType( value ):
 
 def makeRows( list, nColumns ):
 	"""Make a list into rows of nColumns columns
-	>>> makeRows( [1,2,3,4,5], 2 )
-	[[1,3],[2,4],[5,None]]
-	>>> makeRows( [1,2,3,4,5], 3 )
-	[[1,3,5],[2,4,None]]
+	>>> makeRows([1, 2, 3, 4, 5], 2)
+	[(1, 4), (2, 5), (3, None)]
+	>>> makeRows([1, 2, 3, 4, 5], 3)
+	[(1, 3, 5), (2, 4, None)]
 	"""
 	# calculate the minimum number of rows necessary to fit the list in n Columns
 	nRows = len(list) / nColumns
