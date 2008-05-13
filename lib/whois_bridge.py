@@ -107,10 +107,10 @@ class ArgentinaWhoisHandler(WhoisHandler):
 		query = self._query
 		pageURL = 'http://www.nic.ar/consdom.html'
 		form = ParseResponse(urlopen(pageURL))[0]
-		form['nombre'] = query[ :query.find('.') ]
+		form['nombre'] = query[:query.find('.')]
 		try:
-			domain = query[ query.find('.') : ]
-			form['dominio'] = [ domain ]
+			domain = query[query.find('.') :]
+			form['dominio'] = [domain]
 		except ItemNotFoundError:
 			raise ValueError, 'Invalid domain (%s)' % domain
 		req = form.click()
@@ -133,7 +133,7 @@ class CoZaWhoisHandler(WhoisHandler):
 		query = self._query
 		pageURL = 'http://whois.co.za/'
 		form = ParseResponse(urlopen(pageURL))[0]
-		form['Domain'] = query[ :query.find('.') ]
+		form['Domain'] = query[:query.find('.')]
 		req = form.click()
 		resp = urlopen(req)
 		self._response = resp.read()
@@ -215,7 +215,7 @@ class BoliviaWhoisHandler(WhoisHandler):
 		name, domain = self._query.split('.', 1)
 		domain = '.' + domain
 		getter = BoliviaPageGetter()
-		getter.form_items = { 'subdominio': [ domain ], 'dominio': name }
+		getter.form_items = {'subdominio': [domain], 'dominio': name}
 		getter.request = getter.Process()
 		self._response = getter.Fetch().read()
 		del getter.request
@@ -241,7 +241,7 @@ class GreeceWhoisHandler(WhoisHandler):
 	services = r'.gr$'
 	_parser = HTMLParser
 	def LoadHTTP(self):
-		getter = GreecePageGetter(form_items = { 'domainName': self._query })
+		getter = GreecePageGetter(form_items = {'domainName': self._query})
 		# process the form and get the next request
 		getter.request = getter.Process()
 		self._response = getter.Fetch().read()
@@ -265,7 +265,7 @@ class SourceWhoisHandler(WhoisHandler):
 
 class DebugHandler(WhoisHandler):
 	services = r'^debug (.*)$'
-	authorized_addresses = [ '127.0.0.1' ]
+	authorized_addresses = ['127.0.0.1']
 	def LoadHTTP(self): pass
 	def ParseResponse(self, s_out):
 		if self.client_address[0] in self.authorized_addresses:

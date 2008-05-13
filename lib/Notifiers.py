@@ -21,16 +21,16 @@ __date__ = '$Date$'[7:-2]
 import string
 import smtplib, socket
 
-class Notifier( object ):
-	def write( self, msg ):
-		self.Notify( msg )
+class Notifier(object):
+	def write(self, msg):
+		self.Notify(msg)
 		
-class SMTPMailbox( Notifier ):
-	def __init__( self, address, server = 'mailgate.sandia.gov' ):
+class SMTPMailbox(Notifier):
+	def __init__(self, address, server = 'mailgate.sandia.gov'):
 		self.Address = address
 		self.Server = server
 
-	def Notify( self, msg = '', importance = 'Normal' ):        
+	def Notify(self, msg = '', importance = 'Normal'):        
 		import smtplib
 		machine_name = socket.getfqdn()
 		if '.srn.sandia.gov' in machine_name:
@@ -38,15 +38,15 @@ class SMTPMailbox( Notifier ):
 		else:
 			fromaddr = 'SMTP Notifier <notifier@%s>' % machine_name
 		toaddr = self.Address
-		Headers = { 'From': fromaddr, 'To': toaddr, 'Importance':importance, 'Subject':'Notification' }
+		Headers = {'From': fromaddr, 'To': toaddr, 'Importance':importance, 'Subject':'Notification'}
 
-		server = smtplib.SMTP( self.Server )
-		server.sendmail( fromaddr, toaddr, self.FormatMessage( Headers, msg ) )
+		server = smtplib.SMTP(self.Server)
+		server.sendmail(fromaddr, toaddr, self.FormatMessage(Headers, msg))
 		server.quit()
 
-	def FormatMessage( self, headers, msg ):
-		msg = msg.encode( 'ascii', 'replace' )
-		return string.join( map( lambda x: '%s: %s\r\n' % x, headers.items() ), '' ) + '\r\n' + msg
+	def FormatMessage(self, headers, msg):
+		msg = msg.encode('ascii', 'replace')
+		return string.join(map(lambda x: '%s: %s\r\n' % x, headers.items()), '') + '\r\n' + msg
 
-	def __repr__( self ):
+	def __repr__(self):
 		return 'mailto://' + self.Address
