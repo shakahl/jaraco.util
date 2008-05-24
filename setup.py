@@ -14,14 +14,15 @@ __version__ = '$Rev$'[6:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
-setup (name = 'jaraco-util',
+setup (name = 'jaraco',
 		version = '2.1.1',
 		description = 'General utility modules to support functionality that Python maybe should support natively',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
 		url = 'http://www.jaraco.com/',
-		packages = [''],
-		package_dir = {'':'lib'},
+		packages = find_packages('src'),
+		package_dir = {'':'src'},
+		namespace_packages = ['jaraco',],
 		license = 'MIT',
 		classifiers = [
 			"Development Status :: 4 - Beta",
