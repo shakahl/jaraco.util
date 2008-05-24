@@ -1,18 +1,18 @@
 # -*- coding: UTF-8 -*-
 
-"""itools
+"""jaraco.iter_
 	Tools for working with iterables.  Complements itertools.
 	
-Copyright © 2004 Sandia National Laboratories  
+Copyright © 2008 Jason R. Coombs
 """
 
-__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
 __version__ = '$Revision$'[11:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 import operator, itertools
-from tools import ordinalth
+from jaraco.util import ordinalth
 
 class Count(object):
 	"""

@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 """
-tools.py:
+jaraco.util:
   small functions or classes that don't have a home elsewhere
 """
 
@@ -216,7 +216,7 @@ def ReverseLists(lists):
 	tLists.reverse()
 	return zip(*tLists)
 
-import datetools
+from jaraco import dateutil
 import logging, time
 class TimestampFileHandler(logging.StreamHandler):
 	"""
@@ -237,8 +237,8 @@ class TimestampFileHandler(logging.StreamHandler):
 		"""
 		self._period = period
 		if period:
-			self._periodSeconds = datetools.getPeriodSeconds(self._period)
-			self._dateFormat = datetools.getDateFormatString(self._periodSeconds)
+			self._periodSeconds = dateutil.get_period_seconds(self._period)
+			self._dateFormat = dateutil.get_date_format_string(self._periodSeconds)
 		else:
 			self._periodSeconds = 0
 			self._dateFormat = ''
