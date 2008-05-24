@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-""" Setup script for building General Purpose Module distribution
+""" Setup script for building jaraco-util distribution
 
 Copyright © 2004-2008 Jason R. Coombs
 """
@@ -14,9 +14,9 @@ __version__ = '$Rev$'[6:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
-setup (name = 'jaraco',
-		version = '2.1.1',
-		description = 'General utility modules to support functionality that Python maybe should support natively',
+setup (name = 'jaraco.util',
+		version = '3.0',
+		description = 'General utility modules that supply commonly-used functionality',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
 		url = 'http://www.jaraco.com/',
@@ -31,7 +31,7 @@ setup (name = 'jaraco',
 		],
 		entry_points = {
 			'console_scripts': [
-				'whois_bridge = whois_bridge:main',
+				'whois_bridge = jaraco.net.whois.main',
 				],
 		},
 		install_requires=[
