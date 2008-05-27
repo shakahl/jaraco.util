@@ -8,11 +8,12 @@
 TCP port scanning utility
 """
 
-import os, tools, operator, sys
+import os, operator, sys
 import re, struct, socket, itertools
 from optparse import OptionParser
 
 import inet
+from jaraco.util import TimestampFileHandler
 
 import logging
 log = logging.getLogger('port scanner')
@@ -39,7 +40,7 @@ def setupLogger(output_level):
 	outputHandler.level = getattr(logging, output_level.upper())
 	logging.root.handlers.append(outputHandler)
 	logbase = os.path.join(os.environ['SystemRoot'], 'system32', 'logfiles', 'portscan', 'scan.log')
-	logfilehandler = tools.TimestampFileHandler(logbase)
+	logfilehandler = TimestampFileHandler(logbase)
 	logfilehandler.level = logging.INFO
 	handlerFormat = '[%(asctime)s] - %(levelname)s - [%(name)s] %(message)s'
 	formatter = logging.Formatter(handlerFormat)
