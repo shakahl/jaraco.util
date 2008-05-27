@@ -15,7 +15,7 @@ __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 setup (name = 'jaraco.util',
-		version = '3.0',
+		version = '1.0',
 		description = 'General utility modules that supply commonly-used functionality',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
@@ -31,7 +31,8 @@ setup (name = 'jaraco.util',
 		],
 		entry_points = {
 			'console_scripts': [
-				'whois_bridge = jaraco.net.whois.main',
+				'whois_bridge = jaraco.net.whois:main',
+				'scanner = jaraco.net.scanner:scan',
 				],
 		},
 		install_requires=[
