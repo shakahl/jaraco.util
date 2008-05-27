@@ -30,14 +30,8 @@ setup (name = 'jaraco.util',
 			"Programming Language :: Python",
 		],
 		entry_points = {
-			'console_scripts': [
-				'whois_bridge = jaraco.net.whois:main',
-				'scanner = jaraco.net.scanner:scan',
-				],
 		},
 		install_requires=[
-			'clientform>=0.2.7',
-			'pyxml>=0.8.4',
 		],
 		dependency_links = [
 			"http://www.jaraco.com/ASP/eggs",
