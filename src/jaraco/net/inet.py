@@ -113,4 +113,11 @@ class PortRangeListener(object):
 		ports.sort()
 		self.threads = map(PortListener, ports)
 		map(lambda t: t.start(), self.threads)
+
+def ping_host(host):
+	x = os.system("ping %s -n 1" % host)
+	if x:
+		print("Either %s is offline, or ping request has been blocked." %ip)
+	else:
+		print("%s is online." %ip)
 		
