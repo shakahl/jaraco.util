@@ -14,7 +14,7 @@ __date__ = '$Date$'[7:-2]
 
 import os, copy, urllib, httplib
 # import case-insensitive string & dictionary
-from tools import ciString, ciDict
+from jaraco.util import ciString, ciDict
 import itertools
 import string, re
 
