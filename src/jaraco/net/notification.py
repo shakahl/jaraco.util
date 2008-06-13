@@ -13,7 +13,7 @@
 Copyright © 2004-2008 Jason R. Coombs
 """
 
-__author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
+__author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
 __version__ = '$Revision$a'[11:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
@@ -116,10 +116,9 @@ class ExceptionNotifier(BufferedNotifier, SMTPMailbox):
 
 	def __call__(self, *args, **kargs):
 		try:
-			self.target_func(*args, **kargs)
+			return self.target_func(*args, **kargs)
 		except Exception, e:
 			print >> self, 'Unhandled exception encountered'
-			last_traceback = sys.exc_info()[2]
-			traceback.print_tb(last_traceback, file=self)
-			del last_traceback
-		self.flush()
+			traceback.print_exc(file=self)
+			self.flush()
+			raise
