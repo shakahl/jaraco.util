@@ -39,8 +39,14 @@ setup (name = 'jaraco.util',
 		},
 		install_requires=[
 			'clientform>=0.2.7',
-			'pyxml>=0.8.4',
+#			'pyxml>=0.8.4',
 		],
+		extras_require = {
+#			'net':
+#				['clientform>=0.2.7'],
+#			'what_requires_this?': 
+#				['pyxml>=0.8.4'],
+		}
 		dependency_links = [
 			"http://www.jaraco.com/ASP/eggs",
 		],
