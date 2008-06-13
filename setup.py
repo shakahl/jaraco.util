@@ -46,7 +46,7 @@ setup (name = 'jaraco.util',
 #				['clientform>=0.2.7'],
 #			'what_requires_this?': 
 #				['pyxml>=0.8.4'],
-		}
+		},
 		dependency_links = [
 			"http://www.jaraco.com/ASP/eggs",
 		],
