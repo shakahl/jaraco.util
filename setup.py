@@ -39,11 +39,10 @@ setup (name = 'jaraco.util',
 		},
 		install_requires=[
 			'clientform>=0.2.7',
-#			'pyxml>=0.8.4',
 		],
 		extras_require = {
-#			'net':
-#				['clientform>=0.2.7'],
+			'image':
+				['pil>=1.1.6'],
 #			'what_requires_this?': 
 #				['pyxml>=0.8.4'],
 		},
