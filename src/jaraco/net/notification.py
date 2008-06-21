@@ -72,7 +72,7 @@ class SMTPMailbox(NotificationTarget):
 	@property
 	def dest_addrs(self):
 		from string import strip
-		get_attr = lambda a: getattr(self, a)
+		get_attr = lambda a: getattr(self, a, None)
 		to_attrs = ('to_addrs', 'cc_addrs', 'bcc_addrs')
 		values = filter(None, map(get_attr, to_attrs))
 		split_email = lambda s: map(strip, s.split(','))
