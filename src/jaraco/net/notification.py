@@ -86,13 +86,13 @@ class SMTPMailbox(NotificationTarget):
 	@staticmethod
 	def format_message(headers, msg):
 		msg = msg.encode('ascii', 'replace')
-		format_header = lambda h: '%s: %s\r\n' % h
+		format_header = lambda h: '%s: %s\n' % h
 		formatted_headers = map(format_header, headers.items())
 		header = ''.join(formatted_headers)
-		return '\r\n'.join((header, msg))
+		return '\n'.join((header, msg))
 
 	def __repr__(self):
-		return 'mailto:' + self.destination
+		return 'mailto:' + self.to_addrs
 
 class BufferedNotifier(NotificationTarget):
 	"""
