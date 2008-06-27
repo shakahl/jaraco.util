@@ -84,13 +84,13 @@ class DMS(object):
 	def __float__(self):
 		return self.dd
 
-	def __str__(self):
+	def __unicode__(self):
 		value, sign = self.DMS
 		sign = sign_string(sign)
-		return '''%s%d° %d' %d"''' % ((sign,)+value)
+		return u'''%s%d° %d' %d"''' % ((sign,)+value)
 
 	@staticmethod
-	def get_dms_from_dd(dd, precision=5):
+	def get_dms_from_dd(dd, precision=2):
 		sign, dd = split_sign(dd)
 		int_round = lambda v: int(round(v, precision))
 		deg = int_round(dd)
