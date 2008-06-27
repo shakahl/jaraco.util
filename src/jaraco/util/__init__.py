@@ -219,6 +219,7 @@ class odict(dict):
 	"""ordered dictionary: behaves like a dictionary except calls to keys(), values(), items(), etc
 	returns results in the order they were added"""
 
+	__deprecated__ = "use one of the publically-published implementations"
 	def __init__(self, *args):
 		dict.__init__(self, *args)
 		try:

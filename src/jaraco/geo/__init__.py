@@ -1,11 +1,37 @@
-#!python
 # -*- coding: utf-8 -*-
+#!python
 
+import re
+import operator
+from jaraco.util.dictlib import DictMap
+
+def split_sign(value):
+	"""
+	>>> split_sign(-5)
+	(-1, 5)
+	>>> split_sign(5)
+	(1, 5)
+	"""
+	sign = [1, -1][value < 0]
+	return sign, value*sign
+
+def sign_string(sign):
+	return ['', '-'][sign < 0]
+	
 class DMS(object):
 	"""
 	DMS - Degrees Minutes Seconds
 	A class for parsing and manipulating polar coordinates in degrees,
 	either as DMS or as decimal degrees (DD)
+	
+	>>> lat = DMS('-34.383333333')
+	>>> float(lat) == -34.383333333
+	True
+	>>> value, sign = lat.DMS
+	>>> value[0]
+	34
+	>>> value[1]
+	23
 	"""
 	dmsPatterns = [
 		# This pattern matches the DMS string that assumes little formatting.
@@ -58,8 +84,23 @@ class DMS(object):
 	def __float__(self):
 		return self.dd
 
+	def __str__(self):
+		value, sign = self.DMS
+		sign = sign_string(sign)
+		return '''%s%d° %d' %d"''' % ((sign,)+value)
+
+	@staticmethod
+	def get_dms_from_dd(dd, precision=5):
+		sign, dd = split_sign(dd)
+		int_round = lambda v: int(round(v, precision))
+		deg = int_round(dd)
+		fracMin = (dd - deg) * 60
+		min = int_round(fracMin)
+		sec = (fracMin - min) * 60
+		return (deg, min, sec), sign
+
 	def SetDMS(self, DMSString):
-		self.DMSString = string.strip(str(DMSString))
+		self.DMSString = str(DMSString).strip()
 		matches = filter(None, map(self._doPattern, self.dmsPatterns))
 		if len(matches) == 0:
 			raise ValueError, 'String %s did not match any DMS pattern' % self.DMSString
@@ -68,11 +109,8 @@ class DMS(object):
 		del self.DMSString
 
 	def GetDMS(self):
-		deg = int(self.dd)
-		fracMin = (self.dd - deg) * 60
-		min = int(fracMin)
-		sec = (fracMin - min) * 60
-		return (deg, min, sec)
+		return self.get_dms_from_dd(self.dd)
+
 	DMS = property(GetDMS, SetDMS)
 	
 	def _doPattern(self, pattern):
