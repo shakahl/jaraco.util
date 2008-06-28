@@ -8,12 +8,15 @@ import cookielib
 from jaraco.util import splitter
 
 
-p = OptionParser()
-p.add_option('-p', '--port', type='int', help="Bind to port", default=80)
-p.add_option('-t', '--timeout', type='int', help="Socket timeout", default=3)
-p.add_option('-d', '--delay', type='float', help="Artificial delay in response", default=0)
+def get_args():
+	global options
 
-options, args = p.parse_args()
+	p = OptionParser()
+	p.add_option('-p', '--port', type='int', help="Bind to port", default=80)
+	p.add_option('-t', '--timeout', type='int', help="Socket timeout", default=3)
+	p.add_option('-d', '--delay', type='float', help="Artificial delay in response", default=0)
+	
+	options, args = p.parse_args()
 
 def GetContentLength(request):
 	match = re.search('^Content-Length:\s+(\d+)\s*$', request, re.I | re.MULTILINE)
@@ -57,6 +60,7 @@ def GetResponse(conn):
 
 
 def start_simple_server():
+	get_args()
 	"A simple web server that sends a simple response"
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.bind(('', options.port))

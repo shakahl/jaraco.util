@@ -15,7 +15,10 @@ __version__ = '$Rev$'[6:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
-import urllib2, os, re
+import urllib2
+import os
+import re
+import sys
 from ClientForm import ParseResponse, ItemNotFoundError
 from htmllib import HTMLParser
 from formatter import NullFormatter, DumbWriter, AbstractFormatter
@@ -353,7 +356,7 @@ try:
 		def SvcDoRun(self):
 			import servicemanager
 
-			self.setupLogging()			
+			self._setup_logging()			
 
 			log.info('%s service is starting.', self._svc_display_name_)
 			servicemanager.LogMsg(
@@ -376,17 +379,17 @@ try:
 			self.listener = Listener()
 			self.listener.serve_until_closed()
 
-		def setupLogging(self):
-			import tools, sys
+		def _setup_logging(self):
+			from jaraco.util import TimestampFileHandler, LogFileWrapper
 			logfile = os.path.join(os.environ['WINDIR'], 'system32', 'LogFiles', self._svc_display_name_, 'events.log')
-			handler = tools.TimestampFileHandler(logfile)
+			handler = TimestampFileHandler(logfile)
 			handlerFormat = '[%(asctime)s] - %(levelname)s - [%(name)s] %(message)s'
 			handler.setFormatter(logging.Formatter(handlerFormat))
 			logging.root.addHandler(handler)
 			# if I don't redirect stdoutput and stderr, when the stdio flushes,
 			#  an exception will be thrown and the service will bail
-			sys.stdout = tools.LogFileWrapper('stdout')
-			sys.stderr = tools.LogFileWrapper('stderr')
+			sys.stdout = LogFileWrapper('stdout')
+			sys.stderr = LogFileWrapper('stderr')
 			logging.root.level = logging.INFO
 			
 	def main():
