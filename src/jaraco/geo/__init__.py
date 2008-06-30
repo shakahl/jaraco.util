@@ -32,6 +32,12 @@ class DMS(object):
 	34
 	>>> value[1]
 	23
+	
+	Test to make sure we can recognize a DD with no leading zero
+	>>> dms, sign = DMS('.616667').DMS
+	>>> dms[1] == 37
+	True
+	
 	"""
 	dmsPatterns = [
 		# This pattern matches the DMS string that assumes little formatting.
@@ -52,6 +58,8 @@ class DMS(object):
 		(-)?			# optional negative sign
 		(?P<deg>\d+		# number of degrees (saved as 'deg')
 			(\.\d+)?	# optional fractional number of degrees (not saved separately)
+			|			# OR
+			\.\d+		# fractional number of degrees with implicit 0 degrees
 		)				# all saved as 'deg'
 		\s*				# optional whitespace
 		(?:(°|deg))?	# optionally a degrees symbol or the word 'deg' (not saved)
