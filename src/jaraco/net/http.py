@@ -11,7 +11,8 @@ from jaraco.util import splitter
 def get_args():
 	global options
 
-	p = OptionParser()
+	p = OptionParser(conflict_handler="resolve")
+	p.add_option('-h', '--host', help="Bind to IP address", default='')
 	p.add_option('-p', '--port', type='int', help="Bind to port", default=80)
 	p.add_option('-t', '--timeout', type='int', help="Socket timeout", default=3)
 	p.add_option('-d', '--delay', type='float', help="Artificial delay in response", default=0)
@@ -63,7 +64,7 @@ def start_simple_server():
 	get_args()
 	"A simple web server that sends a simple response"
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.bind(('', options.port))
+	s.bind((options.host, options.port))
 	s.listen(1)
 	conn, addr = s.accept()
 	print 'Accepted connection from', addr
