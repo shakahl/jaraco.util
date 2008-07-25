@@ -24,7 +24,7 @@ __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 setup (name = 'jaraco.util',
-		version = '1.2',
+		version = '1.3',
 		description = 'General utility modules that supply commonly-used functionality',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
@@ -48,6 +48,7 @@ setup (name = 'jaraco.util',
 		},
 		install_requires=[
 			'clientform>=0.2.7',
+			'BeautifulSoup',
 		],
 		extras_require = {
 			'image':
