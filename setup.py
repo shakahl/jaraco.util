@@ -44,6 +44,8 @@ setup (name = 'jaraco.util',
 				'scanner = jaraco.net.scanner:scan',
 				'fake-http = jaraco.net.http:start_simple_server',
 				'fake-smtp = jaraco.net.smtp:start_simple_server',
+				'udp-send = jaraco.net.udp:Sender',
+				'udp-echo = jaraco.net.udp:EchoServer',
 				],
 		},
 		install_requires=[
