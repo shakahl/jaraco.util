@@ -17,7 +17,11 @@ class EchoServer(object):
 		return parser.parse_args()
 
 	def serve(self, options):
-		s = socket(AF_INET, SOCK_DGRAM)
+		host = ''
+		port = options.port
+		infos = getaddrinfo(host, port)
+		(family, socktype, proto, canonname, sockaddr) = infos[0]
+		s = socket(family, SOCK_DGRAM)
 		s.bind(('', options.port))
 		while True:
 			res, addr = s.recvfrom(1024)
@@ -25,17 +29,19 @@ class EchoServer(object):
 
 class Sender(object):
 	def __init__(self):
-		options, args = self.get_options()
+		self.options, args = self.get_options()
 		if len(args) != 0:
 			raise RuntimeError, 'Bad arguments provided'
-		self.send_message(options)
+		self.send_message()
 		
-	def send_message(self, options):
-		host, port = options.connect.split(':')
-		port = int(port)
-		s = socket(AF_INET, SOCK_DGRAM)
-		s.connect((host, port))
-		s.send(options.message)
+	def send_message(self):
+		host, port = self.options.connect.split(':')
+		infos = getaddrinfo(host, port)
+		(family, socktype, proto, canonname, sockaddr) = infos[0]
+		self.sockaddr = sockaddr
+		s = socket(family, SOCK_DGRAM)
+		s.connect(sockaddr)
+		s.send(self.options.message)
 		s.close()
 
 	def get_options(self):
@@ -49,5 +55,5 @@ class Sender(object):
 		return parser.parse_args()
 
 	def __repr__(self):
-		return 'message sent'
+		return 'message sent to %(sockaddr)s' % self.__dict__
 		
