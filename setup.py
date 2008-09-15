@@ -46,6 +46,7 @@ setup (name = 'jaraco.util',
 				'fake-smtp = jaraco.net.smtp:start_simple_server',
 				'udp-send = jaraco.net.udp:Sender',
 				'udp-echo = jaraco.net.udp:EchoServer',
+				'dns-forward-service = jaraco.net.dns:start_service',
 				],
 		},
 		install_requires=[
