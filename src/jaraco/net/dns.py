@@ -76,8 +76,7 @@ class ForwardingService(win32serviceutil.ServiceFramework):
 		"""Called when Windows receives a service stop request."""
 		
 		self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-		# todo: stop the forwarder
-		# self.forwarder.stop()
+		self.forwarder.stop()
 		self.ReportServiceStatus(win32service.SERVICE_STOPPED)
 
 	def init_logging(self):
