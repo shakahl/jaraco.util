@@ -19,8 +19,12 @@ class Forwarder(object):
 		self.dest = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
 		self.dest.settimeout(2)
 
+	def stop(self):
+		self.run = False
+
 	def serve_forever(self):
-		while True:
+		self.run = True
+		while self.run:
 			self.relay_message()
 
 	def relay_message(self):
@@ -58,8 +62,7 @@ class ForwardingService(win32serviceutil.ServiceFramework):
 		)		 													# The log directory for the stderr and 
 																	# stdout logs.
 	_listen_host = '2002:41de:a625::41de:a625'
-	_listen_host = '2002:41de:a627::41de:a627'
-	# -- END USER EDIT SECTION
+	#_listen_host = '2002:41de:a627::41de:a627'
 	
 	def SvcDoRun(self):
 		""" Called when the Windows Service runs. """
@@ -79,7 +82,8 @@ class ForwardingService(win32serviceutil.ServiceFramework):
 
 	def init_logging(self):
 		"redirect output to avoid crashing the service"
-		os.makedirs(ForwardingService.log_dir)
+		if not os.path.exists(self.log_dir):
+			os.makedirs(self.log_dir)
 		sys.stdout = open(os.path.join(ForwardingService.log_dir, 'stdout.log'), 'a')
 		sys.stderr = open(os.path.join(ForwardingService.log_dir, 'stderr.log'), 'a')
 
