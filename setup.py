@@ -47,6 +47,7 @@ setup (name = 'jaraco.util',
 				'udp-send = jaraco.net.udp:Sender',
 				'udp-echo = jaraco.net.udp:EchoServer',
 				'dns-forward-service = jaraco.net.dns:start_service',
+				'roll-dice = jaraco.util.dice:do_dice_roll',
 				],
 		},
 		install_requires=[
