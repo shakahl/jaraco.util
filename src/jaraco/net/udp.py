@@ -22,10 +22,16 @@ class EchoServer(object):
 		infos = getaddrinfo(host, port)
 		(family, socktype, proto, canonname, sockaddr) = infos[0]
 		s = socket(family, SOCK_DGRAM)
+		s.settimeout(1)
 		s.bind(('', options.port))
 		while True:
-			res, addr = s.recvfrom(1024)
-			print res, addr
+			try:
+				res, addr = s.recvfrom(1024)
+				print res, addr
+			except timeout:
+				pass
+			except KeyboardInterrupt:
+				break
 
 class Sender(object):
 	def __init__(self):
