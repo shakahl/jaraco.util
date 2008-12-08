@@ -22,12 +22,12 @@ def consecutive_same(items):
 	"""A generator that returns the count of consecutive
 	preceeding items that match the current item.
 	>>> tuple(consecutive_same([1,1,2,2,3,3,3]))
-	(0,1,0,1,0,1,2)
+	(0, 1, 0, 1, 0, 1, 2)
 	
 	Note this will trivially produce zeros for most
 	inputs.
 	>>> tuple(consecutive_same([1,2,3]))
-	(0,0,0)
+	(0, 0, 0)
 	"""
 	counter = consecutive_count()
 	return imap(counter, items)
