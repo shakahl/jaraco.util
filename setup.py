@@ -48,6 +48,7 @@ setup (name = 'jaraco.util',
 				'udp-echo = jaraco.net.udp:EchoServer',
 				'dns-forward-service = jaraco.net.dns:start_service',
 				'roll-dice = jaraco.util.dice:do_dice_roll',
+				'encode-dvd = jaraco.media.dvd.encode_dvd',
 				],
 		},
 		install_requires=[
