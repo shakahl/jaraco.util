@@ -3,6 +3,7 @@ from optparse import OptionParser
 import urlparse
 import urllib
 import urllib2
+import cgi
 import ClientForm
 import cookielib
 from jaraco.util import splitter
@@ -151,4 +152,32 @@ class PageGetter(object):
 		next.request = self.Process()
 		return next
 
-
+class HeadRequest(urllib2.Request):
+	def get_method(self): return 'HEAD'
+  
+def get_content_disposition_filename(url):
+	"""
+	Get the content disposition filename from a URL.
+	Returns None if no such disposition can be found.
+	
+	>>> url = 'http://www.voidspace.org.uk/cgi-bin/voidspace/downman.py?file=pythonutils-0.3.0.zip'
+	>>> get_content_disposition_filename(url) in (None, 'pythonutils-0.3.0.zip')
+	True
+	
+	>>> url = 'http://www.example.com/invalid_url'
+	>>> get_content_disposition_filename(url) is None
+	True
+	
+	>>> url = 'http://www.google.com/'
+	>>> get_content_disposition_filename(url) is None
+	True
+	
+	"""
+	req = HeadRequest(url)
+	try:
+		res = urllib2.urlopen(req)
+	except urllib2.URLError:
+		return
+	header = res.headers.get('content-disposition', '')
+	value, params = cgi.parse_header(header)
+	return params.get('filename')
