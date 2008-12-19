@@ -5,10 +5,98 @@ import optparse
 import re
 import os
 from os.path import join
+from copy import deepcopy
+from cStringIO import StringIO
+import logging
 from jaraco.util import flatten
+from jaraco.media import cropdetect
+
+log = logging.getLogger(__name__)
 
 rangePattern = re.compile('(\d+)(?:-(\d+))?')
 delimiterPattern = re.compile('\s*[, ;]\s*')
+
+class DelimitedArgs(dict):
+	value_join = '='
+	
+	def __str__(self):
+		return self.delimiter.join(self.get_args())
+
+	def get_args(self):
+		args = self.items()
+		remove_none_values = lambda item: filter(None, item)
+		join_key_values = lambda item: self.value_join.join(item)
+		args = map(join_key_values, map(remove_none_values, args))
+		return args
+
+class HyphenArgs(DelimitedArgs):
+	value_join=' '
+	delimiter=' '
+	
+	@staticmethod
+	def add_hyphen(value):
+		return '-%s' % value
+
+	def items(self):
+		return zip(self.keys(), self.values())
+
+	def keys(self):
+		return map(self.add_hyphen, super(self.__class__, self).keys())
+
+	def __iter__(self):
+		for key, value in self.items():
+			yield key
+			yield value
+
+class ColonDelimitedArgs(DelimitedArgs):
+	"""
+	>>> print ColonDelimitedArgs(x='3', y='4')
+	y=4:x=3
+	"""
+	delimiter = ':'
+	
+	def __iter__(self):
+		yield str(self)
+
+def guess_output_filename(name):
+	"""
+	>>> guess_output_filename('JEAN_DE_FLORETTE')
+	'Jean De Florette'
+	
+	>>> guess_output_filename('')
+	''
+	"""
+	names = name.split('_')
+	names = map(str.capitalize, names)
+	return ' '.join(names)
+
+class MEncoderCommand(object):
+	exe_path = [r'c:\Program Files (x86)\Slysoft\CloneDVDmobile\apps\mencoder.exe']
+	
+	def __init__(self):
+		self.other_options = HyphenArgs()
+
+	def copy(self):
+		result = MEncoderCommand()
+		# we need to do a deep copy so we make copies of all the args
+		result.__dict__.update(deepcopy(self.__dict__))
+		return result
+
+	def get_args(self):
+		arg_order = 'exe_path', 'source', 'device', 'video_filter', 'video_options', 'audio_options', 'other_options'
+		assert getattr(self, 'source', None) is not None
+		for arg in arg_order:
+			arg = getattr(self, arg, None)
+			if not arg: continue
+			for value in arg:
+				yield str(value)
+	
+	def set_device(self, value):
+		assert os.path.exists(value), "Couldn't find device %s" % value
+		self.device = HyphenArgs({'dvd-device': value})
+		
+	def __setitem__(self, key, value):
+		self.other_options[key]=value
 
 def expandRange(title_range):
 	start, stop = rangePattern.match(title_range)
@@ -19,14 +107,33 @@ def getTitles(title_spec_string):
 	title_specs = delimiterPattern.split(title_spec_string)
 	title_specs = flatten(map(expandRange, title_specs))
 
+def generate_two_pass_commands(command):
+	#two_pass_temp_file = join(os.environ['USERPROFILE'], 'Videos', '%(user_title)s_pass.log' % vars())
+	filename, ext = os.path.splitext(command.other_options['o'])
+	two_pass_temp_file = filename + '_pass.log'
+
+	command = command.copy()
+	command['passlogfile'] = two_pass_temp_file
+	
+	first_pass = command.copy()
+	first_pass.audio_options=HyphenArgs(nosound=None)
+	first_pass.video_options['lavcopts'].update(turbo=None, vpass='1')
+	first_pass['o'] = 'nul' # TODO: /dev/null on linux
+
+	second_pass = command.copy()
+	second_pass.video_options['lavcopts'].update(vpass='2')
+	return first_pass, second_pass
+
 def encode_dvd():
+	logging.basicConfig(level=logging.INFO)
+	
 	parser = optparse.OptionParser()
 	#parser.add_option('-t', '--titles', 'enter the title or titles to process (i.e. 1 or 1,5 or 1-5)' default='')
 	parser.add_option('-t', '--title', help='enter the dvd title number to process', default='')
+	parser.add_option('-s', '--subtitle', help='enter the subtitle ID')
 	options, args = parser.parse_args()
 
-	mencoder = r'c:\Program Files (x86)\Slysoft\CloneDVDmobile\apps\mencoder.exe'
-
+	command = MEncoderCommand()
 	# todo, print "device" list
 	rips = join(os.environ['USERPROFILE'], 'videos', 'rips')
 
@@ -35,74 +142,68 @@ def encode_dvd():
 		device = args[0]
 	else:
 		device = raw_input('enter device> ')
-	assert os.path.exists(device), "Couldn't find device %s" % device
 
 	print 'device is', device
+	command.set_device(device)
 
 	videos_path = join(os.environ['PUBLIC'], 'Videos', 'Movies')
 
 	default_title = os.path.basename(device)
-	title_prompt = 'Enter name of output [%s]> ' % default_title
-	title = raw_input(title_prompt) or default_title
+	title_prompt = 'Enter output filename [%s]> ' % default_title
+	user_title = raw_input(title_prompt) or default_title
 
-	filename = '%(title)s.mp4' % vars()
-	target = os.path.join(videos_path, title)
+	filename = '%(user_title)s.mp4' % vars()
+	target = os.path.join(videos_path, user_title)
 	output_filename = os.path.join(videos_path, filename)
 
+	command['o'] = output_filename
+	
 	dvd_title = options.title
-	source = 'dvd://%(dvd_title)s' % vars()
+	command.source = ['dvd://%(dvd_title)s' % vars()]
+	
+	audio_options = HyphenArgs(
+		oac='copy',
+		aid='128',
+		)
+	command.audio_options = audio_options
 
-	audio_options = '-oac copy -aid 128'.split()
+	crop = cropdetect.get_crop(device, dvd_title)
+	log.info('crop is %s', crop)
+	command.video_filter = HyphenArgs(
+		sws='2',
+		vf=ColonDelimitedArgs(crop=crop),
+		)
 
-	vid_filter = '-sws 2 -vf crop=720:464:0:8'.split()
+	lavcopts = ColonDelimitedArgs(
+		vcodec='libx264',
+		threads='2',
+		vbitrate='1200',
+		autoaspect=None,
+		)
+	command.video_options=HyphenArgs(
+		ovc='lavc',
+		lavcopts=lavcopts,
+		)
 
-	vid_opts='-ovc lavc -lavcopts vcodec=libx264:threads=2:vbitrate=1200:autoaspect'.split()
+	if options.subtitle:
+		command[sid] = options.subtitle
 
-	gen_opts = ''
-	if False: #todo: subtitle
-		gen_opts = ' '.join(get_opts, '-sid 0')
-	gen_opts = gen_opts.split()
+	assert not os.path.exists(command.other_options['o']), 'Output file %s alread exists' % command.other_options['o']
 
-	two_pass_temp_file = join(os.environ['USERPROFILE'], 'Videos', '%(title)s_pass.log' % vars())
+	first_pass, second_pass = generate_two_pass_commands(command)
 
-	assert not os.path.exists(output_filename), 'Output file %(output_filename)s alread exists' % vars()
+	first_pass_args = tuple(first_pass.get_args())
+	second_pass_args = tuple(second_pass.get_args())
 
-	first_pass_command = '"%(mencoder)s" %(source)s -dvd-device "%(device)s" %(vid_filter)s -nosound %(vid_opts)s:turbo:vpass=1 %(gen_opts)s -o nul -passlogfile "%(two_pass_temp_file)s"' % vars()
-	second_pass_command = '"%(mencoder)s" %(source)s -dvd-device "%(device)s" %(vid_filter)s %(audio_options)s %(vid_opts)s:vpass=2 %(gen_opts)s -o "%(output_filename)s" -passlogfile "%(two_pass_temp_file)s"' % vars()
-
-	args_template = [
-		mencoder,
-		source,
-		'-dvd-device',
-		device,
-		vid_filter,
-		audio_options,
-		vid_opts,
-		gen_opts,
-		'-o',
-		output_filename,
-		]
-
-	first_pass_args = list(args_template)
-	first_pass_args[5] = '-nosound'
-	first_pass_args[6] += ':turbo:vpass=1'
-	first_pass_args[9] = 'nul'
-	pass_log_file_args = ['-passlogfile', two_pass_temp_file]
-	first_pass_args.extend(pass_log_file_args)
-
-	second_pass_args = list(args_template)
-	second_pass_args[6] += 'vpass=2'
-	second_pass_args.extend(pass_log_file_args)
-
-	first_pass_args=flatten(first_pass_args)
-	second_pass_args=flatten(second_pass_args)
+	errors = open('errors', 'w')
 
 	import subprocess
 	print 'executing with', first_pass_args
-	proc = subprocess.Popen(first_pass_args)
+	proc = subprocess.Popen(first_pass_args, stderr=errors)
 	proc.wait()
+	return
 	print 'executing with', second_pass_args
-	proc = subprocess.Popen(second_pass_args)
+	proc = subprocess.Popen(second_pass_args, stderr=errors)
 	proc.wait()
 
 	try:

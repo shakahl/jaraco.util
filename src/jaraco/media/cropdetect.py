@@ -3,7 +3,9 @@ import win32api
 import sys
 from pywintypes import error
 from itertools import imap, takewhile, ifilter
+import logging
 
+log = logging.getLogger(__name__)
 
 class consecutive_count(object):
 	def __init__(self):
@@ -37,66 +39,77 @@ def within_consecutive_limit(limit):
 	within_limit = lambda item: counter(item) < limit
 	return within_limit
 
-def get_args():
+def parse_args():
 	from optparse import OptionParser
 	parser = OptionParser()
-	parser.add_option('-d', '--dvd-device', help="The drive or path to the files")
 	parser.add_option('-t', '--title', help="The title to use", default="")
 	options, args = parser.parse_args()
-	
-	if options.dvd_device: print "using device", options.dvd_device
-	if options.title: print "using title", options.title
+	dvd_device = (args or None) and args.pop()
+	title = options.title
+	log.info(['using default device', 'using device %s' % dvd_device][bool(dvd_device)])
+	log.info(['using default title', 'using title %s' % title][bool(title)])
+	return dvd_device, title
 
-	args = [
-		r"C:\Program Files (x86)\Slysoft\CloneDVDmobile\apps\mencoder.exe",
-		"dvd://",
-		"-nosound",
-		"-vf", "cropdetect",
-		"-ovc",	"lavc",
-		"-o", "nul",
-		"-chapter", "3-3",
-		]
+def build_command(dvd_device=None, title=""):
+	from jaraco.media.dvd import MEncoderCommand, HyphenArgs
+	command = MEncoderCommand()
+	command.source = ['dvd://%(title)s' % vars()]
+	command.audio_options = HyphenArgs(nosound=None)
+	command.video_filter = HyphenArgs(vf='cropdetect')
+	command.video_options = HyphenArgs(ovc='lavc')
+	command['o']='nul'
+	command['chapter'] = '3-3'
 
-	args[1] = 'dvd://%(title)s' % options.__dict__
+	dvd_device and command.set_device(dvd_device)
+	return command
 
-	if options.dvd_device:
-		args[1:1] = [
-			r"-dvd-device",
-			options.dvd_device,
-		]
-	return args
-
-def get_input():
-	global mencoder
+def get_input(command=None):
 	from subprocess import Popen, PIPE, list2cmdline
 	#print list2cmdline(mencoder_args)
 	null = open('NUL', 'w')
-	mencoder_args = get_args()
-	mencoder = Popen(mencoder_args, stdout=PIPE, stderr=null)
+	command = command or build_command(*parse_args())
+	args = tuple(command.get_args())
+	mencoder = Popen(args, stdout=PIPE, stderr=null)
+	return mencoder
 
-def process_input():
+class InsufficientFramesError(RuntimeError):
+	pass
+
+def process_input(process, n_frames=1000):
 	pattern = re.compile('.*crop=(\d+:\d+:\d+:\d+).*')
 	
-	crop_matches = ifilter(None, imap(pattern.match, mencoder.stdout))
+	crop_matches = ifilter(None, imap(pattern.match, process.stdout))
 	crop_values = imap(lambda match: match.group(1), crop_matches)
-	n_frames = 1000
 	preceeding_items = takewhile(within_consecutive_limit(n_frames), crop_values)
 
-	print len(tuple(preceeding_items))
+	log.info('processed %d frames', len(tuple(preceeding_items)))
 	try:
 		target = crop_values.next()
-		print target
 	except StopIteration:
-		print >> sys.stderr, "Not enough frames to detect %d consecutive same" % n_frames
+		raise InsufficientFramesError("Not enough frames to detect %d consecutive same" % n_frames)
+	finally:
+		clean_up(process)
+	return target
 
-def clean_up():
+def clean_up(process):
 	try:
-		win32api.TerminateProcess(int(mencoder._handle), -1)
-		mencoder.stdout.flush()
+		win32api.TerminateProcess(int(process._handle), -1)
+		process.stdout.flush()
 	except error, e:
 		pass # process is probably already terminated
 
+def get_crop(dvd_device=None, title=''):
+	log.info('Detecting crop')
+	return process_input(get_input(build_command(dvd_device, title)))
+
+def execute(command=None):
+	logging.basicConfig(level=logging.INFO)
+	mencoder = get_input(command)
+	try:
+		log.info('crop is %s', process_input(mencoder))
+	except InsufficientFramesError, e:
+		log.warning(e)
+
 if __name__ == '__main__':
-	get_input()
-	process_input()
-	clean_up()
+	execute()
+	
