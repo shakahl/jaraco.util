@@ -10,13 +10,14 @@ from cStringIO import StringIO
 import logging
 from jaraco.util import flatten
 from jaraco.media import cropdetect
+from odict import OrderedDict
 
 log = logging.getLogger(__name__)
 
 rangePattern = re.compile('(\d+)(?:-(\d+))?')
 delimiterPattern = re.compile('\s*[, ;]\s*')
 
-class DelimitedArgs(dict):
+class DelimitedArgs(OrderedDict):
 	value_join = '='
 	
 	def __str__(self):
@@ -93,7 +94,7 @@ class MEncoderCommand(object):
 	
 	def set_device(self, value):
 		assert os.path.exists(value), "Couldn't find device %s" % value
-		self.device = HyphenArgs({'dvd-device': value})
+		self.device = HyphenArgs(('dvd-device', value))
 		
 	def __setitem__(self, key, value):
 		self.other_options[key]=value
@@ -201,7 +202,6 @@ def encode_dvd():
 	print 'executing with', first_pass_args
 	proc = subprocess.Popen(first_pass_args, stderr=errors)
 	proc.wait()
-	return
 	print 'executing with', second_pass_args
 	proc = subprocess.Popen(second_pass_args, stderr=errors)
 	proc.wait()
