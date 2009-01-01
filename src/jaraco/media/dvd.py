@@ -227,7 +227,7 @@ def encode_dvd():
 		)
 
 	if options.subtitle:
-		command[sid] = options.subtitle
+		command['sid'] = options.subtitle
 
 	assert not os.path.exists(command.other_options['o']), 'Output file %s alread exists' % command.other_options['o']
 

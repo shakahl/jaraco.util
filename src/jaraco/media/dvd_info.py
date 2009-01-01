@@ -57,7 +57,74 @@ def banner():
 	print __url__
 	print 50*'='
 	print
+
+class MetaTitleParser(type):
+	"""
+	A metaclass for title parsers that keeps track of all of them.
+	"""
 	
+	_all_parsers = set()
+	
+	def __init__(cls, name, bases, attrs):
+		if name == 'TitleParser': return # don't add the base class
+		cls._all_parsers.add(cls)
+
+class TitleParser(object):
+	__metaclass__ = MetaTitleParser
+	
+	def __init__(self, info):
+		# info is the object that stores title info
+		self.info = info
+		self.pattern = re.compile(self.pattern)
+	
+	def __call__(self, line):
+		self.parse(line)
+
+	def parse(self, line):
+		match = self.pattern.search(line)
+		match and self.handle(match)
+	
+	@classmethod
+	def create_all(cls, info):
+		"Create all of the title parsers associated with this info"
+		return [parser(info) for parser in cls._all_parsers]
+
+class MaxTitlesParser(TitleParser):
+	pattern = '^There are (?P<max_titles>\d+) titles'
+	def handle(self, match):
+		self.info['max_titles'] = int(match.groupdict()['max_titles'])
+
+class ChaptersParser(TitleParser):
+	pattern = '^There are (?P<chapters>\d+) chapters'
+	def handle(self, match):
+		self.info['chapters'] = int(match.groupdict()['chapters'])
+
+class AudioParser(TitleParser):
+	pattern = '^audio stream: (?P<stream>\d+) format: (?P<format>.+) language: (?P<language>.+) aid: (?P<aid>\d+)'
+	def handle(self, match):
+		'''Parse a single audio-channel line'''
+		d = match.groupdict()
+		d['aid'] = int(d['aid'])
+		self.info['audiotracks'][d['aid']] = d
+
+class SubtitleParser(TitleParser):
+	pattern = '^subtitle \(\s*sid\s*\): (?P<sid>\d+) language: (?P<language>.*)'
+	def handle(self, match):
+		'''Parse a single subtitle-channel line'''
+		d = match.groupdict()
+		d['sid'] = int(d['sid'])
+		self.info['subtitles'].append(d)
+
+class NaviParser(TitleParser):
+	pattern = 'Found NAVI packet!'
+	def handle(self, match):
+		self.info['navi_count']+=1
+
+class TitleInfo(dict):
+	def __init__(self, *args, **kwargs):
+		self.update(max_titles=0, chapters=0, audiotracks={}, subtitles=[], navi_count=0)
+		dict.__init__(self, *args, **kwargs)
+
 def title_info(title):
 	'''Returns title information about a single title.
 	
@@ -72,56 +139,13 @@ def title_info(title):
 	
 	mplayer_stdin.close()
 
-	info = {
-		'max_titles': 0,
-		'chapters': 0,
-		'audiotracks': {},
-		'subtitles': [],
-		'navi_count': 0,
-	}
+	info = TitleInfo()
 
-	def parse_max_titles(match):
-		'''Parse the number of titles on this DVD'''
-		info['max_titles'] = int(match.group(1))
+	parsers = TitleParser.create_all(info)
 
-	def parse_chapters(match):
-		'''Parse the number of chapters in this title'''
-		info['chapters'] = int(match.group(1))
-
-	def parse_audio(match):
-		'''Parse a single audio-channel line'''
-		d = match.groupdict()
-		d['aid'] = int(d['aid'])
-		info['audiotracks'][d['aid']] = d
-
-	def parse_sub(match):
-		'''Parse a single subtitle-channel line'''
-		d = match.groupdict()
-		d['sid'] = int(d['sid'])
-		info['subtitles'].append(d)
-		
-	def parse_navi(match):
-		info['navi_count']+=1
-
-	tests = [
-		['^There are (?P<titles>\d+) titles', parse_max_titles],
-		['^There are (?P<chapters>\d+) chapters', parse_chapters],
-		['^audio stream: (?P<stream>\d+) format: (?P<format>.+) language: (?P<language>.+) aid: (?P<aid>\d+)', parse_audio],
-		['^subtitle \(sid \): (?P<sid>\d+) language: (?P<language>.*)', parse_sub],
-		['Found NAVI packet!', parse_navi],
-
-	]
-	
-	# Compile the regular expressions
-	for num, (regexp, func) in enumerate(tests):
-		tests[num][0] = re.compile(regexp)
-
-	# Parse incoming lines
 	for line in mplayer:
-		for (regexp, func) in tests:
-			match = regexp.search(line)
-			if match:
-				func(match)
+		for parser in parsers:
+			parser(line)
 		if info['navi_count'] > 100: break
 	
 	mplayer.close()
