@@ -50,6 +50,7 @@ setup (name = 'jaraco.util',
 				'roll-dice = jaraco.util.dice:do_dice_roll',
 				'encode-dvd = jaraco.media.dvd:encode_dvd',
 				'crop-detect = jaraco.media.cropdetect:execute',
+				'dvd-info = jaraco.media.dvd_info:main',
 				],
 		},
 		install_requires=[

@@ -220,8 +220,8 @@ class odict(dict):
 	returns results in the order they were added"""
 
 	__deprecated__ = "use one of the publically-published implementations"
-	def __init__(self, *args):
-		dict.__init__(self, *args)
+	def __init__(self, *args, **kargs):
+		dict.__init__(self, *args, **kargs)
 		try:
 			if isinstance(args[0], odict):
 				self._keys = args[0]._keys[:]
@@ -230,7 +230,7 @@ class odict(dict):
 			else:
 				self._keys = dict.keys(self)
 		except IndexError:
-			self._keys = []
+			self._keys = dict.keys(self)
 		
 	def __delitem__(self, key):
 		dict.__delitem__(self, key)

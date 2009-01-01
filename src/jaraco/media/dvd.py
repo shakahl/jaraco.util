@@ -4,20 +4,24 @@ import sys
 import optparse
 import re
 import os
+try:
+	import win32api
+except:
+	pass
 from os.path import join
 from copy import deepcopy
 from cStringIO import StringIO
 import logging
 from jaraco.util import flatten
 from jaraco.media import cropdetect
-from odict import OrderedDict
+from jaraco.util import odict
 
 log = logging.getLogger(__name__)
 
 rangePattern = re.compile('(\d+)(?:-(\d+))?')
 delimiterPattern = re.compile('\s*[, ;]\s*')
 
-class DelimitedArgs(OrderedDict):
+class DelimitedArgs(odict):
 	value_join = '='
 	
 	def __str__(self):
@@ -71,6 +75,13 @@ def guess_output_filename(name):
 	names = map(str.capitalize, names)
 	return ' '.join(names)
 
+def infer_name(device):
+	try:
+		label = win32api.GetVolumeInformation(device)[0]
+	except Exception:
+		label = os.path.basename(device)
+	return guess_output_filename(label)
+
 class MEncoderCommand(object):
 	exe_path = [r'c:\Program Files (x86)\Slysoft\CloneDVDmobile\apps\mencoder.exe']
 	
@@ -88,13 +99,13 @@ class MEncoderCommand(object):
 		assert getattr(self, 'source', None) is not None
 		for arg in arg_order:
 			arg = getattr(self, arg, None)
-			if not arg: continue
+			if arg is None: continue
 			for value in arg:
 				yield str(value)
 	
 	def set_device(self, value):
 		assert os.path.exists(value), "Couldn't find device %s" % value
-		self.device = HyphenArgs(('dvd-device', value))
+		self.device = HyphenArgs({'dvd-device': value})
 		
 	def __setitem__(self, key, value):
 		self.other_options[key]=value
@@ -149,7 +160,7 @@ def encode_dvd():
 
 	videos_path = join(os.environ['PUBLIC'], 'Videos', 'Movies')
 
-	default_title = os.path.basename(device)
+	default_title = infer_name(device)
 	title_prompt = 'Enter output filename [%s]> ' % default_title
 	user_title = raw_input(title_prompt) or default_title
 
