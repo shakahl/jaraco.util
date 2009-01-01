@@ -27,8 +27,10 @@ class DelimitedArgs(odict):
 	def __str__(self):
 		return self.delimiter.join(self.get_args())
 
+	arg_items = odict.items
+
 	def get_args(self):
-		args = self.items()
+		args = self.arg_items()
 		remove_none_values = lambda item: filter(None, item)
 		join_key_values = lambda item: self.value_join.join(item)
 		args = map(join_key_values, map(remove_none_values, args))
@@ -45,6 +47,11 @@ class HyphenArgs(DelimitedArgs):
 	e.g. -filename myfile.txt
 	>>> print HyphenArgs(filename='myfile.txt')
 	-filename myfile.txt
+	
+	>>> args = HyphenArgs([('a','a'), ('b','b')])
+	>>> args_copy = args.copy()
+	>>> print args_copy
+	-a a -b b
 	""" 
 	value_join=' '
 	delimiter=' '
@@ -53,14 +60,14 @@ class HyphenArgs(DelimitedArgs):
 	def add_hyphen(value):
 		return '-%s' % value
 
-	def items(self):
-		return zip(self.keys(), self.values())
+	def arg_items(self):
+		return zip(self.hyphenated_keys(), self.values())
 
-	def keys(self):
+	def hyphenated_keys(self):
 		return map(self.add_hyphen, super(self.__class__, self).keys())
 
 	def __iter__(self):
-		for key, value in self.items():
+		for key, value in self.arg_items():
 			yield key
 			yield value
 
@@ -94,6 +101,17 @@ def infer_name(device):
 	return guess_output_filename(label)
 
 class MEncoderCommand(object):
+	"""
+	>>> cmd = MEncoderCommand()
+	>>> cmd.source = ['dvd://']
+	>>> lavcopts = ColonDelimitedArgs(vcodec='libx264',threads='2',vbitrate='1200',autoaspect=None,)
+	>>> cmd.video_options = HyphenArgs(lavcopts=lavcopts)
+	>>> cmd2 = cmd.copy()
+	>>> cmd_args = tuple(cmd.get_args())
+	>>> cmd2_args = tuple(cmd2.get_args())
+	>>> assert cmd_args == cmd2_args, '%s != %s' % (cmd_args, cmd2_args)
+	"""
+	
 	exe_path = [r'c:\Program Files (x86)\Slysoft\CloneDVDmobile\apps\mencoder.exe']
 	
 	def __init__(self):
