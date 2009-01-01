@@ -106,7 +106,7 @@ class MultiPassHandler(object):
 
 	def __iter__(self):
 		for current_pass in range(1, self.passes+1):
-			current_path_th = ordinalth(current_pass)
+			current_pass_th = ordinalth(current_pass)
 			log.info('Modifying command for %s pass.' % current_pass_th)
 			method = [self.early_pass, self.last_pass][current_pass == self.passes]
 			yield method(current_pass)
@@ -186,7 +186,7 @@ def encode_dvd():
 	title_prompt = 'Enter output filename [%s]> ' % default_title
 	user_title = raw_input(title_prompt) or default_title
 
-	filename = '%(user_title)s.mp4' % vars()
+	filename = '%(user_title)s.avi' % vars()
 	target = os.path.join(videos_path, user_title)
 	output_filename = os.path.join(videos_path, filename)
 
