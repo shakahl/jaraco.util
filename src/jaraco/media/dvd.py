@@ -11,6 +11,7 @@ except:
 from os.path import join
 from copy import deepcopy
 from cStringIO import StringIO
+from itertools import ifilter
 import logging
 from jaraco.util import flatten
 from jaraco.media import cropdetect
@@ -52,6 +53,8 @@ class HyphenArgs(DelimitedArgs):
 	>>> args_copy = args.copy()
 	>>> print args_copy
 	-a a -b b
+	>>> print HyphenArgs([('a', '1'), ('b', None)])
+	-a 1 -b
 	""" 
 	value_join=' '
 	delimiter=' '
@@ -67,9 +70,10 @@ class HyphenArgs(DelimitedArgs):
 		return map(self.add_hyphen, super(self.__class__, self).keys())
 
 	def __iter__(self):
-		for key, value in self.arg_items():
-			yield key
-			yield value
+		return ifilter(None, flatten(self.arg_items()))
+		#for key, value in self.arg_items():
+		#	yield key
+		#	yield value
 
 class ColonDelimitedArgs(DelimitedArgs):
 	"""
@@ -215,6 +219,9 @@ def encode_dvd():
 		vf=ColonDelimitedArgs(crop=crop),
 		)
 
+	# this is the setting I used for divx
+	#set VID_OPTS=-ovc lavc -lavcopts vcodec=mpeg4:vhq:vbitrate=1200:autoaspect
+
 	lavcopts = ColonDelimitedArgs(
 		vcodec='libx264',
 		threads='2',
@@ -236,7 +243,9 @@ def encode_dvd():
 	first_pass_args = tuple(first_pass.get_args())
 	second_pass_args = tuple(second_pass.get_args())
 
-	errors = open('errors', 'w')
+	errors = open('nul', 'w')
+
+	#C:\Users\jaraco\Public>"C:\Program Files (x86)\Slysoft\CloneDVDmobile\apps\mencoder.exe" -dvd-device "C:\Users\jaraco\Videos\rips\JEAN_DE_FLORETTE" dvd:// -sws 2 -vf crop=720:352:0:62 -nosound -ovc lavc -lavcopts vcodec=libx264:threads=2:vbitrate=1200:autoaspect:turbo:vpass=1  -sid 0 -o nul -passlogfile"C:\Users\jaraco\Videos\Jean de Florette_pass.log"  2>nul
 
 	import subprocess
 	print 'executing with', first_pass_args
