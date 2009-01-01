@@ -14,7 +14,7 @@ from cStringIO import StringIO
 import logging
 from jaraco.util import flatten
 from jaraco.media import cropdetect
-from jaraco.util import odict
+from jaraco.util.odict import odict
 
 log = logging.getLogger(__name__)
 
@@ -35,6 +35,17 @@ class DelimitedArgs(odict):
 		return args
 
 class HyphenArgs(DelimitedArgs):
+	"""
+	Construct args suitable for unix-style command lines.
+	
+	e.g. -flag
+	>>> print HyphenArgs({'flag':None})
+	-flag
+	
+	e.g. -filename myfile.txt
+	>>> print HyphenArgs(filename='myfile.txt')
+	-filename myfile.txt
+	""" 
 	value_join=' '
 	delimiter=' '
 	
