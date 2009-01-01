@@ -4,6 +4,7 @@ import sys
 import optparse
 import re
 import os
+import subprocess
 try:
 	import win32api
 except:
@@ -12,7 +13,7 @@ from os.path import join
 from copy import deepcopy
 from cStringIO import StringIO
 import logging
-from jaraco.util import flatten
+from jaraco.util import flatten, ordinalth
 from jaraco.media import cropdetect
 from jaraco.media.arguments import *
 
@@ -78,6 +79,9 @@ class MEncoderCommand(object):
 		
 	def __setitem__(self, key, value):
 		self.other_options[key]=value
+	
+	def __getitem__(self, key):
+		return self.other_options[key]
 
 def expandRange(title_range):
 	start, stop = rangePattern.match(title_range)
@@ -88,23 +92,50 @@ def getTitles(title_spec_string):
 	title_specs = delimiterPattern.split(title_spec_string)
 	title_specs = flatten(map(expandRange, title_specs))
 
-def generate_two_pass_commands(command):
-	#two_pass_temp_file = join(os.environ['USERPROFILE'], 'Videos', '%(user_title)s_pass.log' % vars())
-	filename, ext = os.path.splitext(command.other_options['o'])
-	two_pass_temp_file = filename + '_pass.log'
+class MultiPassHandler(object):
+	def __init__(self, command, passes=2):
+		self.command = command.copy()
+		self.setup_log_file()
+		self.passes = passes
 
-	command = command.copy()
-	command['passlogfile'] = two_pass_temp_file
+	def setup_log_file(self):
+		#multi_pass_temp_file = join(os.environ['USERPROFILE'], 'Videos', '%(user_title)s_pass.log' % vars())
+		filename, ext = os.path.splitext(command.other_options['o'])
+		multi_pass_temp_file = filename + '_pass.log'
+		self.command['passlogfile'] = multi_pass_temp_file
+
+	def __iter__(self):
+		for current_pass in range(1, self.passes+1):
+			current_path_th = ordinalth(current_pass)
+			log.info('Modifying command for %s pass.' % current_pass_th)
+			method = [self.early_pass, self.last_pass][current_pass == self.passes]
+			yield method(current_pass)
 	
-	first_pass = command.copy()
-	first_pass.audio_options=HyphenArgs(nosound=None)
-	first_pass.video_options['lavcopts'].update(turbo=None, vpass='1')
-	first_pass['o'] = 'nul' # TODO: /dev/null on linux
+	def early_pass(self, pass_number):
+		command = self.command.copy()
+		command.audio_options=HyphenArgs(nosound=None)
+		command.video_options['lavcopts'].update(turbo=None, vpass=str(pass_number))
+		command['o'] = 'nul' # TODO: /dev/null on linux
+		return command
 
-	second_pass = command.copy()
-	second_pass.video_options['lavcopts'].update(vpass='2')
-	return first_pass, second_pass
+	def last_pass(self, pass_number):
+		command = self.command.copy()
+		command.video_options['lavcopts'].update(vpass=str(pass_number))
+		return command
 
+	def __del__(self):
+		self.cleanup_log_file()
+		
+	def cleanup_log_file(self):
+		try:
+			filename = self.command['passlogfile']
+		except KeyError:
+			return
+		try:
+			os.path.exists(filename) and os.remove(filename)
+		except:
+			log.error('Error removing logfile %s', filename)
+		
 def encode_dvd():
 	logging.basicConfig(level=logging.INFO)
 	
@@ -174,24 +205,12 @@ def encode_dvd():
 
 	assert not os.path.exists(command.other_options['o']), 'Output file %s alread exists' % command.other_options['o']
 
-	first_pass, second_pass = generate_two_pass_commands(command)
-
-	first_pass_args = tuple(first_pass.get_args())
-	second_pass_args = tuple(second_pass.get_args())
-
 	errors = open('nul', 'w')
-
+	two_pass_handler = MultiPassHandler(command)
+	for _pass in two_pass_handler:
+		_pass_args = tuple(_pass.get_args())
+		print 'executing with', _pass_args
+		proc = subprocess.Popen(_pass_args, stderr=errors)
+		proc.wait()
+		
 	#C:\Users\jaraco\Public>"C:\Program Files (x86)\Slysoft\CloneDVDmobile\apps\mencoder.exe" -dvd-device "C:\Users\jaraco\Videos\rips\JEAN_DE_FLORETTE" dvd:// -sws 2 -vf crop=720:352:0:62 -nosound -ovc lavc -lavcopts vcodec=libx264:threads=2:vbitrate=1200:autoaspect:turbo:vpass=1  -sid 0 -o nul -passlogfile"C:\Users\jaraco\Videos\Jean de Florette_pass.log"  2>nul
-
-	import subprocess
-	print 'executing with', first_pass_args
-	proc = subprocess.Popen(first_pass_args, stderr=errors)
-	proc.wait()
-	print 'executing with', second_pass_args
-	proc = subprocess.Popen(second_pass_args, stderr=errors)
-	proc.wait()
-
-	try:
-		os.remove(two_pass_temp_file)
-	except:
-		pass # todo: log warning
