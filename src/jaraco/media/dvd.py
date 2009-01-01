@@ -100,7 +100,7 @@ class MultiPassHandler(object):
 
 	def setup_log_file(self):
 		#multi_pass_temp_file = join(os.environ['USERPROFILE'], 'Videos', '%(user_title)s_pass.log' % vars())
-		filename, ext = os.path.splitext(command.other_options['o'])
+		filename, ext = os.path.splitext(self.command.other_options['o'])
 		multi_pass_temp_file = filename + '_pass.log'
 		self.command['passlogfile'] = multi_pass_temp_file
 
@@ -136,6 +136,28 @@ class MultiPassHandler(object):
 		except:
 			log.error('Error removing logfile %s', filename)
 		
+def get_x264_options():
+	lavcopts = ColonDelimitedArgs()
+	lavcopts.update(vcodec='libx264')
+	lavcopts.update(threads='2')
+	lavcopts.update(vbitrate='1200')
+	lavcopts.update(autoaspect=None)
+	options=HyphenArgs()
+	options.update(ovc='lavc')
+	options.update(lavcopts=lavcopts)
+	return options
+
+def get_mpeg4_options():
+	lavcopts = ColonDelimitedArgs()
+	lavcopts.update(vcodec='mpeg4')
+	lavcopts.update(vhq=None)
+	lavcopts.update(vbitrate='1200')
+	lavcopts.update(autoaspect=None)
+	options=HyphenArgs()
+	options.update(ovc='lavc')
+	options.update(lavcopts=lavcopts)
+	return options
+
 def encode_dvd():
 	logging.basicConfig(level=logging.INFO)
 	
@@ -186,20 +208,8 @@ def encode_dvd():
 		vf=ColonDelimitedArgs(crop=crop),
 		)
 
-	# this is the setting I used for divx
-	#set VID_OPTS=-ovc lavc -lavcopts vcodec=mpeg4:vhq:vbitrate=1200:autoaspect
-
-	lavcopts = ColonDelimitedArgs(
-		vcodec='libx264',
-		threads='2',
-		vbitrate='1200',
-		autoaspect=None,
-		)
-	command.video_options=HyphenArgs(
-		ovc='lavc',
-		lavcopts=lavcopts,
-		)
-
+	command.video_options = get_mpeg4_options()
+	
 	if options.subtitle:
 		command['sid'] = options.subtitle
 
