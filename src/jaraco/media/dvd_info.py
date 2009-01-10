@@ -40,6 +40,7 @@ import re
 from os import popen4
 import sys
 import getopt
+import datetime
 
 __author__ = '$Author$'[9:-2]
 __email__ = 'jaraco@jaraco.com'
@@ -120,6 +121,13 @@ class NaviParser(TitleParser):
 	def handle(self, match):
 		self.info['navi_count']+=1
 
+class LengthParser(TitleParser):
+	pattern = 'ID_LENGTH=(?P<length>[\d.]+)'
+	def handle(self, match):
+		length = float(match.groupdict()['length'])
+		length = datetime.timedelta(seconds=length)
+		self.info['length'] = length
+
 class TitleInfo(dict):
 	def __init__(self, *args, **kwargs):
 		self.update(max_titles=0, chapters=0, audiotracks={}, subtitles=[], navi_count=0)
@@ -131,15 +139,14 @@ def title_info(title):
 	Returns a tuple max_titles, chapters, audiotracks, subtitles.
 	'''
 
-	options_to_consider = '-identify'
 	# need at least two -v to get "Found NAVI packet"
-	mpcmd = 'mplayer -v -v -v -nosound -frames 0 -dvd-device %s dvd://%i -vo null'
+	mpcmd = 'mplayer -v -v -v -identify -nosound -frames 0 -dvd-device %s dvd://%i -vo null'
 
 	(mplayer_stdin, mplayer) = popen4(mpcmd % (device, title))
 	
 	mplayer_stdin.close()
 
-	info = TitleInfo()
+	info = TitleInfo(number=title)
 
 	parsers = TitleParser.create_all(info)
 
@@ -151,8 +158,7 @@ def title_info(title):
 	mplayer.close()
 	#mplayer.wait()
 	
-	return (info['max_titles'], info['chapters'], info['audiotracks'],
-			info['subtitles'])
+	return info
 
 def main():
 	'''The main function'''
@@ -162,11 +168,7 @@ def main():
 	# Set to the real value after the first read.
 	max_title = '?'
 
-	# Info of the longest title
-	longest_title = 0
-	chapters = None
-	audiotracks = None
-	subtitles = None
+	longest_title_info = None
 
 	title = 1
 	find_longest = True
@@ -198,38 +200,39 @@ def main():
 			sys.stdout.write('Reading title %i/%s   \r' % (title, max_title))
 			sys.stdout.flush()
 
-			max_title, c, a, s = title_info(title)
+			info = title_info(title)
 
 			# Remember info about the title with the most chapters,
 			# but only if it has audio tracks.
-			if a and (chapters is None or c > chapters):
-				chapters = c
-				audiotracks = a
-				subtitles = s
-				longest_title = title
+			if info['audiotracks'] and (longest_title_info is None or info['chapters'] > longest_title_info['chapters']):
+				longest_title_info = info
 
 			title += 1
+			max_title = info['max_titles']
 
 		print 'Done reading.            '
 
-		print 'Longest title: %s' % longest_title
+		print 'Longest title: %s' % longest_title_info['number']
+		info = longest_title_info
 	else:
 		print 'Reading title: %i' % title
 		# Get info about given title
-		max_title, chapters, audiotracks, subtitles = title_info(title)
+		info = title_info(title)
 	
 	if not max_title:
 		raise SystemExit("Unable to find any titles on %s" % device)
 
-	print 'Chapters: %s' % chapters
+	print 'Title length: %s' % info['length']
+
+	print 'Chapters: %s' % info['chapters']
 
 	print 'Audio tracks:'
-	for info in audiotracks.itervalues():
-		print '\taid=%(aid)3i lang=%(language)s fmt=%(format)s' % info
+	for aud_info in info['audiotracks'].itervalues():
+		print '\taid=%(aid)3i lang=%(language)s fmt=%(format)s' % aud_info
 
 	print 'Subtitles:'
-	for info in subtitles:
-		print '\tsid=%(sid)3i lang=%(language)s' % info
+	for st_info in info['subtitles']:
+		print '\tsid=%(sid)3i lang=%(language)s' % st_info
 
 if __name__ == '__main__':
 	main()

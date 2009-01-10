@@ -115,7 +115,7 @@ class MultiPassHandler(object):
 		command = self.command.copy()
 		command.audio_options=HyphenArgs(nosound=None)
 		command.video_options['lavcopts'].update(turbo=None, vpass=str(pass_number))
-		command['o'] = 'nul' # TODO: /dev/null on linux
+		command['o'] = os.path.devnull
 		return command
 
 	def last_pass(self, pass_number):
