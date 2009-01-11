@@ -51,6 +51,7 @@ setup (name = 'jaraco.util',
 				'encode-dvd = jaraco.media.dvd:encode_dvd',
 				'crop-detect = jaraco.media.cropdetect:execute',
 				'dvd-info = jaraco.media.dvd_info:main',
+				'dnsbl-check = jaraco.net.dnsbl:handle_cmdline',
 				],
 		},
 		install_requires=[
