@@ -62,7 +62,7 @@ class WhoisHandler(object):
 		self._query = query
 
 	@classmethod
-	_query_matches_services(cls, query):
+	def _query_matches_services(cls, query):
 		return re.search(cls.services, query, re.IGNORECASE)
 
 	@staticmethod
