@@ -7,7 +7,7 @@ HTTP scraper for nic servers who only offer whois service via web only.
 Run the script from the command line and it will service port 43 as a whois server,
 passing the query to the appropriate web form and parsing the results into a textual format.
 
-Copyright © 2005-2008 Jason R. Coombs
+Copyright Â© 2005-2008 Jason R. Coombs
 """
 
 __author__ = 'Jason R. Coombs <jaraco@sandia.gov>'
@@ -23,6 +23,7 @@ from ClientForm import ParseResponse, ItemNotFoundError
 from htmllib import HTMLParser
 from formatter import NullFormatter, DumbWriter, AbstractFormatter
 from jaraco.net.http import PageGetter
+from jaraco.util.meta import LeafClassesMeta
 from urllib import basejoin
 import logging
 from StringIO import StringIO
@@ -54,21 +55,30 @@ class WhoisHandler(object):
 	Also, child classes must define LoadHTTP which will retrieve the HTTP response
 	and a _parser class which is an HTMLParser capable of parsing the response and
 	outputting the textual result."""
+	
+	__metaclass__ = LeafClassesMeta
+	
 	def __init__(self, query = None):
 		self._query = query
 
+	@classmethod
+	_query_matches_services(cls, query):
+		return re.search(cls.services, query, re.IGNORECASE)
+
+	@staticmethod
 	def GetHandler(query):
-		"""Search through the global variables for WhoisHandlers and return the one
-		that matches the query"""
+		"""Search through the WhoisHandler subclasses and return the one
+		that matches the query."""
 		query = query.lower()
-		handlers = filter(WhoisHandler._IsWhoisHandler_, globals().values())
-		matches = filter(lambda c: re.search(c.services, query, re.IGNORECASE), handlers)
+		handlers = WhoisHandler._leaf_classes
+		matches = filter(None, map(lambda c: c._query_matches_services(query), handlers))
 		if not len(matches) == 1:
-			if len(matches) == 0: error = 'Domain for %s is not serviced by this server.'
-			else: error = 'Server error, ambiguous nic server resolution for %s.'
+			error = [
+				'Domain for %s is not serviced by this server.',
+				'Server error, ambiguous nic server resolution for %s.',
+				][bool(len(matches))]
 			raise ValueError, error % query
 		return matches[0](query)
-	GetHandler = staticmethod(GetHandler)
 
 	def _IsWhoisHandler_(ob):
 		return hasattr(ob, '__bases__') and WhoisHandler in ob.__bases__
