@@ -1,53 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''dvdinfo.py [--title n] [dvd device]
-dvdinfo.py --help | -h
-
-Displays information on the longest title on the DVD. If the dvd
-device is not specified, /dev/dvd is used. You can also use a DVD
-image as the device.
-
-The title with the largest number of titles is considered the 'longest
-title'. This is the feature film on the majority of the DVDs.
-
-If you want to display the information on a specific title, pass the
-title number with the --title option.
+u'''
+routines for acquiring dvd details, based on dvdinfo.py (many thanks
+to Sybren Stüvel, http://stuvel.eu/dvdinfo).
 '''
 
-# Changes:
-#
-# Version 1.1, 2006-08-13 13:00
-#
-#    - Only consider a title the main movie if it has an audio track.
-#      This ensures that picture-titles with one chapter per picture
-#      aren't considered the main movie, even though such titles can
-#      have a lot of chapters.
-#
-#    - Added the ability to specify which title to read.
-#
-#    - Display 1/? instead of 1/1 if the total number of titles is
-#      unknown.
-#
-# Version 1.0, released 2006-06-12 23:05
-#
-#    - Initial release
-
-# COPYING: this software is released under the GPL licence. For more
-# information, see http://www.stuvel.eu/licence
-
 import re
-from os import popen4
 import sys
-import getopt
 import datetime
+from itertools import count
+from optparse import OptionParser
+from subprocess import Popen, PIPE, STDOUT
 
 __author__ = '$Author$'[9:-2]
 __email__ = 'jaraco@jaraco.com'
 __revision__ = '2.0'
 __url__ = 'http://www.jaraco.com'
-
-device = 'd:'
 
 def banner():
 	'''Display the banner'''
@@ -134,106 +103,89 @@ class TitleInfo(dict):
 		self.update(max_titles=0, chapters=0, audiotracks={}, subtitles=[], navi_count=0)
 		dict.__init__(self, *args, **kwargs)
 
-def title_info(title):
-	'''Returns title information about a single title.
+	def __str__(self):
+		buffer = []
+		buffer.append('Title length: %(length)s' % self)
+		buffer.append('Chapters: %(chapters)s' % self)
+		buffer.append('Audio tracks:')
+		aud_fmt = '\taid=%(aid)3i lang=%(language)s fmt=%(format)s'
+		fmt_aud_info = lambda i: aud_fmt % i
+		buffer.extend(map(fmt_aud_info, self['audiotracks'].values()))
+		buffer.append('Subtitles:')
+		sub_fmt = '\tsid=%(sid)3i lang=%(language)s'
+		fmt_sub_info = lambda i: sub_fmt % i
+		buffer.extend(map(fmt_sub_info, self['subtitles']))
+		return '\n'.join(buffer)
+
+
+def title_info(device, title):
+	'''Get title information about a single title.
 	
-	Returns a tuple max_titles, chapters, audiotracks, subtitles.
+	expects device to be available globally.
+	
+	Returns a TitleInfo object
 	'''
 
 	# need at least two -v to get "Found NAVI packet"
 	mpcmd = 'mplayer -v -v -v -identify -nosound -frames 0 -dvd-device %s dvd://%i -vo null'
 
-	(mplayer_stdin, mplayer) = popen4(mpcmd % (device, title))
-	
-	mplayer_stdin.close()
+	cmd = mpcmd % (device, title)
+	mplayer = Popen(cmd, stdout=PIPE, stderr=STDOUT)
 
 	info = TitleInfo(number=title)
 
 	parsers = TitleParser.create_all(info)
 
-	for line in mplayer:
+	for line in mplayer.stdout:
 		for parser in parsers:
 			parser(line)
 		if info['navi_count'] > 100: break
 	
-	mplayer.close()
-	#mplayer.wait()
-	
 	return info
 
 def main():
-	'''The main function'''
-
-	global device
-
-	# Set to the real value after the first read.
-	max_title = '?'
-
 	longest_title_info = None
-
-	title = 1
-	find_longest = True
 
 	banner()
 
-	# Parse options
-	opts, args = getopt.gnu_getopt(sys.argv[1:], 'ht:', ('help',
-		'title='))
-	opts = dict(opts)
+	parser = OptionParser(usage=__doc__)
+	parser.add_option('-t', '--title', help='only search a specific title', default=0)
+	parser.add_option('-d', '--device', help='the device (default d:)', default='d:')
+	options, args = parser.parse_args()
+	
+	if not len(args) == 0: parser.error('This program takes no arguments')
 
-	if '-h' in opts or '--help' in opts:
-		print __doc__
-		return
-
-	if '-t' in opts:
-		title = int(opts['-t'])
-		find_longest = False
-	if '--title' in opts:
-		title = int(opts['--title'])
-		find_longest = False
-
-	if args:
-		device = args[0]
+	find_longest = not options.title
 
 	if find_longest:
+		max_title = '?'
 		# Walk through all titles
-		while max_title == '?' or title <= max_title:
+		for title in count(1):
+			if isinstance(max_title, int) and title > max_title: break
 			sys.stdout.write('Reading title %i/%s   \r' % (title, max_title))
 			sys.stdout.flush()
 
-			info = title_info(title)
+			info = title_info(options.device, title)
 
 			# Remember info about the title with the most chapters,
 			# but only if it has audio tracks.
 			if info['audiotracks'] and (longest_title_info is None or info['chapters'] > longest_title_info['chapters']):
 				longest_title_info = info
 
-			title += 1
 			max_title = info['max_titles']
 
 		print 'Done reading.            '
 
+		if not longest_title_info:
+			raise SystemExit("Unable to find any titles on %s" % options.device)
 		print 'Longest title: %s' % longest_title_info['number']
 		info = longest_title_info
 	else:
-		print 'Reading title: %i' % title
+		print 'Reading title: %i' % options.title
 		# Get info about given title
-		info = title_info(title)
-	
-	if not max_title:
-		raise SystemExit("Unable to find any titles on %s" % device)
+		info = title_info(options.title)
 
-	print 'Title length: %s' % info['length']
-
-	print 'Chapters: %s' % info['chapters']
-
-	print 'Audio tracks:'
-	for aud_info in info['audiotracks'].itervalues():
-		print '\taid=%(aid)3i lang=%(language)s fmt=%(format)s' % aud_info
-
-	print 'Subtitles:'
-	for st_info in info['subtitles']:
-		print '\tsid=%(sid)3i lang=%(language)s' % st_info
+	print info
 
 if __name__ == '__main__':
 	main()
