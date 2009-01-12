@@ -67,8 +67,9 @@ class MetaTitleParser(type):
 	_all_parsers = set()
 	
 	def __init__(cls, name, bases, attrs):
-		if name == 'TitleParser': return # don't add the base class
 		cls._all_parsers.add(cls)
+		# remove any base classes
+		cls._all_parsers -= set(bases)
 
 class TitleParser(object):
 	__metaclass__ = MetaTitleParser
