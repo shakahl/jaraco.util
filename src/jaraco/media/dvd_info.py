@@ -15,14 +15,14 @@ from subprocess import Popen, PIPE, STDOUT
 
 __author__ = '$Author$'[9:-2]
 __email__ = 'jaraco@jaraco.com'
-__revision__ = '2.0'
+__revision__ = '$Rev$'
 __url__ = 'http://www.jaraco.com'
 
 def banner():
 	'''Display the banner'''
 
 	print 50*'='
-	print 'dvdinfo.py version %s' % __revision__
+	print '%s version %s' % (__name__, __revision__)
 	print '%s <%s>' % (__author__, __email__)
 	print __url__
 	print 50*'='
