@@ -15,7 +15,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 __author__ = '$Author$'[9:-2]
 __email__ = 'jaraco@jaraco.com'
-__revision__ = '$Rev$'
+__revision__ = '$Rev$'[6:-2]
 __url__ = 'http://www.jaraco.com'
 
 def banner():
