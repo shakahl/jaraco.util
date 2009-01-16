@@ -105,6 +105,7 @@ class TitleInfo(dict):
 
 	def __str__(self):
 		buffer = []
+		buffer.append('Number: %(number)s' % self)
 		buffer.append('Title length: %(length)s' % self)
 		buffer.append('Chapters: %(chapters)s' % self)
 		buffer.append('Audio tracks:')
@@ -116,7 +117,9 @@ class TitleInfo(dict):
 		fmt_sub_info = lambda i: sub_fmt % i
 		buffer.extend(map(fmt_sub_info, self['subtitles']))
 		return '\n'.join(buffer)
-
+	
+	def has_audio(self):
+		return self['audiotracks']
 
 def title_info(device, title):
 	'''Get title information about a single title.
@@ -155,9 +158,8 @@ def main():
 	
 	if not len(args) == 0: parser.error('This program takes no arguments')
 
-	find_longest = not options.title
-
-	if find_longest:
+	if not options.title:
+		titles = []
 		max_title = '?'
 		# Walk through all titles
 		for title in count(1):
@@ -166,7 +168,7 @@ def main():
 			sys.stdout.flush()
 
 			info = title_info(options.device, title)
-
+			titles.append(info)
 			# Remember info about the title with the most chapters,
 			# but only if it has audio tracks.
 			if info['audiotracks'] and (longest_title_info is None or info['chapters'] > longest_title_info['chapters']):
@@ -176,16 +178,21 @@ def main():
 
 		print 'Done reading.            '
 
-		if not longest_title_info:
-			raise SystemExit("Unable to find any titles on %s" % options.device)
-		print 'Longest title: %s' % longest_title_info['number']
-		info = longest_title_info
+		titles_with_audio = filter(TitleInfo.has_audio, titles)
+		titles_with_audio.sort(key=lambda t: -t['chapters'])
+
+		if not titles_with_audio:
+			raise SystemExit("Unable to find any titles with audio on %s" % options.device)
+		
+		for title in titles_with_audio:
+			print
+			print title
 	else:
 		print 'Reading title: %i' % options.title
 		# Get info about given title
 		info = title_info(options.title)
 
-	print info
+		print info
 
 if __name__ == '__main__':
 	main()
