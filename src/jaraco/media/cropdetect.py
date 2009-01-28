@@ -1,11 +1,21 @@
 import re
-import win32api
 import sys
-from pywintypes import error
 from itertools import imap, takewhile, ifilter
 import logging
 
 log = logging.getLogger(__name__)
+
+def terminate(process):
+	"Pre python 2.6 shim for terminating a Popen process"
+	if sys.versioninfo < (2,6):
+		import win32api
+		from pywintypes import error
+		try:
+			win32api.TerminateProcess(int(process._handle), -1)
+		except error, e:
+			pass # process has probably already terminated on its own
+		return
+	process.terminate()
 
 class consecutive_count(object):
 	def __init__(self):
@@ -92,11 +102,8 @@ def process_input(process, n_frames=1000):
 	return target
 
 def clean_up(process):
-	try:
-		win32api.TerminateProcess(int(process._handle), -1)
-		process.stdout.flush()
-	except error, e:
-		pass # process is probably already terminated
+	terminate(process)
+	process.stdout.flush()
 
 def get_crop(dvd_device=None, title=''):
 	log.info('Detecting crop')
