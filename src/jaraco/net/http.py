@@ -1,4 +1,15 @@
-import socket, sys, re, time
+#!/usr/bin/env python
+
+# $Id$
+
+"""HTTP routines
+"""
+
+import socket
+import sys
+import os
+import re
+import time
 from optparse import OptionParser
 import urlparse
 import urllib
@@ -181,3 +192,17 @@ def get_content_disposition_filename(url):
 	header = res.headers.get('content-disposition', '')
 	value, params = cgi.parse_header(header)
 	return params.get('filename')
+
+def get_url_filename(url):
+	return os.path.basename(urlparse.urlparse(url).path)
+
+def get_url(url):
+	src = urllib2.urlopen(url)
+	fname = get_content_disposition_filename(src) or get_url_filename(url)
+	if os.path.exists(fname):
+		raise RuntimeError, "%s exists" % fname
+	dest = open(fname, 'wb')
+	for line in src: dest.write(line)
+
+def wget():
+	get_url(sys.argv[1])
