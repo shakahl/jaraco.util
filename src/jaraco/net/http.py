@@ -5,11 +5,14 @@
 """HTTP routines
 """
 
+import logging
 import socket
 import sys
 import os
 import re
 import time
+import calendar
+import datetime
 from optparse import OptionParser
 import urlparse
 import urllib
@@ -19,6 +22,7 @@ import ClientForm
 import cookielib
 from jaraco.util import splitter
 
+log = logging.getLogger(__name__)
 
 def get_args():
 	global options
@@ -184,11 +188,14 @@ def get_content_disposition_filename(url):
 	True
 	
 	"""
-	req = HeadRequest(url)
-	try:
-		res = urllib2.urlopen(req)
-	except urllib2.URLError:
-		return
+	
+	res = url
+	if not isinstance(url, urllib2.addinfourl):
+		req = HeadRequest(url)
+		try:
+			res = urllib2.urlopen(req)
+		except urllib2.URLError:
+			return
 	header = res.headers.get('content-disposition', '')
 	value, params = cgi.parse_header(header)
 	return params.get('filename')
@@ -196,13 +203,30 @@ def get_content_disposition_filename(url):
 def get_url_filename(url):
 	return os.path.basename(urlparse.urlparse(url).path)
 
-def get_url(url):
+def get_url(url, dest=None, replace_newer=False):
 	src = urllib2.urlopen(url)
-	fname = get_content_disposition_filename(src) or get_url_filename(url)
+	log.debug(src.headers)
+	mod_time = datetime.datetime.strptime(src.headers['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')
+	content_length = int(src.headers['content-length'])
+	log.info('Downloading %s (last mod %s)', url, str(mod_time))
+	fname = dest or get_content_disposition_filename(src) or get_url_filename(url) or 'result.dat'
 	if os.path.exists(fname):
-		raise RuntimeError, "%s exists" % fname
+		stat = os.lstat(fname)
+		previous_size = stat.st_size
+		previous_mod_time = datetime.datetime.utcfromtimestamp(stat.st_mtime)
+		log.debug('Local last mod %s', previous_mod_time)
+		log.debug('Local size %d', previous_size)
+		if not replace_newer: raise RuntimeError, "%s exists" % fname
+		if previous_mod_time >= mod_time and previous_size == content_length:
+			log.info('File is current')
+			return
 	dest = open(fname, 'wb')
-	for line in src: dest.write(line)
+	for line in src:
+		dest.write(line)
+	dest.close()
+	mtime = calendar.timegm(mod_time.utctimetuple())
+	atime = os.stat(fname).st_atime
+	os.utime(fname, (atime, mtime))
 
 def wget():
 	get_url(sys.argv[1])
