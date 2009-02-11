@@ -8,15 +8,7 @@ Copyright © 2004-2008 Jason R. Coombs
 from ez_setup import use_setuptools
 use_setuptools()
 from setuptools import setup, find_packages
-
-import os
-import sys
-
-# a quick little fix for PyPI
-if sys.platform in ('win32',):
-	if not os.environ.has_key('HOME'):
-		drivepath = map(os.environ.get, ('HOMEDRIVE', 'HOMEPATH'))
-		os.environ['HOME'] = os.path.join(*drivepath)
+import pypi_fix
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
 __version__ = '$Rev$'[6:-2]
@@ -24,7 +16,7 @@ __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 setup (name = 'jaraco.util',
-		version = '1.5',
+		version = '2.0',
 		description = 'General utility modules that supply commonly-used functionality',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
