@@ -152,7 +152,7 @@ def main():
 	banner()
 
 	parser = OptionParser(usage=__doc__)
-	parser.add_option('-t', '--title', help='only search a specific title', default=0)
+	parser.add_option('-t', '--title', help='only search a specific title', type=int, default=0)
 	parser.add_option('-d', '--device', help='the device (default d:)', default='d:')
 	options, args = parser.parse_args()
 	
@@ -190,7 +190,7 @@ def main():
 	else:
 		print 'Reading title: %i' % options.title
 		# Get info about given title
-		info = title_info(options.title)
+		info = title_info(options.device, options.title)
 
 		print info
 

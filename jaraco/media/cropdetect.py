@@ -71,6 +71,8 @@ def build_command(dvd_device=None, title=""):
 	command.video_filter = HyphenArgs(vf='cropdetect')
 	command.video_options = HyphenArgs(ovc='lavc')
 	command['o']='nul'
+	# As a rule-of-thumb, use the 2nd or 3rd chapter to determine the crop;
+	#  The first chapter can tend to have a different format.
 	command['chapter'] = '3-3'
 
 	dvd_device and command.set_device(dvd_device)
@@ -78,10 +80,10 @@ def build_command(dvd_device=None, title=""):
 
 def get_input(command=None):
 	from subprocess import Popen, PIPE, list2cmdline
-	#print list2cmdline(mencoder_args)
 	null = open('NUL', 'w')
 	command = command or build_command(*parse_args())
 	args = tuple(command.get_args())
+	log.debug(list2cmdline(args))
 	mencoder = Popen(args, stdout=PIPE, stderr=null)
 	return mencoder
 
