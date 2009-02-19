@@ -16,7 +16,7 @@ __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
 setup (name = 'jaraco.util',
-		version = '2.0',
+		version = '2.1',
 		description = 'General utility modules that supply commonly-used functionality',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
