@@ -32,6 +32,7 @@ setup (name = 'jaraco.util',
 		entry_points = {
 			'console_scripts': [
 				'roll-dice = jaraco.util.dice:do_dice_roll',
+				'release-package = jaraco.util.release:do_release',
 				],
 		},
 		install_requires=[
