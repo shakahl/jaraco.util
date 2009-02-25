@@ -9,8 +9,7 @@ def do_release():
 			os.environ['HOME'] = os.path.join(*drivepath)
 
 	sys.argv[1:] = ['egg_info', '-RDb', '', 'sdist', 'upload']
-	setup_file = os.path.join(os.path.dirname(__file__), 'setup.py')
-	execfile(setup_file)
+	execfile('setup.py')
 
 if __name__ == '__main__':
 	do_release()
