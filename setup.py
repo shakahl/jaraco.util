@@ -6,7 +6,11 @@ Copyright © 2004-2009 Jason R. Coombs
 """
 
 from setuptools import setup, find_packages
-from jaraco.util.package import read_long_description
+try:
+	from jaraco.util.package import read_long_description
+	long_description = read_long_description()
+except:
+	long_description = None
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
 __version__ = '$Rev$'[6:-2]
@@ -18,7 +22,7 @@ name = 'jaraco.util'
 setup (name = name,
 		version = '2.3',
 		description = 'General utility modules that supply commonly-used functionality',
-		long_description = read_long_description(),
+		long_description = long_description,
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
 		url = 'http://pypi.python.org/pypi/'+name,
