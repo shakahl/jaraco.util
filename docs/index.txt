@@ -1,0 +1,44 @@
+jaraco.util
+==============
+
+.. contents::
+
+Status and License
+------------------
+
+``jaraco.util`` provides miscellaneous utility functions used across
+projects developed by the author.
+
+``jaraco.util`` is written by Jason R. Coombs.  It is licensed under an
+`MIT-style permissive license
+<http://www.opensource.org/licenses/mit-license.php>`_.
+
+You can install it with ``easy_install jaraco.util``, or from the
+`subversion repository
+<https://svn.jaraco.com/jaraco/python/jaraco.util#egg=jaraco.util-dev>`_ with
+``easy_install jaraco.util==dev``.
+
+Changes
+-------
+
+2.2
+~~~
+
+* First release with documentation.
+
+2.1
+~~~
+
+* Added package release script.
+* Added RelativePath, a class for manipulating file system paths
+* Added trim function
+
+2.0
+~~~
+
+* First release with no dependencies.
+
+1.0
+~~~
+
+* Initial release
