@@ -12,12 +12,14 @@ __version__ = '$Rev$'[6:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
-setup (name = 'jaraco.util',
+name = 'jaraco.util'
+
+setup (name = name,
 		version = '2.2',
 		description = 'General utility modules that supply commonly-used functionality',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
-		url = 'http://www.jaraco.com/',
+		url = 'http://pypi.python.org/pypi/'+name,
 		packages = find_packages(exclude=['ez_setup', 'tests', 'examples']),
 		namespace_packages = ['jaraco',],
 		license = 'MIT',
