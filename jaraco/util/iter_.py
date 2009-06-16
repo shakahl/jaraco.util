@@ -3,7 +3,7 @@
 """jaraco.iter_
 	Tools for working with iterables.  Complements itertools.
 	
-Copyright (c) 2008 Jason R. Coombs
+Copyright © 2008 Jason R. Coombs
 """
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'

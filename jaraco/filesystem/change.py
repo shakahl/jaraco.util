@@ -3,7 +3,7 @@
 """FileChange
 	Classes and routines for monitoring the file system for changes.
 	
-Copyright (c) 2004 Jason R. Coombs
+Copyright © 2004 Jason R. Coombs
 """
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
