@@ -2,7 +2,7 @@
 
 """ Setup script for building jaraco-util distribution
 
-Copyright © 2004-2009 Jason R. Coombs
+Copyright (c) 2004-2009 Jason R. Coombs
 """
 
 try:

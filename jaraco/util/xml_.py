@@ -3,7 +3,7 @@
 """xmlTools
 	Classes and routines for supporting xml processing.
 	
-Copyright © 2004 Jason R. Coombs  
+Copyright (c) 2004 Jason R. Coombs  
 """
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
