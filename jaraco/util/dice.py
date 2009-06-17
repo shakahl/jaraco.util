@@ -1,7 +1,12 @@
+from __future__ import print_function
+
 import random
 import sys
 
 def do_dice_roll():
+	"""
+	Roll n 6-sided dice and return each result and the total
+	"""
 	try:
 		n_dice = int(sys.argv[1])
 	except:
@@ -10,5 +15,5 @@ def do_dice_roll():
 	for dice in range(n_dice):
 		value = random.randint(1,6)
 		total += value
-		print 'rolled %d' % value
-	if n_dice > 1: print 'total %d' % total
+		print('rolled', value)
+	if n_dice > 1: print('total', total)
