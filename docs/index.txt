@@ -21,6 +21,23 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.0
+~~~
+
+This change involves many backwards-incompatible changes.
+
+* May require Python 2.6
+* Removed powerball module
+* Refactored RangeMap: RangeValueUndefined, RangeItem/First/Last moved into RangeMap class. RangeValueUndefined, RangeItemFirst, and RangeItemLast are now instances, not classes. Renamed to UndefinedValue, Item, FirstItem, LastItem.
+* Renamed DictMap function to dict_map
+
+2.3
+~~~
+
+* Minor fixes, primarily to deployment techniques
+* Mostly Python 3 compatible.
+* Final release before major refactoring.
+
 2.2
 ~~~
 
