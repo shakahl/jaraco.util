@@ -24,7 +24,7 @@ Changes
 3.0
 ~~~
 
-This change involves many backwards-incompatible changes.
+This version includes many backwards-incompatible changes.
 
 * May require Python 2.6
 * Removed powerball module

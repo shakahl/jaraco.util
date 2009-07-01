@@ -245,7 +245,7 @@ def iflatten(subject, test=None):
 		for elem in subject:
 			for subelem in iflatten(elem, test):
 				yield subelem
-				
+
 def flatten(subject, test=None):
 	"""flatten an iterable with possible nested iterables.
 	Adapted from
@@ -259,3 +259,66 @@ def flatten(subject, test=None):
 	"""
 	return list(iflatten(subject, test))
 
+def empty():
+	"""
+	An empty iterator.
+	"""
+	return iter(tuple())
+
+class Reusable(object):
+	"""
+	An iterator that may be reset and reused.
+	
+	>>> ri = Reusable(xrange(3))
+	>>> tuple(ri)
+	(0, 1, 2)
+	>>> next(ri)
+	0
+	>>> tuple(ri)
+	(1, 2)
+	>>> next(ri)
+	0
+	>>> ri.reset()
+	>>> tuple(ri)
+	(0, 1, 2)
+	"""
+
+	def __init__(self, iterable):
+		self.__saved = iterable
+		self.reset()
+
+	def __iter__(self): return self
+
+	def reset(self):
+		"""
+		Resets the iterator to the start.
+		
+		Any remaining values in the current iteration are discarded.
+		"""
+		self.__iterator, self.__saved = itertools.tee(self.__saved)
+
+	def next(self):
+		try:
+			return next(self.__iterator)
+		except StopIteration, e:
+			# we're still going to raise the exception, but first
+			#  reset the iterator so it's good for next time
+			self.reset()
+			raise
+
+# from Python 2.6 docs
+def roundrobin(*iterables):
+	"""
+	>>> ' '.join(roundrobin('ABC', 'D', 'EF'))
+	'A D E B F C'
+	"""
+	# Recipe credited to George Sakkis
+	pending = len(iterables)
+	nexts = itertools.cycle([iter(it).next for it in iterables])
+	while pending:
+		try:
+			for next in nexts:
+				yield next()
+		except StopIteration:
+			pending -= 1
+			nexts = itertools.cycle(itertools.islice(nexts, pending))
