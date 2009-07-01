@@ -30,6 +30,7 @@ This version includes many backwards-incompatible changes.
 * Removed powerball module
 * Refactored RangeMap: RangeValueUndefined, RangeItem/First/Last moved into RangeMap class. RangeValueUndefined, RangeItemFirst, and RangeItemLast are now instances, not classes. Renamed to UndefinedValue, Item, FirstItem, LastItem.
 * Renamed DictMap function to dict_map
+* Renamed iter_.evalAll to iter_.consume and evalN to consume_n
 
 2.3
 ~~~

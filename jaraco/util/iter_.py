@@ -189,14 +189,14 @@ def infiniteCall(f, *args):
 	while True:
 		yield f(*args)
 
-def evalAll(i):
+def consume(i):
 	"Cause an iterable to evaluate all of its arguments, but don't store any result."
 	for x in i: pass
 
-def evalN(i, n):
+def consume_n(i, n):
 	"Cause an iterable to evaluate n of its arguments, but don't store any result."
-	for x in itertools.islice(i, n): pass
-	
+	consume(itertools.islice(i, n))
+
 class Counter(object):
 	def __init__(self, i):
 		self.__count__ = 0
