@@ -322,3 +322,17 @@ def roundrobin(*iterables):
 		except StopIteration:
 			pending -= 1
 			nexts = itertools.cycle(itertools.islice(nexts, pending))
+
+# from Python 2.6.2 documentation
+def unique_justseen(iterable, key=None):
+	"""
+	List unique elements, preserving order. Remember only the element just seen.
+
+	>>> ' '.join(unique_justseen('AAAABBBCCDAABBB'))
+	'A B C D A B'
+	
+	>>> ' '.join(unique_justseen('ABBCcAD', str.lower))
+	'A B C A D'
+	"""
+	return itertools.imap(next, itertools.imap(operator.itemgetter(1), itertools.groupby(iterable, key)))
+
