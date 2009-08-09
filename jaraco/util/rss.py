@@ -54,7 +54,7 @@ def load_feed_enclosure(url, filter_=None, index=None):
 	
 	if index is None:
 		for i, entry in enumerate(filtered_entries):
-			print('{0:4d} {1}'.format(i, entry.title))
+			print(u'{0:4d} {1}'.format(i, entry.title))
 		try:
 			index = int(raw_input('Which one? '))
 		except ValueError:
