@@ -13,6 +13,7 @@ import operator
 import datetime
 import sys
 from dateutil import parser as date_parser
+from optparse import OptionParser
 
 def parse_filter(filter_string):
 	filter_pattern = re.compile('(?:(before|after) )?([0-9-]+)$', re.I)
@@ -30,22 +31,29 @@ class CombinedFilter(object):
 		results = [filter(subject) for filter in self.filters]
 		return reduce(operator.and_, results, True)
 
+def _parse_filters(options):
+	filters = map(parse_filter, options.date_filter)
+	options.date_filter = CombinedFilter(filters)
+
+def _parse_args(parser=None):
+	parser = parser or OptionParser()
+	parser.add_option('-u', '--url')
+	#parser.add_option('-r', '--reverse', help="show in reverse order")
+	parser.add_option('-f', '--date-filter', help="add a date filter such as 'before 2006'", default=[], action="append")
+	options, args = parser.parse_args()
+	if not options.url: parser.error("URL is required")
+	_parse_filters(options)
+	return options, args
+
 def launch_feed_enclosure():
 	"""
 	RSS Feed Launcher
 	"""
-	from optparse import OptionParser
 	parser = OptionParser(usage=launch_feed_enclosure.__doc__)
-	parser.add_option('-u', '--url')
-	#parser.add_option('-r', '--reverse', help="show in reverse order")
-	parser.add_option('-f', '--date-filter', help="add a date filter such as 'before 2006'", default=[], action="append")
 	parser.add_option('-i', '--index', help="launch feed found at specified index")
-	options, args = parser.parse_args()
+	options, args = _parse_args(parser)
 	assert not args, "Positional arguments not allowed"
-	if not options.url: parser.error("URL is required")
-	filters = map(parse_filter, options.date_filter)
-	filter = CombinedFilter(filters)
-	load_feed_enclosure(options.url, filter, options.index)
+	load_feed_enclosure(options.url, options.filter, options.index)
 
 def load_feed_enclosure(url, filter_=None, index=None):
 	d = feedparser.parse(url)
@@ -70,5 +78,19 @@ def load_feed_enclosure(url, filter_=None, index=None):
 	command = [player, filtered_entries[index].enclosures[0].href]
 	print('running', subprocess.list2cmdline(command))
 	subprocess.Popen(command)
+
+def launch_feed_as_playlist():
+	options, args = _parse_args()
+	assert not args, "Positional arguments not allowed"
+	get_feed_as_playlist(options.url, filter_=options.date_filter)
+
+def get_feed_as_playlist(url, outfile=sys.stdout, filter_=None):
+	d = feedparser.parse(url)
+	filtered_entries = filter(filter_, d['entries'])
+	# RSS feeds are normally retrieved in reverse cronological order
+	filtered_entries.reverse()
+	for e in filtered_entries:
+		outfile.write(e.enclosures[0].href)
+		outfile.write('\n')
 
 if __name__ == '__main__': launch_feed_enclosure()
