@@ -16,6 +16,8 @@ from threading import Thread
 import traceback
 from stat import *
 import itertools
+from jaraco.util.iter_ import consume
+from jaraco.util.string import multi_substitution
 
 import logging
 log = logging.getLogger(__name__)
@@ -69,21 +71,18 @@ class PatternFilter(FileFilter):
 		if rePattern:
 			self.pattern = rePattern
 
+	@staticmethod
 	def ConvertFilePattern(p):
 		r"""
 		converts a filename specification (such as c:\*.*) to an equivelent regular expression
 		>>> PatternFilter.ConvertFilePattern('c:\*')
 		'c:\\\\.*'
 		"""
-		import string
 		subs = (('\\', '\\\\'), ('.', '\\.'), ('*', '.*'), ('?', '.'))
-		for old, new in subs:
-			p = string.replace(p, old, new)
-		return p
-	ConvertFilePattern = staticmethod(ConvertFilePattern)
+		return multi_substitution(*subs)(p)
 
 	def __call__(self, file):
-		return operator.truth(re.match(self.pattern, file, re.I))
+		return bool(re.match(self.pattern, file, re.I))
 
 class AggregateFilter(FileFilter):
 	"""
@@ -94,12 +93,12 @@ class AggregateFilter(FileFilter):
 		self.filters = filters
 
 	def SetRoot(self, root):
-		map(lambda x: x.SetRoot(root), self.filters)
+		consume(f.SetRoot(root) for f in self.filters)
 
 	def __call__(self, file):
-		results = map(lambda x: x(file), self.filters)
+		results = (fil(file) for fil in self.filters)
 		result = reduce(operator.and_, results)
-		return result	
+		return result
 
 def filesWithPath(files, path):
 	for file in files:
