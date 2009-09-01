@@ -18,6 +18,7 @@ import mimetypes
 import urllib2
 import logging
 import jaraco.util.logging
+from jaraco.util.filesystem import encode as encode_filename
 from dateutil import parser as date_parser
 from optparse import OptionParser
 
@@ -58,7 +59,7 @@ def _parse_args(parser=None):
 def download_enclosures():
 	options, args = _parse_args()
 	d = feedparser.parse(options.url)
-	for entry in d['entries']:
+	for entry in filter(options.date_filter, d['entries']):
 		enclosure = entry.enclosures.pop()
 		assert not entry.enclosures, "Only support one enclosure per item"
 		
@@ -66,7 +67,16 @@ def download_enclosures():
 		ext = mimetypes.guess_extension(enclosure.type) or '.mp3'
 		filename = title + ext
 		log.info('Getting %s', filename)
-		open(filename, 'w').write(urllib2.urlopen(enclosure.url).read())
+		filename = encode_filename(filename)
+		if os.path.exists(filename):
+			log.info('%s exists - skipping', filename)
+			continue
+		try:
+			open(filename, 'wb').write(urllib2.urlopen(enclosure.url).read())
+		except KeyboardInterrupt:
+			if os.path.exists(filename): os.remove(filename)
+			log.info('Quitting')
+			break
 
 def launch_feed_enclosure():
 	"""
@@ -76,7 +86,7 @@ def launch_feed_enclosure():
 	parser.add_option('-i', '--index', help="launch feed found at specified index")
 	options, args = _parse_args(parser)
 	assert not args, "Positional arguments not allowed"
-	load_feed_enclosure(options.url, options.filter, options.index)
+	load_feed_enclosure(options.url, options.date_filter, options.index)
 
 def load_feed_enclosure(url, filter_=None, index=None):
 	d = feedparser.parse(url)
