@@ -3,6 +3,8 @@ Routines for handling RSS feeds
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
+
 import feedparser
 import itertools
 import subprocess
@@ -12,8 +14,14 @@ import re
 import operator
 import datetime
 import sys
+import mimetypes
+import urllib2
+import logging
+import jaraco.util.logging
 from dateutil import parser as date_parser
 from optparse import OptionParser
+
+log = logging.getLogger(__name__)
 
 def parse_filter(filter_string):
 	filter_pattern = re.compile('(?:(before|after) )?([0-9-]+)$', re.I)
@@ -40,10 +48,25 @@ def _parse_args(parser=None):
 	parser.add_option('-u', '--url')
 	#parser.add_option('-r', '--reverse', help="show in reverse order")
 	parser.add_option('-f', '--date-filter', help="add a date filter such as 'before 2006'", default=[], action="append")
+	jaraco.util.logging.add_options(parser)
 	options, args = parser.parse_args()
 	if not options.url: parser.error("URL is required")
 	_parse_filters(options)
+	jaraco.util.logging.setup(options)
 	return options, args
+
+def download_enclosures():
+	options, args = _parse_args()
+	d = feedparser.parse(options.url)
+	for entry in d['entries']:
+		enclosure = entry.enclosures.pop()
+		assert not entry.enclosures, "Only support one enclosure per item"
+		
+		title = entry.title
+		ext = mimetypes.guess_extension(enclosure.type) or '.mp3'
+		filename = title + ext
+		log.info('Getting %s', filename)
+		open(filename, 'w').write(urllib2.urlopen(enclosure.url).read())
 
 def launch_feed_enclosure():
 	"""
