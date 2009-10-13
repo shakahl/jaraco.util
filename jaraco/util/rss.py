@@ -19,6 +19,7 @@ import urllib2
 import logging
 import jaraco.util.logging
 from jaraco.util.filesystem import encode as encode_filename
+from jaraco.net.http import get_url
 from dateutil import parser as date_parser
 from optparse import OptionParser
 
@@ -68,11 +69,8 @@ def download_enclosures():
 		filename = title + ext
 		log.info('Getting %s', filename)
 		filename = encode_filename(filename)
-		if os.path.exists(filename):
-			log.info('%s exists - skipping', filename)
-			continue
 		try:
-			open(filename, 'wb').write(urllib2.urlopen(enclosure.url).read())
+			get_url(enclosure.url, filename)
 		except KeyboardInterrupt:
 			if os.path.exists(filename): os.remove(filename)
 			log.info('Quitting')
