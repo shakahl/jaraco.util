@@ -70,7 +70,7 @@ def download_enclosures():
 		log.info('Getting %s', filename)
 		filename = encode_filename(filename)
 		try:
-			get_url(enclosure.url, filename)
+			get_url(enclosure.url, filename, replace_newer=True)
 		except KeyboardInterrupt:
 			if os.path.exists(filename): os.remove(filename)
 			log.info('Quitting')
