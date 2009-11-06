@@ -166,7 +166,9 @@ def chunkGenerator(seq, size):
 		yield result
 
 def adjacentPairs(i):
-	"""Yield adjacent pairs of a single iterable as pairs
+	"""
+	DEPRECATED. Use pairwise
+	Yield adjacent pairs of a single iterable as pairs
 	>>> tuple(adjacentPairs(iter(xrange(5))))
 	((0, 1), (1, 2), (2, 3), (3, 4))
 	"""
@@ -175,6 +177,13 @@ def adjacentPairs(i):
 		next = i.next()
 		yield (last, next)
 		last = next
+
+# from Python 2.6 docs
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return izip(a, b)
 
 def chain(sequences):
 	"""functions like itertools.chain, except chains everything in sequences.
