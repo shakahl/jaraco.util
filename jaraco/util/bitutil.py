@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+
+from jaraco.util.py26compat import int as newint
+from functools import reduce
 
 def get_bit_values(number, size=32):
 	"""
@@ -7,19 +11,19 @@ def get_bit_values(number, size=32):
 	True
 
 	>>> get_bit_values(0xDEADBEEF)
-	[1L, 1L, 0L, 1L, 1L, 1L, 1L, 0L, 1L, 0L, 1L, 0L, 1L, 1L, 0L, 1L, 1L, 0L, 1L, 1L, 1L, 1L, 1L, 0L, 1L, 1L, 1L, 0L, 1L, 1L, 1L, 1L]
+	[1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1]
 
 	You may override the default word size of 32-bits to match your actual
 	application.
 	>>> get_bit_values(0x3, 2)
-	[1L, 1L]
+	[1, 1]
 	
 	>>> get_bit_values(0x3, 4)
-	[0L, 0L, 1L, 1L]
+	[0, 0, 1, 1]
 	"""
 	values = list(gen_bit_values(number))
 	# 0-pad the most significant bit
-	res = [0L]*(size-len(values))
+	res = [0]*(size-len(values))
 	res.extend(reversed(values))
 	return res
 
@@ -28,9 +32,9 @@ def gen_bit_values(number):
 	Return a zero or one for each bit of a numeric value up to the most
 	significant 1 bit, beginning with the least significant bit.
 	"""
-	number = long(number)
+	number = newint(number)
 	while number:
-		yield number & 0x1
+		yield int(number & 0x1)
 		number >>= 1
 
 def coalesce(bits):
@@ -52,15 +56,15 @@ class Flags(object):
 	>>> MyFlags = type('MyFlags', (Flags,), dict(_names=tuple('abc')))
 	>>> mf = MyFlags.from_number(5)
 	>>> mf['a']
-	1L
+	1
 	>>> mf['b']
-	0L
+	0
 	>>> mf['c'] == mf[2]
 	True
 	>>> mf['b'] = 1
 	>>> mf['a'] = 0
 	>>> mf.number
-	6L
+	6
 	"""
 	def __init__(self, values):
 		self._values = list(values)

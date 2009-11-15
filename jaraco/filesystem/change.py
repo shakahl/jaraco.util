@@ -63,9 +63,9 @@ class PatternFilter(FileFilter):
 	"""
 	def __init__(self, filePattern = None, rePattern = None):
 		if filePattern and rePattern:
-			raise TypeError, 'PatternFilter() takes exactly 1 argument (2 given).'
+			raise TypeError('PatternFilter() takes exactly 1 argument (2 given).')
 		if not filePattern and not rePattern:
-			raise TypeError, 'PatternFilter() takes exactly 1 argument (0 given).'
+			raise TypeError('PatternFilter() takes exactly 1 argument (0 given).')
 		if filePattern:
 			self.pattern = PatternFilter.ConvertFilePattern(filePattern)
 		if rePattern:
@@ -134,7 +134,7 @@ class Notifier(object):
 
 		# make sure it worked; if not, bail
 		if self.hChange == INVALID_HANDLE_VALUE:
-			raise NotifierException, 'Could not set up directory change notification'
+			raise NotifierException('Could not set up directory change notification')
 
 	def _FilteredWalk(path, fileFilter):
 		"""

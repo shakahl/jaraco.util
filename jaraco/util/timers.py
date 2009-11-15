@@ -35,7 +35,7 @@ class WaitableTimer:
 
 	def _SignalLoop_(self, dueTime, period):
 		if not dueTime and not period:
-			raise ValueError, "dueTime or period must be non-zero"
+			raise ValueError("dueTime or period must be non-zero")
 		try:
 			if not dueTime:
 				dueTime = time.time() + period

@@ -30,7 +30,7 @@ class Count(object):
 			result = True
 		else:
 			if self.count > self.limit:
-				raise ValueError, "Should not call count stop more anymore."
+				raise ValueError("Should not call count stop more anymore.")
 			result = self.count < self.limit
 		self.count += 1
 		return result
@@ -64,7 +64,7 @@ class islice(object):
 		return result
 
 	def _formatArgs(self):
-		baseOneRange = lambda (a,b): '%d to %d' % (a+1,b)
+		baseOneRange = lambda a_b: '%d to %d' % (a_b[0]+1,a_b[1])
 		if len(self.sliceArgs) == 1:
 			result = 'at most %d' % self.sliceArgs
 		if len(self.sliceArgs) == 2:
@@ -96,7 +96,7 @@ class LessThanNBlanks(object):
 	def __call__(self, arg):
 		self.count += not arg
 		if self.count > self.limit:
-			raise ValueError, "Should not call this object anymore."
+			raise ValueError("Should not call this object anymore.")
 		return self.count < self.limit
 
 class LessThanNConsecutiveBlanks(object):
@@ -124,7 +124,7 @@ class LessThanNConsecutiveBlanks(object):
 			self.count = 0
 		self.last = operator.truth(arg)
 		if self.count > self.limit:
-			raise ValueError, "Should not call this object anymore."
+			raise ValueError("Should not call this object anymore.")
 		return self.count < self.limit
 
 class splitter(object):
@@ -157,7 +157,7 @@ def chunkGenerator(seq, size):
 	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9,))
 	"""
 	if isinstance(seq, basestring):
-		raise TypeError, 'Cannot use chunkGenerator on strings.  Use tools.chunkGenerator instead'
+		raise TypeError('Cannot use chunkGenerator on strings.  Use tools.chunkGenerator instead')
 	# make sure sequence is iterable
 	seq = iter(seq)
 	while 1:
@@ -224,11 +224,17 @@ class Counter(object):
 # todo, factor out caching capability
 class iterable_test(dict):
 	"Test objects for iterability, caching the result by type"
-	def __init__(self, ignore_classes=(basestring,)):
-		"""ignore_classes must include basestring, because if a string
+	def __init__(self, ignore_classes=None):
+		"""ignore_classes must include str, because if a string
 		is iterable, so is a single character, and the routine runs
 		into an infinite recursion"""
-		assert basestring in ignore_classes, 'basestring must be in ignore_classes'
+		try:
+			str = basestring
+		except NameError:
+			pass
+		if ignore_classes is None:
+			ignore_classes = (str,)
+		assert str in ignore_classes, 'str must be in ignore_classes'
 		self.ignore_classes = ignore_classes
 
 	def __getitem__(self, candidate):
@@ -309,7 +315,7 @@ class Reusable(object):
 	def next(self):
 		try:
 			return next(self.__iterator)
-		except StopIteration, e:
+		except StopIteration as e:
 			# we're still going to raise the exception, but first
 			#  reset the iterator so it's good for next time
 			self.reset()
