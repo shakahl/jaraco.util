@@ -67,7 +67,8 @@ class XMLObject(dict):
 	def getAttributes(self):
 		return itertools.imap(self.encodeAttribute, self.iteritems())
 
-	def encodeAttribute(self, (name,val)):
+	def encodeAttribute(self, attr):
+		name, val = attr
 		if type(val) in (datetime, date, time):
 			val = val.isoformat()
 		return (self.encodeXMLName(name), str(val))

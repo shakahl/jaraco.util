@@ -13,7 +13,7 @@ __date__ = '$Date$'[7:-2]
 
 import time
 import win32event
-import thread
+from jaraco.util.py26compat import threading
 
 class WaitableTimer:
 	def __init__(self):
@@ -21,7 +21,7 @@ class WaitableTimer:
 		self.StopEvent = win32event.CreateEvent(None, 0, 0, None)
 
 	def Set(self, dueTime, period):
-		thread.start_new_thread(self._SignalLoop_, (dueTime, period))
+		threading.start_new_thread(self._SignalLoop_, (dueTime, period))
 
 	def Stop(self):
 		win32event.SetEvent(self.StopEvent)

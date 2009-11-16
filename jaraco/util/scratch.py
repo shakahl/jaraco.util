@@ -1,3 +1,4 @@
+from __future__ import print_function
 import ctypes
 
 class SYSTEMTIME(ctypes.Structure):
@@ -31,4 +32,4 @@ def GetTimeZoneInformation(name=None):
 
 if __name__=='__main__':
 	tzi = GetTimeZoneInformation('EST')
-	print tzi
+	print(tzi)

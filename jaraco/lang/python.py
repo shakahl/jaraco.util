@@ -1,6 +1,7 @@
 #!python
 
 from __future__ import print_function, division
+from jaraco.util import callable
 
 # a couple of utilities based on those by Samuel Huckins
 #  http://dancingpenguinsoflight.com/2009/11/a-better-way-to-search-for-methods-of-python-objects/
