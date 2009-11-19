@@ -229,12 +229,12 @@ class iterable_test(dict):
 		is iterable, so is a single character, and the routine runs
 		into an infinite recursion"""
 		try:
-			str = basestring
+			strc = basestring
 		except NameError:
-			pass
+			strc = str
 		if ignore_classes is None:
-			ignore_classes = (str,)
-		assert str in ignore_classes, 'str must be in ignore_classes'
+			ignore_classes = (strc,)
+		assert strc in ignore_classes, 'str must be in ignore_classes'
 		self.ignore_classes = ignore_classes
 
 	def __getitem__(self, candidate):
