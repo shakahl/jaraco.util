@@ -18,7 +18,7 @@ class Count(object):
 	"""
 	A stop object that will count how many times it's been called and return
 	False on the N+1st call.  Useful for use with takewhile.
-	>>> tuple(itertools.takewhile(Count(5), xrange(20)))
+	>>> tuple(itertools.takewhile(Count(5), range(20)))
 	(0, 1, 2, 3, 4)
 	"""
 	def __init__(self, limit):
@@ -45,9 +45,9 @@ class islice(object):
 	"""May be applied to an iterable to limit the number of items returned.
 	Works similarly to count, except is called only once on an iterable.
 	Functionality is identical to islice, except for __str__ and reusability.
-	>>> tuple(islice(5).apply(xrange(20)))
+	>>> tuple(islice(5).apply(range(20)))
 	(0, 1, 2, 3, 4)
-	>>> tuple(islice(None).apply(xrange(20)))
+	>>> tuple(islice(None).apply(range(20)))
 	(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
 	"""
 	def __init__(self, *sliceArgs):
@@ -149,7 +149,7 @@ class splitter(object):
 
 def chunkGenerator(seq, size):
 	"""returns sequence or iterable seq in chunks of size
-	>>> c = chunkGenerator(xrange(11), 3)
+	>>> c = chunkGenerator(range(11), 3)
 	>>> tuple(c)
 	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10))
 	>>> c = chunkGenerator(range(10), 3)
@@ -169,7 +169,7 @@ def adjacentPairs(i):
 	"""
 	DEPRECATED. Use pairwise
 	Yield adjacent pairs of a single iterable as pairs
-	>>> tuple(adjacentPairs(iter(xrange(5))))
+	>>> tuple(adjacentPairs(iter(range(5))))
 	((0, 1), (1, 2), (2, 3), (3, 4))
 	"""
 	last = i.next()
@@ -284,7 +284,7 @@ class Reusable(object):
 	"""
 	An iterator that may be reset and reused.
 	
-	>>> ri = Reusable(xrange(3))
+	>>> ri = Reusable(range(3))
 	>>> tuple(ri)
 	(0, 1, 2)
 	>>> next(ri)
