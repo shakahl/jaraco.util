@@ -76,7 +76,11 @@ class XMLObject(dict):
 	def encodeXMLName(self, n):
 		return string.join(self.encodeXMLNameChars(n), '')
 
-	validChars = range(0x30, 0x3A) + range(0x41, 0x5B) + range(0x61, 0x7B) + [ord('-'), ord('_'), ord('.')]
+	validChars = (
+		list(range(0x30, 0x3A)) +
+		list(range(0x41, 0x5B)) +
+		list(range(0x61, 0x7B)) + [ord('-'), ord('_'), ord('.')]
+		)
 	def encodeXMLNameChars(self, n):
 		for c in n:
 			if ord(c) in self.validChars:
