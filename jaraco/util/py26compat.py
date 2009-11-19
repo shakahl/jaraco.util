@@ -16,3 +16,8 @@ try:
 	import thread as threading
 except ImportError:
 	import threading
+
+try:
+	basestring = basestring
+except NameError:
+	basestring = str

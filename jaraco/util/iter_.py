@@ -11,8 +11,11 @@ __version__ = '$Revision$'[11:-2]
 __svnauthor__ = '$Author$'[9:-2]
 __date__ = '$Date$'[7:-2]
 
-import operator, itertools
+import operator
+import itertools
+import sys
 from jaraco.util import ordinalth
+from jaraco.util.py26compat import basestring
 
 class Count(object):
 	"""
@@ -172,11 +175,11 @@ def adjacentPairs(i):
 	>>> tuple(adjacentPairs(iter(range(5))))
 	((0, 1), (1, 2), (2, 3), (3, 4))
 	"""
-	last = i.next()
+	last = next(i)
 	while True:
-		next = i.next()
-		yield (last, next)
-		last = next
+		current = next(i)
+		yield (last, current)
+		last = current
 
 # from Python 2.6 docs
 def pairwise(iterable):
@@ -224,17 +227,11 @@ class Counter(object):
 # todo, factor out caching capability
 class iterable_test(dict):
 	"Test objects for iterability, caching the result by type"
-	def __init__(self, ignore_classes=None):
+	def __init__(self, ignore_classes=[basestring]):
 		"""ignore_classes must include str, because if a string
 		is iterable, so is a single character, and the routine runs
 		into an infinite recursion"""
-		try:
-			strc = basestring
-		except NameError:
-			strc = str
-		if ignore_classes is None:
-			ignore_classes = (strc,)
-		assert strc in ignore_classes, 'str must be in ignore_classes'
+		assert basestring in ignore_classes, 'str must be in ignore_classes'
 		self.ignore_classes = ignore_classes
 
 	def __getitem__(self, candidate):
@@ -312,7 +309,7 @@ class Reusable(object):
 		"""
 		self.__iterator, self.__saved = itertools.tee(self.__saved)
 
-	def next(self):
+	def __next__(self):
 		try:
 			return next(self.__iterator)
 		except StopIteration as e:
@@ -320,6 +317,9 @@ class Reusable(object):
 			#  reset the iterator so it's good for next time
 			self.reset()
 			raise
+
+	if sys.version_info < (3,):
+		next = __next__
 
 # from Python 2.6 docs
 def roundrobin(*iterables):
@@ -329,7 +329,7 @@ def roundrobin(*iterables):
 	"""
 	# Recipe credited to George Sakkis
 	pending = len(iterables)
-	nexts = itertools.cycle([iter(it).next for it in iterables])
+	nexts = itertools.cycle([next(iter(it)) for it in iterables])
 	while pending:
 		try:
 			for next in nexts:
@@ -349,5 +349,5 @@ def unique_justseen(iterable, key=None):
 	>>> ' '.join(unique_justseen('ABBCcAD', str.lower))
 	'A B C A D'
 	"""
-	return itertools.imap(next, itertools.imap(operator.itemgetter(1), itertools.groupby(iterable, key)))
+	return map(next, map(operator.itemgetter(1), itertools.groupby(iterable, key)))
 
