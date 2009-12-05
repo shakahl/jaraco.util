@@ -3,7 +3,7 @@
 """jaraco.iter_
 	Tools for working with iterables.  Complements itertools.
 	
-Copyright © 2008 Jason R. Coombs
+Copyright © 2008-2009 Jason R. Coombs
 """
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
@@ -131,11 +131,12 @@ class LessThanNConsecutiveBlanks(object):
 		return self.count < self.limit
 
 class splitter(object):
-	"""object that will split a string with the given arguments for each call
+	"""
+	object that will split a string with the given arguments for each call
 	>>> s = splitter(',')
 	>>> list(s('hello, world, this is your, master calling'))
 	['hello', ' world', ' this is your', ' master calling']
-"""
+	"""
 	def __init__(self, sep = None):
 		self.sep = sep
 
@@ -150,36 +151,34 @@ class splitter(object):
 				yield s[lastIndex:]
 				break
 
-def chunkGenerator(seq, size):
-	"""returns sequence or iterable seq in chunks of size
-	>>> c = chunkGenerator(range(11), 3)
+# From Python 3.1 docs
+def grouper(n, iterable, fillvalue=None):
+	"""
+	grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
+	
+	>>> c = grouper(3, range(11))
+	>>> tuple(c)
+	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, None))
+	"""
+	args = [iter(iterable)] * n
+	fn_name = ['izip_longest', 'zip_longest'][sys.version_info >= (3,0)]
+	fn = getattr(itertools, fn_name)
+	return fn(*args, fillvalue=fillvalue)
+
+def grouper_nofill(n, iterable):
+	"""
+	Just like grouper, but doesn't add any fill values.
+
+	>>> c = grouper(3, range(11))
 	>>> tuple(c)
 	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10))
-	>>> c = chunkGenerator(range(10), 3)
-	>>> tuple(c)
-	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9,))
 	"""
-	if isinstance(seq, basestring):
-		raise TypeError('Cannot use chunkGenerator on strings.  Use tools.chunkGenerator instead')
-	# make sure sequence is iterable
-	seq = iter(seq)
-	while 1:
-		result = tuple(itertools.islice(seq, size))
-		if not result: break
-		yield result
-
-def adjacentPairs(i):
-	"""
-	DEPRECATED. Use pairwise
-	Yield adjacent pairs of a single iterable as pairs
-	>>> tuple(adjacentPairs(iter(range(5))))
-	((0, 1), (1, 2), (2, 3), (3, 4))
-	"""
-	last = next(i)
-	while True:
-		current = next(i)
-		yield (last, current)
-		last = current
+	nofill = type('nofill', (object,), dict())
+	value_is_not_nofill = lambda v: v is not nofill
+	remove_nofill = lambda s: tuple(filter(value_is_not_nofill, s))
+	result = grouper(n, iterable, fillvalue = nofill)
+	return map(remove_nofill, result)
+	
 
 # from Python 2.6 docs
 def pairwise(iterable):
@@ -329,7 +328,8 @@ def roundrobin(*iterables):
 	"""
 	# Recipe credited to George Sakkis
 	pending = len(iterables)
-	nexts = itertools.cycle([next(iter(it)) for it in iterables])
+	next_attr = ['next', '__next__'][sys.version_info >= (3,)]
+	nexts = itertools.cycle([getattr(iter(it), next_attr) for it in iterables])
 	while pending:
 		try:
 			for next in nexts:
