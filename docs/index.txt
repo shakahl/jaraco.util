@@ -21,6 +21,12 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.0.1
+~~~~~
+
+* More Python 3 changes.
+* Fixes bug in `jaraco.util.meta.LeafClassesMeta`.
+
 3.0
 ~~~
 
