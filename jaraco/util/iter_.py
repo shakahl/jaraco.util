@@ -169,7 +169,7 @@ def grouper_nofill(n, iterable):
 	"""
 	Just like grouper, but doesn't add any fill values.
 
-	>>> c = grouper(3, range(11))
+	>>> c = grouper_nofill(3, range(11))
 	>>> tuple(c)
 	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10))
 	"""
