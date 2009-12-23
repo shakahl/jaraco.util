@@ -30,13 +30,13 @@ This version includes many backwards-incompatible changes.
 * Removed powerball module
 * Refactored RangeMap: RangeValueUndefined, RangeItem/First/Last moved into RangeMap class. RangeValueUndefined, RangeItemFirst, and RangeItemLast are now instances, not classes. Renamed to UndefinedValue, Item, FirstItem, LastItem.
 * Renamed DictMap function to dict_map
-* Renamed iter_.evalAll to iter_.consume and evalN to consume_n
+* Renamed `iter_.evalAll` to `iter_.consume` and evalN to consume_n
 * More Python 3 improvements
 * Added rss feed handler (this perhaps this belongs in jaraco.net, and may be moved in the future)
 * Renamed ciString to jaraco.util.string.FoldedCase and added support for sorting case-insensitive strings
 * Added some useful iterator tools.
 * Added bitutil, based on some functions in jaraco.input
-* Added some rich comparison mixins in jaraco.util.cmp_
+* Added some rich comparison mixins in `jaraco.util.cmp_`
 * Added PasswordGenerator from jaraco.site
 * Added logging module for commonly-used logging patterns
 
