@@ -5,13 +5,15 @@ class Menu(object):
 	"""
 	A simple command-line based menu
 	"""
-	def __init__(self, choices=None):
+	def __init__(self, choices=None, formatter=str):
 		self.choices = choices or list()
+		self.formatter = formatter
 
 	def get_choice(self, prompt="> "):
 		number_width = len(self.choices)/10+1
 		menu_fmt = '{number:{number_width}}) {choice}'
-		for number, choice in zip(count(1), self.choices):
+		formatted_choices = map(self.formatter, self.choices)
+		for number, choice in zip(count(1), formatted_choices):
 			print(menu_fmt.format(**vars()))
 		print()
 		try:
