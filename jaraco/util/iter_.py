@@ -353,3 +353,12 @@ def unique_justseen(iterable, key=None):
 		map = itertools.imap
 	return map(next, map(operator.itemgetter(1), itertools.groupby(iterable, key)))
 
+def skip_first(iterable):
+	"""
+	Skip the first element of an iterable
+	
+	>>> tuple(skip_first(range(10)))
+	(1, 2, 3, 4, 5, 6, 7, 8, 9)
+	"""
+	return itertools.islice(iterable, 1, None)
+
