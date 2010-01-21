@@ -338,7 +338,7 @@ def roundrobin(*iterables):
 			pending -= 1
 			nexts = itertools.cycle(itertools.islice(nexts, pending))
 
-# from Python 2.6.2 documentation
+# from Python 3.1 documentation
 def unique_justseen(iterable, key=None):
 	"""
 	List unique elements, preserving order. Remember only the element just seen.
@@ -349,5 +349,7 @@ def unique_justseen(iterable, key=None):
 	>>> ' '.join(unique_justseen('ABBCcAD', str.lower))
 	'A B C A D'
 	"""
+	if sys.version_info < (3,0):
+		map = itertools.imap
 	return map(next, map(operator.itemgetter(1), itertools.groupby(iterable, key)))
 
