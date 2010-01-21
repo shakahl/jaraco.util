@@ -21,6 +21,11 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.1
+~~~~~
+
+* Added skip_first to `jaraco.util.iter_`
+
 3.0.1
 ~~~~~
 
