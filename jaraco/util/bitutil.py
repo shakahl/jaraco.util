@@ -3,6 +3,14 @@ from __future__ import absolute_import
 from jaraco.util.py26compat import int as newint
 from functools import reduce
 
+# consider Brandon Craig Rhoades presentation at PyCon 2010 for a new
+#  implementation to get bit values.
+# http://us.python.org/2010/conference/schedule/event/12/
+"""
+def bits(word):
+	... # forgot it
+"""
+
 def get_bit_values(number, size=32):
 	"""
 	Get bit values as a list for a given number
