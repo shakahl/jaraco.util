@@ -13,7 +13,7 @@ __date__ = '$Date$'[7:-2]
 
 import time
 import win32event
-from jaraco.util.py26compat import threading
+import threading
 
 class WaitableTimer:
 	def __init__(self):

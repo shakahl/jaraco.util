@@ -4,7 +4,6 @@ Routines for handling RSS feeds
 
 from __future__ import print_function
 from __future__ import absolute_import
-from jaraco.util.py26compat import str
 
 import feedparser
 import itertools
@@ -94,7 +93,7 @@ def load_feed_enclosure(url, filter_=None, index=None):
 	
 	if index is None:
 		for i, entry in enumerate(filtered_entries):
-			fmt = str('{0:4d} {1}')
+			fmt = unicode('{0:4d} {1}')
 			print(fmt.format(i, entry.title))
 		try:
 			index = int(raw_input('Which one? '))

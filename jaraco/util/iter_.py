@@ -15,7 +15,6 @@ import operator
 import itertools
 import sys
 from jaraco.util import ordinalth
-from jaraco.util.py26compat import basestring
 
 class Count(object):
 	"""
@@ -161,9 +160,7 @@ def grouper(n, iterable, fillvalue=None):
 	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, None))
 	"""
 	args = [iter(iterable)] * n
-	fn_name = ['izip_longest', 'zip_longest'][sys.version_info >= (3,0)]
-	fn = getattr(itertools, fn_name)
-	return fn(*args, fillvalue=fillvalue)
+	return itertools.izip_longest(*args, fillvalue=fillvalue)
 
 def grouper_nofill(n, iterable):
 	"""
@@ -308,7 +305,7 @@ class Reusable(object):
 		"""
 		self.__iterator, self.__saved = itertools.tee(self.__saved)
 
-	def __next__(self):
+	def next(self):
 		try:
 			return next(self.__iterator)
 		except StopIteration as e:
@@ -316,9 +313,6 @@ class Reusable(object):
 			#  reset the iterator so it's good for next time
 			self.reset()
 			raise
-
-	if sys.version_info < (3,):
-		next = __next__
 
 # from Python 2.6 docs
 def roundrobin(*iterables):
@@ -328,8 +322,7 @@ def roundrobin(*iterables):
 	"""
 	# Recipe credited to George Sakkis
 	pending = len(iterables)
-	next_attr = ['next', '__next__'][sys.version_info >= (3,)]
-	nexts = itertools.cycle([getattr(iter(it), next_attr) for it in iterables])
+	nexts = itertools.cycle([iter(it).next for it in iterables])
 	while pending:
 		try:
 			for next in nexts:
@@ -349,9 +342,7 @@ def unique_justseen(iterable, key=None):
 	>>> ' '.join(unique_justseen('ABBCcAD', str.lower))
 	'A B C A D'
 	"""
-	if sys.version_info < (3,0):
-		map = itertools.imap
-	return map(next, map(operator.itemgetter(1), itertools.groupby(iterable, key)))
+	return itertools.imap(next, itertools.imap(operator.itemgetter(1), itertools.groupby(iterable, key)))
 
 def skip_first(iterable):
 	"""

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-from jaraco.util.py26compat import int as newint
 from functools import reduce
 
 # consider Brandon Craig Rhoades presentation at PyCon 2010 for a new
@@ -40,7 +39,7 @@ def gen_bit_values(number):
 	Return a zero or one for each bit of a numeric value up to the most
 	significant 1 bit, beginning with the least significant bit.
 	"""
-	number = newint(number)
+	number = long(number)
 	while number:
 		yield int(number & 0x1)
 		number >>= 1
