@@ -25,6 +25,7 @@ Changes
 ~~~~~
 
 * Added skip_first to `jaraco.util.iter_`
+* Moved rss module to `jaraco.net` package.
 
 3.0.1
 ~~~~~
