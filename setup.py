@@ -31,7 +31,7 @@ setup (name = name,
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
 		url = 'http://pypi.python.org/pypi/'+name,
-		packages = find_packages(exclude=['ez_setup', 'tests', 'examples']),
+		packages = find_packages(exclude=['tests']),
 		namespace_packages = ['jaraco',],
 		license = 'MIT',
 		classifiers = [
