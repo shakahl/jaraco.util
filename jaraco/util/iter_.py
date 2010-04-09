@@ -222,7 +222,15 @@ class Counter(object):
 
 # todo, factor out caching capability
 class iterable_test(dict):
-	"Test objects for iterability, caching the result by type"
+	"""
+	Test objects for iterability, caching the result by type
+	
+	>>> test = iterable_test()
+	>>> test['foo']
+	False
+	>>> test[[]]
+	True
+	"""
 	def __init__(self, ignore_classes=[basestring]):
 		"""ignore_classes must include str, because if a string
 		is iterable, so is a single character, and the routine runs
@@ -235,7 +243,7 @@ class iterable_test(dict):
 			
 	def _test(self, candidate):
 		try:
-			if isinstance(candidate, self.ignore_classes):
+			if isinstance(candidate, tuple(self.ignore_classes)):
 				raise TypeError
 			iter(candidate)
 			result = True
