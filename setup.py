@@ -7,6 +7,12 @@ Copyright © 2004-2009 Jason R. Coombs
 
 try:
 	from distutils.command.build_py import build_py_2to3 as build_py
+	# exclude some fixers that break already compatible code
+	from lib2to3.refactor import get_fixers_from_package
+	fixers = get_fixers_from_package('lib2to3.fixes')
+	for skip_fixer in ['import']:
+		fixers.remove('lib2to3.fixes.fix_' + skip_fixer)
+	build_py.fixer_names = fixers
 except ImportError:
 	from distutils.command.build_py import build_py
 
