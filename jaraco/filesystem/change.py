@@ -17,7 +17,7 @@ import traceback
 from stat import *
 import itertools
 from jaraco.util.iter_ import consume
-from jaraco.util.string import multi_substitution
+import jaraco.util.string
 
 import logging
 log = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class PatternFilter(FileFilter):
 		'c:\\\\.*'
 		"""
 		subs = (('\\', '\\\\'), ('.', '\\.'), ('*', '.*'), ('?', '.'))
-		return multi_substitution(*subs)(p)
+		return jaraco.util.string.multi_substitution(*subs)(p)
 
 	def __call__(self, file):
 		return bool(re.match(self.pattern, file, re.I))
