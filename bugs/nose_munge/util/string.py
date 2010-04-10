@@ -11,6 +11,8 @@ def multi_substitution(*substitutions):
 	Take a sequence of pairs specifying substitutions, and create
 	a function that performs those substitutions.
 	
-	>>> multi_substitution()
+	>>> multi_substitution()('')
+	''
 	"""
 	substitutions = starmap(substitution, substitutions)
+	return lambda x: x
