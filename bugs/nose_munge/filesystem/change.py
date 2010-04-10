@@ -1,9 +1,7 @@
 from util.string import multi_substitution
 
-def ConvertFilePattern(p):
-	r"""
-	converts a filename specification (such as c:\*.*) to an equivelent regular expression
-	>>> ConvertFilePattern('c:\*')
-	'c:\\\\.*'
+def call_multisub():
 	"""
-	return multi_substitution()(p)
+	>>> call_multisub()
+	"""
+	return multi_substitution()('')
