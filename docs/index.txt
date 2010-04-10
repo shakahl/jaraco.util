@@ -21,6 +21,11 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.2
+~~~
+
+* Removed release module and moved its function to the package module.
+
 3.1
 ~~~~~
 
