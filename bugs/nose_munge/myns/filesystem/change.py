@@ -1,4 +1,4 @@
-from util.string import multi_substitution
+from myns.util.string import multi_substitution
 
 def call_multisub():
 	r"""
