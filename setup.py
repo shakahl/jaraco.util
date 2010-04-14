@@ -44,6 +44,7 @@ setup (name = name,
 			"Development Status :: 4 - Beta",
 			"Intended Audience :: Developers",
 			"Programming Language :: Python",
+			"Programming Language :: Python :: 3",
 		],
 		entry_points = {
 			'console_scripts': [
