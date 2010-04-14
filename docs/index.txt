@@ -21,6 +21,11 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.3
+~~~
+
+* Added prorating calculator and console script prorate-calc.
+
 3.2
 ~~~
 

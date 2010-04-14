@@ -30,3 +30,12 @@ def read_long_description():
 			'docs',
 			'index.txt',
 		) ).read().strip()
+
+def test_compile_rst(filename):
+	try:
+		from docutils.core import publish_string
+	except ImportError:
+		# if we don't have docutils, just fail silently
+		return
+	docs = open(filename).read()
+	res = publish_string(docs)
