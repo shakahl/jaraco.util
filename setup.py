@@ -51,6 +51,7 @@ setup (name = name,
 				'roll-dice = jaraco.util.dice:do_dice_roll',
 				'release-package = jaraco.util.package:release',
 				'calc-prorate = jaraco.dateutil:calculate_prorated_values',
+				'make-turk-recognition-job = jaraco.util.turk:make_turk_recognition_job_from_pdf',
 				],
 		},
 		install_requires=[
