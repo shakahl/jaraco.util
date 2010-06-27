@@ -27,6 +27,7 @@ Changes
 * Added prorating calculator and console script prorate-calc.
 * Added iter_.peek
 * Renamed QuickTimer to Stopwatch - modified to PEP8 specs
+* Adding jaraco.filesystem.DirectoryStack
 
 3.2
 ~~~
