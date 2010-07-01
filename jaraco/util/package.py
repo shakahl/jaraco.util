@@ -2,6 +2,8 @@
 
 import os
 import sys
+import inspect
+import pkg_resources
 
 def set_environment_for_PyPI():
 	"""
@@ -39,3 +41,12 @@ def test_compile_rst(filename):
 		return
 	docs = open(filename).read()
 	res = publish_string(docs)
+
+def local_resource_filename(filename):
+	"""
+	Use pkg_resources to get a filename for a resource relative to
+	the caller's module.
+	"""
+	callers_frame = inspect.currentframe().f_back
+	calling_module_name = callers_frame.f_globals['__name__']
+	return pkg_resources.resource_filename(calling_module_name, filename)
