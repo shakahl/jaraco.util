@@ -31,7 +31,7 @@ __date__ = '$Date$'[7:-2]
 name = 'jaraco.util'
 
 setup (name = name,
-		version = '3.3',
+		version = '3.4',
 		description = 'General utility modules that supply commonly-used functionality',
 		long_description = long_description,
 		author = 'Jason R. Coombs',
