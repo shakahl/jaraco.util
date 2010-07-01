@@ -3,7 +3,7 @@
 """jaraco.iter_
 	Tools for working with iterables.  Complements itertools.
 	
-Copyright © 2008-2009 Jason R. Coombs
+Copyright © 2008-2010 Jason R. Coombs
 """
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
@@ -376,3 +376,24 @@ def peek(iterable):
 	peeker, original = itertools.tee(iterable)
 	return next(peeker), original
 
+def first(item):
+	iterable = iter(item)
+	return next(iterable)
+
+def one(item):
+	"""
+	Return the first element from the iterable, but raise an exception
+	if elements remain in the iterable after the first.
+	
+	>>> one(['val'])
+	'val'
+	>>> one(['val', 'other'])
+	Traceback (most recent call last):
+	...
+	ValueError: item contained more than one value
+	"""
+	iterable = iter(item)
+	result = next(iterable)
+	if tuple(itertools.islice(iterable, 1)):
+		raise ValueError("item contained more than one value")
+	return result
