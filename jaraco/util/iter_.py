@@ -14,6 +14,7 @@ __date__ = '$Date$'[7:-2]
 import operator
 import itertools
 import sys
+import collections
 from jaraco.util import ordinalth
 
 class Count(object):
@@ -197,13 +198,16 @@ def infiniteCall(f, *args):
 	while True:
 		yield f(*args)
 
-def consume(i):
-	"Cause an iterable to evaluate all of its arguments, but don't store any result."
-	for x in i: pass
-
-def consume_n(i, n):
-	"Cause an iterable to evaluate n of its arguments, but don't store any result."
-	consume(itertools.islice(i, n))
+# from Python 2.7 docs
+def consume(iterator, n=None):
+	"Advance the iterator n-steps ahead. If n is none, consume entirely."
+	# Use functions that consume iterators at C speed.
+	if n is None:
+		# feed the entire iterator into a zero-length deque
+		collections.deque(iterator, maxlen=0)
+	else:
+		# advance to the emtpy slice starting at position n
+		next(islice(iterator, n, n), None)
 
 class Counter(object):
 	def __init__(self, i):
