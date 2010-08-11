@@ -25,10 +25,10 @@ Changes
 ~~~
 
 * Added prorating calculator and console script calc-prorate.
-* Added iter_.peek
+* Added `iter_.peek`
 * Renamed QuickTimer to Stopwatch - modified to PEP8 specs
 * Adding jaraco.filesystem.DirectoryStack
-* Added iter_.one and iter_.first
+* Added `iter_.one` and `iter_.first`
 
 3.2
 ~~~
@@ -40,7 +40,7 @@ Changes
 
 * Added skip_first to `jaraco.util.iter_`
 * Moved rss module to `jaraco.net` package.
-* Bug fixes in iter_.flatten.
+* Bug fixes in `iter_.flatten`.
 * Restored Python 2 compatibility and implemented 2to3 for deployment.
   `jaraco.util` is now easy_installable on Python 2 and Python 3.
 
