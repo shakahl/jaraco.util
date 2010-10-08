@@ -21,6 +21,11 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.4
+~~~
+
+* Adding jaraco.util.concurrency
+
 3.3
 ~~~
 
