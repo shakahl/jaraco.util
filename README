@@ -23,6 +23,11 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.4.1
+~~~~~
+
+* Added jaraco.util.filesystem.ensure_dir_exists decorator
+
 3.4
 ~~~
 
