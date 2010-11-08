@@ -380,6 +380,47 @@ def peek(iterable):
 	peeker, original = itertools.tee(iterable)
 	return next(peeker), original
 
+class Peekable(object):
+	"""
+	Wrapper for a traditional iterable to give it a peek attribute.
+	
+	>>> nums = Peekable(xrange(2))
+	>>> nums.peek()
+	0
+	>>> nums.peek()
+	0
+	>>> next(nums)
+	0
+	>>> nums.peek()
+	1
+	>>> next(nums)
+	1
+	>>> nums.peek()
+	Traceback (most recent call last):
+	...
+	StopIteration
+	"""
+	def __new__(cls, iterator):
+		# if the iterator is already 'peekable', return it; otherwise
+		# wrap it
+		if hasattr(iterator, 'peek'):
+			return iterator
+		else:
+			return object.__new__(cls)
+
+	def __init__(self, iterator):
+		self.iterator = iterator
+
+	def __iter__(self):
+		return self
+
+	def next(self):
+		return next(self.iterator)
+
+	def peek(self):
+		result, self.iterator = peek(self.iterator)
+		return result
+
 def first(item):
 	iterable = iter(item)
 	return next(iterable)
