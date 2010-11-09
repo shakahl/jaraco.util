@@ -21,6 +21,7 @@ def release():
 	set_environment_for_PyPI()
 
 	sys.argv[1:] = ['egg_info', '-RDb', '', 'sdist', 'upload']
+	__name__ = '__main__'
 	execfile('setup.py')
 
 def read_long_description():
