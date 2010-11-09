@@ -41,7 +41,6 @@ setup_params = dict(
 	entry_points = {
 		'console_scripts': [
 			'roll-dice = jaraco.util.dice:do_dice_roll',
-			'release-package = jaraco.util.package:release',
 			'calc-prorate = jaraco.dateutil:calculate_prorated_values',
 			],
 	},

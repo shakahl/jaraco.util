@@ -28,6 +28,7 @@ Changes
 
 * Added jaraco.util.filesystem.ensure_dir_exists decorator
 * Added jaraco.util.iter_.Peekable iterator wrapper
+* Moved jaraco.util.package to jaraco.develop project
 
 3.4
 ~~~
