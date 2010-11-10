@@ -354,7 +354,11 @@ def unique_justseen(iterable, key=None):
 	>>> ' '.join(unique_justseen('ABBCcAD', str.lower))
 	'A B C A D'
 	"""
-	return itertools.imap(next, itertools.imap(operator.itemgetter(1), itertools.groupby(iterable, key)))
+	return itertools.imap(
+		next, itertools.imap(
+			operator.itemgetter(1),
+			itertools.groupby(iterable, key)
+		))
 
 def skip_first(iterable):
 	"""
@@ -442,3 +446,41 @@ def one(item):
 	if tuple(itertools.islice(iterable, 1)):
 		raise ValueError("item contained more than one value")
 	return result
+
+def nwise(iter, n):
+	"""
+	Like pairwise, except returns n-tuples of adjacent items.
+	s -> (s0,s1,...,sn), (s1,s2,...,s(n+1)), ...
+	"""
+	iterset = [iter]
+	while len(iterset) < n:
+		iterset[-1:] = itertools.tee(iterset[-1])
+		next(iterset[-1], None)
+	return itertools.izip(*iterset)
+
+def window(iter, pre_size=1, post_size=1):
+	"""
+	Given an iterable, return a new iterable which yields triples of
+	(pre, item, post), where pre and post are the items preceeding and
+	following the item (or None if no such item is appropriate). pre
+	and post will always be pre_size and post_size in length.
+	
+	>>> example = window(range(10), pre_size=2)
+	>>> pre, item, post = next(example)
+	>>> pre
+	(None, None)
+	>>> post
+	(1,)
+	>>> next(example)
+	((None, 0), 1, (2,))
+	>>> list(example)[-1]
+	((7, 8), 9, (None,))
+	"""
+	pre_iter, iter = itertools.tee(iter)
+	pre_iter = itertools.chain((None,)*pre_size, pre_iter)
+	pre_iter = nwise(pre_iter, pre_size)
+	post_iter, iter = itertools.tee(iter)
+	post_iter = itertools.chain(post_iter, (None,)*post_size)
+	post_iter = nwise(post_iter, post_size)
+	next(post_iter, None)
+	return itertools.izip(pre_iter, iter, post_iter)
