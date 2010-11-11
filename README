@@ -23,6 +23,12 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.5.1
+~~~~~
+
+* Removed apng from .image so the package now installs on Python 2.5
+  with only one error.
+
 3.5
 ~~~
 
