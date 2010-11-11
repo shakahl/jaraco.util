@@ -23,6 +23,12 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.6
+~~~
+
+* Added jaraco.util.editor (with EditableFile for editing strings in a
+  subprocess editor).
+
 3.5.1
 ~~~~~
 
