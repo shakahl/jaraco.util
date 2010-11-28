@@ -2,6 +2,8 @@ import tempfile
 import os
 import sys
 import subprocess
+import mimetypes
+import collections
 
 class EditableFile(object):
 	"""
@@ -21,11 +23,18 @@ class EditableFile(object):
 	EDITOR is defined, defaults to 'notepad' on Windows and 'edit' on
 	other platforms.
 	"""
-	def __init__(self, data=None):
+	platform_default_editors = collections.defaultdict(lambda: 'edit',
+		win32 = 'notepad',
+		linux2 = 'vi',
+		)
+	
+	def __init__(self, data=None, content_type='text/plain'):
 		self.data = data
+		self.content_type = content_type
 
 	def __enter__(self):
-		fobj, self.name = tempfile.mkstemp()
+		extension = mimetypes.guess_extension(self.content_type) or ''
+		fobj, self.name = tempfile.mkstemp(extension)
 		if self.data:
 			os.write(fobj, self.data)
 		os.close(fobj)
@@ -38,13 +47,13 @@ class EditableFile(object):
 	def __exit__(self, *tb_info):
 		os.remove(self.name)
 
-	def edit(self, content_type='text/plain'):
+	def edit(self):
 		"""
 		Edit the file
 		"""
 		self.changed = False
 		with self:
-			editor = self.get_editor(content_type)
+			editor = self.get_editor()
 			cmd = [editor, self.name]
 			try:
 				res = subprocess.call(cmd)
@@ -52,24 +61,30 @@ class EditableFile(object):
 				print("Error launching editor %(editor)s" % vars())
 				print(e)
 				return
-			if res != 0: return
+			if res != 0:
+				raise RuntimeException('Editor process returned non-zero.')
 			new_data = self.read()
 			if new_data != self.data:
 				self.changed = True
 				self.data = new_data
 
 	@staticmethod
-	def get_editor(content_type):
+	def _search_env(keys):
+		"""
+		Search the environment for the supplied keys, returning the first
+		one found or None if none was found.
+		"""
+		for key in keys:
+			if key in os.environ:
+				return os.environ[key]
+
+	def get_editor(self):
 		"""
 		Give preference to an XML_EDITOR or EDITOR defined in the
-		environment. Otherwise use notepad on Windows and edit on other
-		platforms.
+		environment. Otherwise use a default editor based on platform.
 		"""
 		env_search = ['EDITOR']
-		if 'xml' in content_type:
+		if 'xml' in self.content_type:
 			env_search.insert(0, 'XML_EDITOR')
-		default_editor = ['edit', 'notepad'][sys.platform.startswith('win32')]
-		# we're going to use reduce to search the environment; the last
-		#  value is the fallback (it's not looked up in the env).
-		env_search.append(default_editor)
-		return reduce(os.environ.get, env_search)
+		default_editor = self.platform_default_editors[sys.platform]
+		return self._search_env(env_search) or default_editor
