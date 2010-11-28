@@ -5,6 +5,8 @@ import subprocess
 import mimetypes
 import collections
 
+class EditProcessException(RuntimeError): pass
+
 class EditableFile(object):
 	"""
 	EditableFile saves some data to a temporary file, launches a
@@ -62,7 +64,8 @@ class EditableFile(object):
 				print(e)
 				return
 			if res != 0:
-				raise RuntimeException('Editor process returned non-zero.')
+				msg = '%(editor)s returned error status %(res)d' % vars()
+				raise EditProcessException(msg)
 			new_data = self.read()
 			if new_data != self.data:
 				self.changed = True
