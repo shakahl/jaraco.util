@@ -440,6 +440,10 @@ def one(item):
 	Traceback (most recent call last):
 	...
 	ValueError: item contained more than one value
+	>>> one([])
+	Traceback (most recent call last):
+	...
+	StopIteration
 	"""
 	iterable = iter(item)
 	result = next(iterable)
