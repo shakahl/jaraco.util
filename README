@@ -23,6 +23,12 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.7
+~~~
+
+* Added jaraco.util.dictlib.DictAdapter
+* Added jaraco.util.dictlib.ItemsAsAttributes
+
 3.6
 ~~~
 
