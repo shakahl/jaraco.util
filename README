@@ -26,8 +26,16 @@ Changes
 3.7
 ~~~
 
-* Added jaraco.util.dictlib.DictAdapter
-* Added jaraco.util.dictlib.ItemsAsAttributes
+* Added jaraco.util.dictlib.DictAdapter.
+* Added jaraco.util.dictlib.ItemsAsAttributes.
+* Added wallpaper script by Samuel Huckins with added support for Windows.
+* Added stream.Tee (for outputting to multiple streams).
+* Fix for NameErrors.
+* Added cross-platform getch function.
+* Added several new functions to `iter_`.
+* Enhanced EditableFile with support for non-ascii text and capturing
+  a diff after changes are made.
+
 
 3.6
 ~~~
