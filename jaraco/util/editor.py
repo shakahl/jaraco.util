@@ -29,7 +29,8 @@ class EditableFile(object):
 		win32 = 'notepad',
 		linux2 = 'vi',
 		)
-	
+	encoding = 'utf-8'
+
 	def __init__(self, data=None, content_type='text/plain'):
 		self.data = data
 		self.content_type = content_type
@@ -38,13 +39,13 @@ class EditableFile(object):
 		extension = mimetypes.guess_extension(self.content_type) or ''
 		fobj, self.name = tempfile.mkstemp(extension)
 		if self.data:
-			os.write(fobj, self.data)
+			os.write(fobj, self.data.encode(self.encoding))
 		os.close(fobj)
 		return self
 
 	def read(self):
 		with open(self.name, 'rb') as f:
-			return f.read()
+			return f.read().decode(self.encoding)
 
 	def __exit__(self, *tb_info):
 		os.remove(self.name)
