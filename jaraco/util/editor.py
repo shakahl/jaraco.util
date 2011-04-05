@@ -4,6 +4,8 @@ import sys
 import subprocess
 import mimetypes
 import collections
+from StringIO import StringIO
+import difflib
 
 class EditProcessException(RuntimeError): pass
 
@@ -69,7 +71,7 @@ class EditableFile(object):
 				raise EditProcessException(msg)
 			new_data = self.read()
 			if new_data != self.data:
-				self.changed = True
+				self.changed = self._save_diff(self.data, new_data)
 				self.data = new_data
 
 	@staticmethod
@@ -92,3 +94,8 @@ class EditableFile(object):
 			env_search.insert(0, 'XML_EDITOR')
 		default_editor = self.platform_default_editors[sys.platform]
 		return self._search_env(env_search) or default_editor
+
+	@staticmethod
+	def _save_diff(*versions):
+		diff = difflib.context_diff(*map(list,map(StringIO, versions)))
+		return tuple(diff)
