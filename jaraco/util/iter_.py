@@ -176,14 +176,17 @@ def grouper_nofill(n, iterable):
 	remove_nofill = lambda s: tuple(filter(value_is_not_nofill, s))
 	result = grouper(n, iterable, fillvalue = nofill)
 	return map(remove_nofill, result)
-	
 
 # from Python 2.6 docs
 def pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-    a, b = tee(iterable)
-    next(b, None)
-    return izip(a, b)
+	"""
+	s -> (s0,s1), (s1,s2), (s2, s3), ...
+	>>> list(pairwise([1,2,3]))
+	[(1, 2), (2, 3), (3, 4)]
+	"""
+	a, b = itertools.tee(iterable)
+	next(b, None)
+	return itertools.izip(a, b)
 
 def chain(sequences):
 	"""functions like itertools.chain, except chains everything in sequences.
