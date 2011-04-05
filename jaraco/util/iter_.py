@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 
 """jaraco.iter_
-	Tools for working with iterables.  Complements itertools.
-	
-Copyright © 2008-2010 Jason R. Coombs
+Tools for working with iterables.  Complements itertools.
+
+Copyright © 2008-2011 Jason R. Coombs
 """
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
@@ -491,3 +491,48 @@ def window(iter, pre_size=1, post_size=1):
 	post_iter = nwise(post_iter, post_size)
 	next(post_iter, None)
 	return itertools.izip(pre_iter, iter, post_iter)
+
+class IterSaver(object):
+	def __init__(n, iterable):
+		self.n = n
+		self.iterable = iterable
+		self.buffer = collections.deque()
+
+	def next(self):
+		while len(self.buffer) <= self.n:
+			self.buffer.append(next(self.iterable))
+		return self.buffer.popleft()
+
+def partition_items(count, bin_size):
+	"""
+	Given the total number of items, determine the number of items that
+	can be added to each bin with a limit on the bin size.
+	
+	So if you want to partition 11 items into groups of 3, you'll want
+	three of three and one of two.
+	>>> partition_items(11, 3)
+	[3, 3, 3, 2]
+	
+	But if you only have ten items, you'll have two groups of three and
+	two of two.
+	>>> partition_items(10, 3)
+	[3, 3, 2, 2]
+	"""
+	num_bins = int(math.ceil(count / float(bin_size)))
+	bins = [0] * num_bins
+	for i in xrange(count):
+		bins[i%num_bins] += 1
+	return bins
+
+def balanced_rows(n, iterable, fillvalue=None):
+	"""
+	Like grouper, but balance the rows to minimize fill per row.
+	balanced_rows(3, 'ABCDEFG', 'x') --> ABC DEx FGx"
+	"""
+	iterable, iterable_copy = itertools.tee(iterable)
+	count = len(tuple(iterable_copy))
+	for allocation in partition_items(count, n):
+		row = itertools.islice(iterable, allocation)
+		if allocation < n:
+			row = itertools.chain(row, [fillvalue])
+		yield tuple(row)
