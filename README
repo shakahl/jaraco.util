@@ -31,6 +31,7 @@ Changes
   both OptionParser and ArgumentParser and is deprecated.
 * Added `jaraco.util.exceptions` with a function for determining if a
   callable throws a specific exception.
+* Added `is_decodable` and `is_binary` to `jaraco.util.string`.
 
 3.7
 ~~~
