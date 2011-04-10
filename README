@@ -23,6 +23,13 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.8
+~~~
+
+* `jaraco.util.logging` now supports ArgumentParser with `add_arguments`
+  and `setup`. `add_options` has been replaced with `add_arguments` for
+  both OptionParser and ArgumentParser and is deprecated.
+
 3.7
 ~~~
 
