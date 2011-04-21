@@ -23,6 +23,12 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.8.1
+~~~~~
+
+* jaraco namespace package now supports py2exe
+* ItemsAsAttributes now works with dicts that customize `__getitem__`
+
 3.8
 ~~~
 
