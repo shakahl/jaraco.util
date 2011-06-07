@@ -23,6 +23,14 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.9
+~~~
+
+* dictlib.RangeMap now uses PEP-8 naming. Use `sort_params` and 
+  `key_match_comparator` for
+  the constructor and `undefined_value`, `last_item`, and `first_item` class
+  attributes.
+
 3.8.1
 ~~~~~
 
