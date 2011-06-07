@@ -13,8 +13,9 @@ __date__ = '$Date$'[7:-2]
 
 import operator
 import itertools
-import sys
 import collections
+import math
+
 from jaraco.util import ordinalth
 
 class Count(object):
@@ -181,7 +182,7 @@ def grouper_nofill(n, iterable):
 def pairwise(iterable):
 	"""
 	s -> (s0,s1), (s1,s2), (s2, s3), ...
-	>>> list(pairwise([1,2,3]))
+	>>> list(pairwise([1,2,3,4]))
 	[(1, 2), (2, 3), (3, 4)]
 	"""
 	a, b = itertools.tee(iterable)
