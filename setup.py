@@ -6,31 +6,38 @@ Setup script for building jaraco.util distribution
 Copyright © 2004-2010 Jason R. Coombs
 """
 
-try:
-	from distutils.command.build_py import build_py_2to3 as build_py
-	# exclude some fixers that break already compatible code
-	from lib2to3.refactor import get_fixers_from_package
-	fixers = get_fixers_from_package('lib2to3.fixes')
-	for skip_fixer in ['import']:
-		fixers.remove('lib2to3.fixes.fix_' + skip_fixer)
-	build_py.fixer_names = fixers
-except ImportError:
-	from distutils.command.build_py import build_py
-
 import sys
 import subprocess
 
 from setuptools import find_packages, Command
 
+import setuptools.command.build_py
+
+def install_fixer_names():
+	"""
+	Distribute doesn't provide an exemption mechanism, so we need to build
+	the full list as if distribute had done it, then we can skip the fixers
+	we want to exempt.
+	"""
+	names = getattr(setuptools.command.build_py.build_py, 'fixer_names', None) or []
+	from lib2to3.refactor import get_fixers_from_package
+	for p in setuptools.lib2to3_fixer_packages:
+		names.extend(get_fixers_from_package(p))
+	setuptools.command.build_py.build_py.fixer_names = names
+
+def skip_fixer(fixer_name):
+	names = getattr(setuptools.command.build_py.build_py, 'fixer_names', None)
+	names and names.remove(fixer_name)
+
 class PyTest(Command):
-    user_options = []
-    def initialize_options(self):
-        pass
-    def finalize_options(self):
-        pass
-    def run(self):
-        import py.test
-        raise SystemExit(py.test.main(args=[]))
+	user_options = []
+	def initialize_options(self):
+		pass
+	def finalize_options(self):
+		pass
+	def run(self):
+		import py.test
+		raise SystemExit(py.test.main(args=[]))
 
 name = 'jaraco.util'
 
@@ -72,11 +79,13 @@ setup_params = dict(
 		'hgtools>=0.4',
 	],
 	cmdclass=dict(
-		build_py=build_py,
 		test=PyTest,
 	),
+	use_2to3=True,
 )
 
 if __name__ == '__main__':
 	from setuptools import setup
+	install_fixer_names()
+	skip_fixer('lib2to3.fixes.fix_import')
 	setup(**setup_params)
