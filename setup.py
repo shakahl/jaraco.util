@@ -17,7 +17,20 @@ try:
 except ImportError:
 	from distutils.command.build_py import build_py
 
-from setuptools import find_packages
+import sys
+import subprocess
+
+from setuptools import find_packages, Command
+
+class PyTest(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        import py.test
+        raise SystemExit(py.test.main(args=[]))
 
 name = 'jaraco.util'
 
@@ -53,13 +66,15 @@ setup_params = dict(
 	dependency_links = [
 	],
 	tests_require=[
-		'nose>=0.10',
+		'pytest>=2',
 	],
-	test_suite = "nose.collector",
 	setup_requires=[
 		'hgtools>=0.4',
 	],
-	cmdclass=dict(build_py=build_py),
+	cmdclass=dict(
+		build_py=build_py,
+		test=PyTest,
+	),
 )
 
 if __name__ == '__main__':
