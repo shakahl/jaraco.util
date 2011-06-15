@@ -102,3 +102,31 @@ class Flags(object):
 		except TypeError:
 			index = self._names.index(key)
 			return self._values[index]
+
+class BitMask(type):
+	"""
+	A metaclass to create a bitmask with attributes. Subclass an int and
+	set this as the metaclass to use.
+	
+	>>> class MyBits(int):
+	...   __metaclass__ = BitMask
+	...   a = 0x1
+	...   b = 0x4
+	...   c = 0x3
+	
+	>>> b1 = MyBits(3)
+	>>> b1.a, b1.b, b1.c
+	(True, False, True)
+	>>> b2 = MyBits(8)
+	>>> any([b2.a, b2.b, b2.c])
+	False
+	"""
+
+	def __new__(cls, name, bases, attrs):
+		newattrs = dict(
+			(attr, property(lambda self, value=value: bool(self & value)))
+			for attr, value in attrs.items()
+			if not attr.startswith('_')
+		)
+		return type.__new__(cls, name, bases, newattrs)
+

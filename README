@@ -30,6 +30,7 @@ Changes
   `key_match_comparator` for
   the constructor and `undefined_value`, `last_item`, and `first_item` class
   attributes.
+* Added `jaraco.util.bitutil.BitMask` metaclass.
 
 3.8.1
 ~~~~~
