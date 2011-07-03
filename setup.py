@@ -19,6 +19,7 @@ def install_fixer_names():
 	the full list as if distribute had done it, then we can skip the fixers
 	we want to exempt.
 	"""
+	if not hasattr(setuptools, 'lib2to3_fixer_packages'): return
 	names = getattr(setuptools.command.build_py.build_py, 'fixer_names', None) or []
 	from lib2to3.refactor import get_fixers_from_package
 	for p in setuptools.lib2to3_fixer_packages:
