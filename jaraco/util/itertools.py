@@ -6,10 +6,7 @@ Tools for working with iterables.  Complements itertools.
 Copyright © 2008-2011 Jason R. Coombs
 """
 
-__author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
-__version__ = '$Revision$'[11:-2]
-__svnauthor__ = '$Author$'[9:-2]
-__date__ = '$Date$'[7:-2]
+from __future__ import absolute_import
 
 import operator
 import itertools
@@ -28,7 +25,7 @@ class Count(object):
 	def __init__(self, limit):
 		self.count = 0
 		self.limit = limit
-		
+
 	def __call__(self, arg):
 		if not self.limit:
 			result = True
@@ -76,7 +73,7 @@ class islice(object):
 		if len(self.sliceArgs) == 3:
 			result = 'every %s item from %s' % (ordinalth(self.sliceArgs[2]), baseOneRange(self.sliceArgs[0:2]))
 		return result
-	
+
 class LessThanNBlanks(object):
 	"""
 	An object that when called will return True until n false elements
@@ -116,12 +113,12 @@ class LessThanNConsecutiveBlanks(object):
 >>> tuple(first)
 ('string 1', 'string 2', '', 'string 3', '', 'string 4', '')
 	"""
-	
+
 	def __init__(self, nBlanks):
 		self.limit = nBlanks
 		self.count = 0
 		self.last = False
-		
+
 	def __call__(self, arg):
 		self.count += not arg
 		if arg:
@@ -156,7 +153,7 @@ class splitter(object):
 def grouper(n, iterable, fillvalue=None):
 	"""
 	grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
-	
+
 	>>> c = grouper(3, range(11))
 	>>> tuple(c)
 	((0, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, None))
@@ -232,7 +229,7 @@ class Counter(object):
 class iterable_test(dict):
 	"""
 	Test objects for iterability, caching the result by type
-	
+
 	>>> test = iterable_test()
 	>>> test['foo']
 	False
@@ -248,7 +245,7 @@ class iterable_test(dict):
 
 	def __getitem__(self, candidate):
 		return dict.get(self, type(candidate)) or self._test(candidate)
-			
+
 	def _test(self, candidate):
 		try:
 			if isinstance(candidate, tuple(self.ignore_classes)):
@@ -292,7 +289,7 @@ def empty():
 class Reusable(object):
 	"""
 	An iterator that may be reset and reused.
-	
+
 	>>> ri = Reusable(range(3))
 	>>> tuple(ri)
 	(0, 1, 2)
@@ -316,7 +313,7 @@ class Reusable(object):
 	def reset(self):
 		"""
 		Resets the iterator to the start.
-		
+
 		Any remaining values in the current iteration are discarded.
 		"""
 		self.__iterator, self.__saved = itertools.tee(self.__saved)
@@ -354,7 +351,7 @@ def unique_justseen(iterable, key=None):
 
 	>>> ' '.join(unique_justseen('AAAABBBCCDAABBB'))
 	'A B C D A B'
-	
+
 	>>> ' '.join(unique_justseen('ABBCcAD', str.lower))
 	'A B C A D'
 	"""
@@ -367,7 +364,7 @@ def unique_justseen(iterable, key=None):
 def skip_first(iterable):
 	"""
 	Skip the first element of an iterable
-	
+
 	>>> tuple(skip_first(range(10)))
 	(1, 2, 3, 4, 5, 6, 7, 8, 9)
 	"""
@@ -391,7 +388,7 @@ def peek(iterable):
 class Peekable(object):
 	"""
 	Wrapper for a traditional iterable to give it a peek attribute.
-	
+
 	>>> nums = Peekable(xrange(2))
 	>>> nums.peek()
 	0
@@ -437,7 +434,7 @@ def one(item):
 	"""
 	Return the first element from the iterable, but raise an exception
 	if elements remain in the iterable after the first.
-	
+
 	>>> one(['val'])
 	'val'
 	>>> one(['val', 'other'])
@@ -472,7 +469,7 @@ def window(iter, pre_size=1, post_size=1):
 	(pre, item, post), where pre and post are the items preceeding and
 	following the item (or None if no such item is appropriate). pre
 	and post will always be pre_size and post_size in length.
-	
+
 	>>> example = window(range(10), pre_size=2)
 	>>> pre, item, post = next(example)
 	>>> pre
@@ -508,12 +505,12 @@ def partition_items(count, bin_size):
 	"""
 	Given the total number of items, determine the number of items that
 	can be added to each bin with a limit on the bin size.
-	
+
 	So if you want to partition 11 items into groups of 3, you'll want
 	three of three and one of two.
 	>>> partition_items(11, 3)
 	[3, 3, 3, 2]
-	
+
 	But if you only have ten items, you'll have two groups of three and
 	two of two.
 	>>> partition_items(10, 3)

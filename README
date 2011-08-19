@@ -23,6 +23,11 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+4.0
+~~~
+
+* Renamed jaraco.util.iter_ to jaraco.util.itertools
+
 3.9
 ~~~
 

@@ -2,7 +2,7 @@
 
 """FileChange
 	Classes and routines for monitoring the file system for changes.
-	
+
 Copyright © 2004 Jason R. Coombs
 """
 
@@ -16,7 +16,7 @@ from threading import Thread
 import traceback
 from stat import *
 import itertools
-from jaraco.util.iter_ import consume
+from jaraco.util.itertools import consume
 import jaraco.util.string
 
 import logging
@@ -181,7 +181,7 @@ class BlockingNotifier(Notifier):
 				return
 			else:
 				pass # it was a timeout.  ignore it and wait some more.
-		
+
 	def FindFilesAfter(self, cutoff):
 		mtf = ModifiedTimeFilter(cutoff)
 		af = AggregateFilter(mtf, *self.filters)
@@ -213,7 +213,7 @@ class ThreadedNotifier(BlockingNotifier, Thread):
 		#  references to this object in the win32api stuff, so __del__ never gets
 		#  called.
 		self.setDaemon(True)
-		
+
 		self.Handle = handler
 
 	def run(self):

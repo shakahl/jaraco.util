@@ -44,7 +44,7 @@ name = 'jaraco.util'
 
 setup_params = dict(
 	name = name,
-	use_hg_version=True,
+	use_hg_version=dict(increment="1.0"),
 	description = 'General utility modules that supply commonly-used functionality',
 	long_description = open('README').read(),
 	author = 'Jason R. Coombs',
