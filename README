@@ -27,11 +27,13 @@ Changes
 ~~~
 
 * Renamed jaraco.util.iter_ to jaraco.util.itertools
+* Moved PasswordGenerator to jaraco.util.auth
+* Updated callable() to use technique that's good for all late Python versions
 
 3.9
 ~~~
 
-* dictlib.RangeMap now uses PEP-8 naming. Use `sort_params` and 
+* dictlib.RangeMap now uses PEP-8 naming. Use `sort_params` and
   `key_match_comparator` for
   the constructor and `undefined_value`, `last_item`, and `first_item` class
   attributes.
