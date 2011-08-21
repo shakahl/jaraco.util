@@ -29,6 +29,8 @@ Changes
 * Renamed jaraco.util.iter_ to jaraco.util.itertools
 * Moved PasswordGenerator to jaraco.util.auth
 * Updated callable() to use technique that's good for all late Python versions
+* Removed jaraco.util.odict (use py26compat.collections.OrderedDict for
+  Python 2.6 and earlier).
 
 3.9
 ~~~
