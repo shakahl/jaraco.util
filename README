@@ -46,6 +46,8 @@ Changes
     + GetUniquePathname is now get_unique_pathname
     + GetUniqueFilename has been removed.
 
+* Removed jaraco.filesystem.change (moved to jaraco.windows project).
+
 3.9
 ~~~
 
