@@ -48,6 +48,7 @@ Changes
 
 * Removed jaraco.filesystem.change (moved to jaraco.windows project).
 * Added jaraco.util.filesystem.tempfile_context.
+* Removed jaraco.util.excel (functionality moved to jaraco.office project).
 
 3.9
 ~~~
