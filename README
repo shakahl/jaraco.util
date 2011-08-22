@@ -41,6 +41,11 @@ Changes
     + Removed getPeriodSeconds, getDateFormatString, and GregorianDate
       backward-compatibility aliases.
 
+  - jaraco.filesystem
+
+    + GetUniquePathname is now get_unique_pathname
+    + GetUniqueFilename has been removed.
+
 3.9
 ~~~
 
