@@ -47,6 +47,7 @@ Changes
     + GetUniqueFilename has been removed.
 
 * Removed jaraco.filesystem.change (moved to jaraco.windows project).
+* Added jaraco.util.filesystem.tempfile_context.
 
 3.9
 ~~~
