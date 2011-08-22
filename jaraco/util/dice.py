@@ -1,3 +1,7 @@
+"""
+Simple module for simulating dice rolls.
+"""
+
 from __future__ import print_function
 
 import random
@@ -10,7 +14,7 @@ def get_options():
 	options, args = parser.parse_args()
 	try:
 		number = int(args.pop())
-	except:
+	except Exception:
 		number = 1
 	options.number = number
 	return options
