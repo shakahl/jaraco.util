@@ -50,6 +50,7 @@ Changes
 * Added jaraco.util.filesystem.tempfile_context.
 * Removed jaraco.util.excel (functionality moved to jaraco.office project).
 * Removed jaraco.util.timers (functionality moved to jaraco.windows project).
+* Removed jaraco.util.scratch (unused).
 
 3.9
 ~~~
