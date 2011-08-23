@@ -1,3 +1,5 @@
+import sys
+
 class Tee(object):
 	"""
 	Copy the standard output to a file, but continue to write it to
