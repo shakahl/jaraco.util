@@ -19,6 +19,9 @@ def install_fixer_names():
 	the full list as if distribute had done it, then we can skip the fixers
 	we want to exempt.
 	"""
+	# if we're not on Python 3, do nothing - this routine can cause
+	#  problems, so don't run it if we're not going to need it.
+	if sys.version_info < (3,): return
 	if not hasattr(setuptools, 'lib2to3_fixer_packages'): return
 	names = getattr(setuptools.command.build_py.build_py, 'fixer_names', None) or []
 	from lib2to3.refactor import get_fixers_from_package

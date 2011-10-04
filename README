@@ -23,10 +23,22 @@ You can install it with ``easy_install jaraco.util``, or from the
 Changes
 -------
 
+3.9.2
+~~~~~
+
+* Another attempt to avoid SandboxViolation errors on some Python
+  installations (Python 2 only).
+
+3.9.1
+~~~~~
+
+* Address attribute error for some older versions of distribute and
+  setuptools.
+
 3.9
 ~~~
 
-* dictlib.RangeMap now uses PEP-8 naming. Use `sort_params` and 
+* dictlib.RangeMap now uses PEP-8 naming. Use `sort_params` and
   `key_match_comparator` for
   the constructor and `undefined_value`, `last_item`, and `first_item` class
   attributes.
