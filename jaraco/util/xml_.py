@@ -2,40 +2,40 @@
 
 from __future__ import absolute_import
 
-"""xmlTools
-	Classes and routines for supporting xml processing.
-	
-Copyright © 2004 Jason R. Coombs  
+"""
+`xml`
+
+Classes and routines for supporting xml processing with minidom.
+
+Copyright © 2004,2011 Jason R. Coombs
 """
 
-__author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
-__version__ = '$Revision$a'[11:-2]
-__svnauthor__ = '$Author$'[9:-2]
-__date__ = '$Date$'[7:-2]
-
 import itertools
+import logging
+import time
+import datetime
 import xml.dom.minidom
 from xml.parsers.expat import ExpatError
 import string
 
-from jaraco.util import ReverseLists, ReplaceList
+from jaraco.util import reverse_lists, replace_list
 
-import logging
 log = logging.getLogger(__name__)
 
-quoteSubstitutions = (('"','&quot;'),
-# leave out this substitution for now
-#					   ("'",'&apos;')
-					  )
-reverseSubstitutions = ReverseLists(quoteSubstitutions)
+quote_substitutions = (
+	('"','&quot;'),
+	# leave out this substitution for now
+	#("'",'&apos;'),
+)
+reverse_substitutions = reverse_lists(quote_substitutions)
 
-def ToXMLQuotedString(s):
-	return ReplaceList(s, quoteSubstitutions)
+def to_xml_quoted_string(s):
+	return replace_list(s, quote_substitutions)
 
-def FromXMLQuotedString(s):
-	return ReplaceList(s, reverseSubstitutions)
+def from_xml_quoted_string(s):
+	return replace_list(s, reverse_substitutions)
 
-def GetXMLRepresentation(value):
+def get_xml_representation(value):
 	"Get the appropriate XML representation for value"
 	try:
 		value = value.XMLRepr
@@ -44,86 +44,80 @@ def GetXMLRepresentation(value):
 	if isinstance(value, float):
 		value = repr(value)
 	else:
-		value = ToXMLQuotedString(value)
+		value = to_xml_quoted_string(value)
 	return value
 
-from datetime import datetime, date, time
-from time import strptime
-def ParseXMLTime(xmlTime):
+def parse_xml_time(xml_time):
 	"Take a time string in XML format and return the value as a datetime object"
 	pattern = '%Y-%m-%dT%H:%M:%S'
-	return datetime(*strptime(xmlTime, pattern)[:6])
+	return datetime.datetime(*time.strptime(xml_time, pattern)[:6])
 
 class XMLObject(dict):
 	xml = xml.dom.minidom.getDOMImplementation()
-	
-	def XMLRepr(self):
+
+	def xml_repr(self):
 		return self.getFragment().toxml()
 
-	def _nodeName_(self):
-		return self.encodeXMLName(self.__class__.__name__)
-	_nodeName_ = property(_nodeName_)
+	@property
+	def _node_name(self):
+		return self.encode_xml_name(self.__class__.__name__)
 
-	def getAttributes(self):
-		return itertools.imap(self.encodeAttribute, self.iteritems())
+	def get_attributes(self):
+		return itertools.imap(self.encode_attribute, self.iteritems())
 
-	def encodeAttribute(self, attr):
+	def encode_attribute(self, attr):
 		name, val = attr
 		if type(val) in (datetime, date, time):
 			val = val.isoformat()
-		return (self.encodeXMLName(name), str(val))
+		return (self.encode_xml_name(name), str(val))
 
-	def encodeXMLName(self, n):
-		return string.join(self.encodeXMLNameChars(n), '')
+	def encode_xml_name(self, n):
+		return string.join(self.encode_xml_name_chars(n), '')
 
-	validChars = (
+	valid_chars = (
 		list(range(0x30, 0x3A)) +
 		list(range(0x41, 0x5B)) +
 		list(range(0x61, 0x7B)) + [ord('-'), ord('_'), ord('.')]
 		)
-	def encodeXMLNameChars(self, n):
+	def encode_xml_name_chars(self, n):
 		for c in n:
-			if ord(c) in self.validChars:
+			if ord(c) in self.valid_chars:
 				yield c
 			else:
 				yield '_x%04x_' % ord(c)
 
-	def getFragment(self):
+	def get_fragment(self):
 		doc = self.xml.createDocument(None, 'root', None)
-		element = doc.createElement(self._nodeName_)
-		for attr in self.getAttributes():
+		element = doc.createElement(self._node_name)
+		for attr in self.get_attributes():
 			element.setAttribute(*attr)
 		return element
 
-def loadXMLObjects(filename, objectModule):
+def load_xml_objects(filename, object_module):
 	doc = xml.dom.minidom.parse(open(filename, 'r'))
-	return getXMLObjects(doc.getElementsByTagName('*'), objectModule)
+	return get_xml_objects(doc.getElementsByTagName('*'), object_module)
 
-def getXMLObjects(nodeSet, objectModule):
-	for objectNode in nodeSet:
+def get_xml_objects(node_set, object_module):
+	for object_node in node_set:
 		try:
-			objectClass = getattr(objectModule, objectNode.nodeName)
-			yield objectClass(objectNode.attributes.items())
+			object_class = getattr(object_module, object_node.nodeName)
+			yield object_class(object_node.attributes.items())
 		except AttributeError: pass # class does not exist
 
-def getChildrenByType(node, type):
+def get_children_by_type(node, type):
 	return filter(lambda n: n.nodeType == type, node.childNodes)
 
-def getChildElements(node):
-	return getChildrenByType(node, node.ELEMENT_NODE)
+def get_child_elements(node):
+	return get_children_by_type(node, node.ELEMENT_NODE)
 
-def saveXMLObjects(filename, objects, root = 'root'):
-	f = open(filename, 'a+')
-	try:
-		doc = xml.dom.minidom.parse(f)
-	except ExpatError:
-		DOM = xml.dom.minidom.getDOMImplementation()
-		doc = DOM.createDocument(None, root, None)
-	xmlNodes = map(lambda o: o.getFragment(), objects)
-	map(doc.documentElement.appendChild, xmlNodes)
-	f.seek(0)
-	f.write(doc.toprettyxml())
-	f.close()
-	
-	
-	
+def save_xml_objects(filename, objects, root = 'root'):
+	with open(filename, 'a+') as f:
+		try:
+			doc = xml.dom.minidom.parse(f)
+		except ExpatError:
+			DOM = xml.dom.minidom.getDOMImplementation()
+			doc = DOM.createDocument(None, root, None)
+		xml_nodes = map(lambda o: o.getFragment(), objects)
+		map(doc.documentElement.appendChild, xml_nodes)
+		f.seek(0)
+		f.write(doc.toprettyxml())
