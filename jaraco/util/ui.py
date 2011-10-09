@@ -1,4 +1,5 @@
 from __future__ import print_function, absolute_import
+
 from itertools import count
 
 class Menu(object):
