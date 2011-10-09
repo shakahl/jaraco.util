@@ -36,7 +36,8 @@ Changes
   - jaraco.util
 
     + Moved `make_rows`, `grouper`, `bisect`, `groupby_saved`, and
-      `FetchingQueue` to `itertools` module.
+      `FetchingQueue` to `itertools` module. Renamed groupby_saved to
+      GroubySaved.
     + Moved `trim` to `string` module.
     + Moved `Stopwatch` to new `timing` module.
     + Moved `splitter` to `string.Splitter`.
