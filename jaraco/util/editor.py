@@ -4,7 +4,7 @@ import sys
 import subprocess
 import mimetypes
 import collections
-from StringIO import StringIO
+import io
 import difflib
 
 class EditProcessException(RuntimeError): pass
@@ -14,14 +14,14 @@ class EditableFile(object):
 	EditableFile saves some data to a temporary file, launches a
 	platform editor for interactive editing, and then reloads the data,
 	setting .changed to True if the data was edited.
-	
+
 	e.g.
-	
+
 	x = EditableFile('foo')
 	x.edit()
 	if x.changed:
 		print x.data
-		
+
 	The EDITOR environment variable can define which executable to use
 	(also XML_EDITOR if the content-type to edit includes 'xml'). If no
 	EDITOR is defined, defaults to 'notepad' on Windows and 'edit' on
@@ -34,7 +34,7 @@ class EditableFile(object):
 	encoding = 'utf-8'
 
 	def __init__(self, data=None, content_type='text/plain'):
-		self.data = data
+		self.data = unicode(data)
 		self.content_type = content_type
 
 	def __enter__(self):
@@ -97,5 +97,5 @@ class EditableFile(object):
 
 	@staticmethod
 	def _save_diff(*versions):
-		diff = difflib.context_diff(*map(list,map(StringIO, versions)))
+		diff = difflib.context_diff(*map(list,map(io.StringIO, versions)))
 		return tuple(diff)
