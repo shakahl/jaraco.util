@@ -2,7 +2,7 @@
 Simple module for simulating dice rolls.
 """
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import random
 import sys
@@ -20,6 +20,11 @@ def get_options():
 	return options
 
 class Dice(object):
+	"""
+	>>> d20 = Dice(20)
+	>>> 1 <= d20.roll() <= 20
+	True
+	"""
 	def __init__(self, sides):
 		self.sides = sides
 

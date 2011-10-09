@@ -33,6 +33,19 @@ Changes
   Python 2.6 and earlier).
 * Renamed many functions and methods to conform more to the PEP-8 convention:
 
+  - jaraco.util
+
+    + Moved `make_rows`, `grouper`, `bisect`, `groupby_saved`, and
+      `FetchingQueue` to `itertools` module.
+    + Moved `trim` to `string` module.
+    + Moved `Stopwatch` to new `timing` module.
+    + Moved `splitter` to `string.Splitter`.
+    + Removed replaceLists.
+    + Moved `readChunks` to `filesystem.read_chunks`.
+    + Moved `coerce_number` and `ordinalth` to new `numbers` module.
+    + Moved `callable` to `jaraco.lang.python` module.
+    + Moved `randbytes` to `random` module.
+
   - jaraco.dateutil
 
     + ConstructDatetime is now DatetimeConstructor.construct_datetime

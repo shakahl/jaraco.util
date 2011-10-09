@@ -1,17 +1,15 @@
 #!python
 
 from __future__ import print_function, division
-from jaraco.util import callable
 
-# a couple of utilities based on those by Samuel Huckins
-#  http://dancingpenguinsoflight.com/2009/11/a-better-way-to-search-for-methods-of-python-objects/
+import collections
 
 def mf(obj, term):
 	"""
 	Searches through the methods and attributes defined for obj,
 	looks for those containing the term passed (case insensitive).
 	Prints all matches or 'No matches' if none found.
-	
+
 	>>> mf('', 'SPLIT')
 	['_formatter_field_name_split', 'rsplit', 'split', 'splitlines']
 	"""
@@ -41,3 +39,7 @@ def obinfo(obj):
 		print("DOC:     ", "\n".join(topfive))
 	else:
 		print("No docstring. Yell at the author.")
+
+def callable(candidate):
+	# The Python 3 recommended way to do this
+	return isinstance(candidate, collections.Callable)
