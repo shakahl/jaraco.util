@@ -1,11 +1,18 @@
 
+"""
+This module currently provides a cross-platform getch function
+"""
+
 try:
-	# Win32
+	# Windows
 	from msvcrt import getch
 except ImportError:
-	# UNIX
+	pass
+
+try:
+	# Unix
+	import sys, tty, termios
 	def getch():
-		import sys, tty, termios
 		fd = sys.stdin.fileno()
 		old = termios.tcgetattr(fd)
 		try:
@@ -13,3 +20,5 @@ except ImportError:
 			return sys.stdin.read(1)
 		finally:
 			termios.tcsetattr(fd, termios.TCSADRAIN, old)
+except ImportError:
+	pass
