@@ -57,6 +57,7 @@ Changes
 * Removed jaraco.util.timers (functionality moved to jaraco.windows project).
 * Removed jaraco.util.scratch (unused).
 * Added jaraco.util.exceptions.suppress_exception.
+* Added jaraco.util.itertools.last.
 
 3.9.2
 ~~~~~
