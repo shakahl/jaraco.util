@@ -76,6 +76,7 @@ modern PEP-8 naming recommendations.
 * Removed jaraco.util.xml_.
 * Added jaraco.util.exceptions.suppress_exception.
 * Added jaraco.util.itertools.last.
+* Moved `jaraco.util.dictlib.NonDataProperty` to `jaraco.util.properties`.
 
 3.9.2
 ~~~~~
