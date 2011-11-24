@@ -30,6 +30,7 @@ modules and functions were moved or renamed for clarity and to match
 modern PEP-8 naming recommendations.
 
 * Renamed `jaraco.util.iter_` to `jaraco.util.itertools`
+* Renamed `jaraco.util.cmp_` to `jaraco.util.cmp`
 * Moved PasswordGenerator to jaraco.util.auth
 * Updated callable() to use technique that's good for all late Python versions
 * Removed jaraco.util.odict (use py26compat.collections.OrderedDict for
