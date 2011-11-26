@@ -22,6 +22,11 @@ from the `mercurial repository
 Changes
 -------
 
+4.1
+~~~
+
+* Added jaraco.util.dictlib.IdentityOverrideMap
+
 4.0
 ~~~
 
