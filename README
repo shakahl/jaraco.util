@@ -26,6 +26,7 @@ Changes
 ~~~
 
 * Added jaraco.util.dictlib.IdentityOverrideMap
+* Added jaraco.util.itertools.always_iterable
 
 4.0
 ~~~
