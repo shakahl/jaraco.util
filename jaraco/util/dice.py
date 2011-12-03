@@ -2,7 +2,7 @@
 Simple module for simulating dice rolls.
 """
 
-from __future__ import print_function, absolute_import
+from __future__ import print_function, absolute_import, unicode_literals
 
 import random
 import sys

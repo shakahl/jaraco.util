@@ -1,4 +1,3 @@
-
 """
 This module currently provides a cross-platform getch function
 """

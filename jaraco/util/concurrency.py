@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import threading
 import functools
@@ -9,7 +9,7 @@ def atomize(f, lock=None):
 	threads from calling said thread simultaneously.
 	"""
 	lock = lock or threading.RLock()
-	
+
 	@functools.wraps(f)
 	def exec_atomic(*args, **kwargs):
 		lock.acquire()

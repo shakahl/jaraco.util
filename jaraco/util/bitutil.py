@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from functools import reduce
 
@@ -24,7 +24,7 @@ def get_bit_values(number, size=32):
 	application.
 	>>> get_bit_values(0x3, 2)
 	[1, 1]
-	
+
 	>>> get_bit_values(0x3, 4)
 	[0, 0, 1, 1]
 	"""
@@ -48,7 +48,7 @@ def coalesce(bits):
 	"""
 	Take a sequence of bits, most significant first, and
 	coalesce them into a number.
-	
+
 	>>> coalesce([1,0,1])
 	5
 	"""
@@ -59,8 +59,8 @@ class Flags(object):
 	"""
 	Subclasses should define _names, a list of flag names beginning
 	with the least-significant bit.
-	
-	>>> MyFlags = type('MyFlags', (Flags,), dict(_names=tuple('abc')))
+
+	>>> MyFlags = type(str('MyFlags'), (Flags,), dict(_names=tuple('abc')))
 	>>> mf = MyFlags.from_number(5)
 	>>> mf['a']
 	1
@@ -107,13 +107,13 @@ class BitMask(type):
 	"""
 	A metaclass to create a bitmask with attributes. Subclass an int and
 	set this as the metaclass to use.
-	
+
 	>>> class MyBits(int):
 	...   __metaclass__ = BitMask
 	...   a = 0x1
 	...   b = 0x4
 	...   c = 0x3
-	
+
 	>>> b1 = MyBits(3)
 	>>> b1.a, b1.b, b1.c
 	(True, False, True)

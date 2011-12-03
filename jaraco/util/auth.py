@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import codecs
 import random
@@ -31,5 +31,5 @@ class PasswordGenerator(object):
 	@staticmethod
 	def random_byte_generator():
 		while True:
-			yield chr(random.randint(0, 255))
+			yield unichr(random.randint(0, 255))
 

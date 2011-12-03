@@ -4,6 +4,8 @@ Utility functions to facilitate object comparison without __cmp__
 Based on recipe found at http://code.activestate.com/recipes/510403/
 """
 
+from __future__ import unicode_literals
+
 class RichComparisonMixin(object):
 	"""
 	Define __cmp__, and inherit from this class to provide full rich
@@ -29,7 +31,7 @@ class RichComparisonMixin(object):
 		return self.__cmp__(other)>=0
 
 class KeyedEqualityMixin(object):
-	
+
 	def __eq__(self, other):
 		return self.__key__() == other.__key__()
 	def __ne__(self, other):

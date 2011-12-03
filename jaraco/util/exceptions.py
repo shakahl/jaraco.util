@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 def throws_exception(callable, exception=Exception):
 	"""
 	Return True if the callable throws the specified exception
