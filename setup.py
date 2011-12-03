@@ -6,6 +6,8 @@ Setup script for building jaraco.util distribution
 Copyright © 2004-2011 Jason R. Coombs
 """
 
+from __future__ import unicode_literals
+
 import sys
 import subprocess
 
@@ -25,7 +27,7 @@ name = 'jaraco.util'
 
 setup_params = dict(
 	name = name,
-	use_hg_version=dict(increment="1.0"),
+	use_hg_version=dict(increment="0.0.1"),
 	description = 'General utility modules that supply commonly-used functionality',
 	long_description = open('README').read(),
 	author = 'Jason R. Coombs',
