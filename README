@@ -22,6 +22,12 @@ from the `mercurial repository
 Changes
 -------
 
+4.3
+~~~
+
+* Added `jaraco.filesystem.recursive_glob`, which acts like a regular glob,
+  but recurses into sub-directories.
+
 4.2
 ~~~
 
