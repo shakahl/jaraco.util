@@ -22,6 +22,12 @@ from the `mercurial repository
 Changes
 -------
 
+4.4
+~~~
+
+* Extracted KeyTransformingDict from FoldedCaseKeyedDict with much more
+  complete handling of key transformation.
+
 4.3
 ~~~
 
