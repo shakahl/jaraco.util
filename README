@@ -27,6 +27,7 @@ Changes
 
 * Renamed method in KeyTransformingDict from `key_transform` to
   `transform_key`.
+* Fixed critical NameErrors in jaraco.util.logging.
 
 4.4
 ~~~
