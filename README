@@ -22,6 +22,12 @@ from the `mercurial repository
 Changes
 -------
 
+5.0
+~~~
+
+* Renamed method in KeyTransformingDict from `key_transform` to
+  `transform_key`.
+
 4.4
 ~~~
 
