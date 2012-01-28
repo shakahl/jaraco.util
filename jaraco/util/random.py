@@ -16,4 +16,3 @@ def bytes(n):
 			yield byte
 	for byte in struct.pack('f', random.random())[: n % 4]:
 		yield byte
-

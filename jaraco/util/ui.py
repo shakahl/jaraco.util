@@ -19,7 +19,7 @@ class Menu(object):
 		print()
 		try:
 			answer = int(raw_input(prompt))
-			result = self.choices[answer-1]
+			result = self.choices[answer - 1]
 		except ValueError:
 			print('invalid selection')
 			result = None
@@ -29,4 +29,3 @@ class Menu(object):
 		except KeyboardInterrupt:
 			result = None
 		return result
-

@@ -10,7 +10,10 @@ except ImportError:
 
 try:
 	# Unix
-	import sys, tty, termios
+	import sys
+	import tty
+	import termios
+
 	def getch():
 		fd = sys.stdin.fileno()
 		old = termios.tcgetattr(fd)

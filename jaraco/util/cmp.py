@@ -13,37 +13,41 @@ class RichComparisonMixin(object):
 	"""
 
 	def __eq__(self, other):
-		return self.__cmp__(other)==0
+		return self.__cmp__(other) == 0
 
 	def __ne__(self, other):
-		return self.__cmp__(other)!=0
+		return self.__cmp__(other) != 0
 
 	def __lt__(self, other):
-		return self.__cmp__(other)<0
+		return self.__cmp__(other) < 0
 
 	def __le__(self, other):
-		return self.__cmp__(other)<=0
+		return self.__cmp__(other) <= 0
 
 	def __gt__(self, other):
-		return self.__cmp__(other)>0
+		return self.__cmp__(other) > 0
 
 	def __ge__(self, other):
-		return self.__cmp__(other)>=0
+		return self.__cmp__(other) >= 0
 
 class KeyedEqualityMixin(object):
 
 	def __eq__(self, other):
 		return self.__key__() == other.__key__()
+
 	def __ne__(self, other):
 		return self.__key__() != other.__key__()
 
 class KeyedComparisonMixin(KeyedEqualityMixin):
 	def __lt__(self, other):
 		return self.__key__() < other.__key__()
+
 	def __le__(self, other):
 		return self.__key__() <= other.__key__()
+
 	def __gt__(self, other):
 		return self.__key__() > other.__key__()
+
 	def __ge__(self, other):
 		return self.__key__() >= other.__key__()
 

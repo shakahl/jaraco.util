@@ -99,5 +99,5 @@ class EditableFile(object):
 
 	@staticmethod
 	def _save_diff(*versions):
-		diff = difflib.context_diff(*map(list,map(io.StringIO, versions)))
+		diff = difflib.context_diff(*map(list, map(io.StringIO, versions)))
 		return tuple(diff)

@@ -6,8 +6,9 @@ from functools import reduce
 #  implementation to get bit values.
 # http://us.python.org/2010/conference/schedule/event/12/
 """
-def bits(word):
-	... # forgot it
+def bits(n):
+	n += 2**32
+	return bin(n)[-32:]
 """
 
 def get_bit_values(number, size=32):
@@ -30,7 +31,7 @@ def get_bit_values(number, size=32):
 	"""
 	values = list(gen_bit_values(number))
 	# 0-pad the most significant bit
-	res = [0]*(size-len(values))
+	res = [0] * (size - len(values))
 	res.extend(reversed(values))
 	return res
 
@@ -77,7 +78,7 @@ class Flags(object):
 		self._values = list(values)
 		if hasattr(self, '_names'):
 			n_missing_bits = len(self._names) - len(self._values)
-			self._values.extend([0]*n_missing_bits)
+			self._values.extend([0] * n_missing_bits)
 
 	@classmethod
 	def from_number(cls, number):
@@ -129,4 +130,3 @@ class BitMask(type):
 			if not attr.startswith('_')
 		)
 		return type.__new__(cls, name, bases, newattrs)
-

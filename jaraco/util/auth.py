@@ -32,4 +32,3 @@ class PasswordGenerator(object):
 	def random_byte_generator():
 		while True:
 			yield unichr(random.randint(0, 255))
-
