@@ -5,6 +5,22 @@ jaraco.util
 
 .. contents::
 
+Overview
+--------
+
+``jaraco.util`` contains a number of nominally useful, reusable classes
+and functions. They're designed to be intuitively named and
+self-documenting (many with extensive doctests). Browse the source for
+details.
+
+Highlights
+----------
+
+Some of the more interesting modules include:
+
+ - ``.dictlib`` contains RangeMap, a dictionary-like object that maps a
+   range of values to a given value.
+
 Status and License
 ------------------
 
