@@ -37,7 +37,9 @@ setup_params = dict(
 	author_email = 'jaraco@jaraco.com',
 	url = 'http://pypi.python.org/pypi/' + name,
 	packages = find_packages(exclude=['tests']),
-	namespace_packages = ['jaraco'],
+	# convert to bytes to work around TypeError when installed with PIP
+	# https://github.com/pypa/pip/issues/449
+	namespace_packages = [bytes('jaraco')],
 	license = 'MIT',
 	classifiers = [
 		"Development Status :: 5 - Production/Stable",
