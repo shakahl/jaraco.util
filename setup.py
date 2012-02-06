@@ -9,16 +9,18 @@ Copyright © 2004-2011 Jason R. Coombs
 from __future__ import unicode_literals
 
 import sys
-import subprocess
 
 from setuptools import find_packages, Command
 
 class PyTest(Command):
 	user_options = []
+
 	def initialize_options(self):
 		pass
+
 	def finalize_options(self):
 		pass
+
 	def run(self):
 		import py.test
 		raise SystemExit(py.test.main(args=[]))
@@ -33,9 +35,9 @@ setup_params = dict(
 	long_description = open('README').read(),
 	author = 'Jason R. Coombs',
 	author_email = 'jaraco@jaraco.com',
-	url = 'http://pypi.python.org/pypi/'+name,
+	url = 'http://pypi.python.org/pypi/' + name,
 	packages = find_packages(exclude=['tests']),
-	namespace_packages = ['jaraco',],
+	namespace_packages = ['jaraco'],
 	license = 'MIT',
 	classifiers = [
 		"Development Status :: 5 - Production/Stable",
