@@ -30,7 +30,7 @@ name = 'jaraco.util'
 setup_params = dict(
 	# convert to bytes to work around UnicodeDecodeError when using bdist --formats gztar
 	name = bytes(name),
-	use_hg_version=dict(increment="0.1"),
+	use_hg_version=True,
 	description = 'General utility modules that supply commonly-used functionality',
 	long_description = open('README').read(),
 	author = 'Jason R. Coombs',
