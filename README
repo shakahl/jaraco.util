@@ -38,6 +38,13 @@ from the `mercurial repository
 Changes
 -------
 
+5.1
+~~~
+
+* Added `functools.once`, a rudimentary caching function to ensure an
+  expensive or non-idempotent function is not expensive on subsequent calls
+  and is idempotent.
+
 5.0
 ~~~
 
