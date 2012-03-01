@@ -29,7 +29,7 @@ name = 'jaraco.util'
 
 setup_params = dict(
 	# convert to bytes to work around UnicodeDecodeError when using bdist --formats gztar
-	name = bytes(name),
+	name = str(name),
 	use_hg_version=True,
 	description = 'General utility modules that supply commonly-used functionality',
 	long_description = open('README').read(),
@@ -39,7 +39,7 @@ setup_params = dict(
 	packages = find_packages(exclude=['tests']),
 	# convert to bytes to work around TypeError when installed with PIP
 	# https://github.com/pypa/pip/issues/449
-	namespace_packages = [bytes('jaraco')],
+	namespace_packages = [str('jaraco')],
 	license = 'MIT',
 	classifiers = [
 		"Development Status :: 5 - Production/Stable",
