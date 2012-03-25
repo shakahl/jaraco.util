@@ -38,6 +38,17 @@ from the `mercurial repository
 Changes
 -------
 
+5.3
+~~~
+
+* Added `string.words` for retrieving words from an identifier, even if
+  it is camelCased.
+
+5.2
+~~~
+
+* Added `string.indent`.
+
 5.1
 ~~~
 
