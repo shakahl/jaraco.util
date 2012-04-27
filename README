@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+5.4
+~~~
+
+* Added context manager support in `timing.Stopwatch`.
+
 5.3.1
 ~~~~~
 
