@@ -3,27 +3,14 @@
 """
 Setup script for building jaraco.util distribution
 
-Copyright © 2004-2011 Jason R. Coombs
+Copyright © 2004-2012 Jason R. Coombs
 """
 
 from __future__ import unicode_literals
 
 import sys
 
-from setuptools import find_packages, Command
-
-class PyTest(Command):
-	user_options = []
-
-	def initialize_options(self):
-		pass
-
-	def finalize_options(self):
-		pass
-
-	def run(self):
-		import py.test
-		raise SystemExit(py.test.main(args=[]))
+import setuptools
 
 name = 'jaraco.util'
 
@@ -36,7 +23,7 @@ setup_params = dict(
 	author = 'Jason R. Coombs',
 	author_email = 'jaraco@jaraco.com',
 	url = 'http://pypi.python.org/pypi/' + name,
-	packages = find_packages(exclude=['tests']),
+	packages = setuptools.find_packages(exclude=['tests']),
 	# convert to bytes to work around TypeError when installed with PIP
 	# https://github.com/pypa/pip/issues/449
 	namespace_packages = [str('jaraco')],
@@ -66,19 +53,15 @@ setup_params = dict(
 		'pytest>=2',
 	],
 	setup_requires=[
-		'hgtools>=0.4',
+		'hgtools',
 	],
-	cmdclass=dict(
-		test=PyTest,
-	),
 	use_2to3=True,
 	use_2to3_exclude_fixers=['lib2to3.fixes.fix_import'],
 )
 
 if __name__ == '__main__':
-	from setuptools import setup
 	import pkg_resources
 	if sys.version_info >= (3,):
 		# distribute 0.6.24 is required to exclude the fixers
-		pkg_resources.require('distribute>=0.6.24dev')
-	setup(**setup_params)
+		pkg_resources.require('distribute>=0.6.24')
+	setuptools.setup(**setup_params)
