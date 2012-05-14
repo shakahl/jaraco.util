@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-def throws_exception(callable, exception=Exception):
+def throws_exception(callable, *exceptions):
 	"""
 	Return True if the callable throws the specified exception
 
@@ -11,9 +11,10 @@ def throws_exception(callable, exception=Exception):
 	>>> throws_exception(lambda: int('a'), KeyError)
 	False
 	"""
+	if not exceptions: exceptions = Exception,
 	try:
 		callable()
-	except exception:
+	except exceptions:
 		return True
 	except Exception:
 		pass
@@ -32,7 +33,7 @@ def suppress_exception(callable, *exceptions):
 	...
 	ValueError: invalid literal for int() with base 10: 'a'
 	"""
-	if not exceptions: exceptions = (Exception,)
+	if not exceptions: exceptions = Exception,
 	try:
 		return callable()
 	except exceptions:
