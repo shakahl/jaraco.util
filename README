@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+5.5
+~~~
+
+* Added `itertools.is_empty`.
+
 5.4
 ~~~
 
