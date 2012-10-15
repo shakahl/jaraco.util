@@ -38,6 +38,12 @@ from the `mercurial repository
 Changes
 -------
 
+6.0
+~~~
+
+* `itertools.always_iterable` now returns an empty iterable when the input
+  is None. This approach appears to work better for the majority of use-cases.
+
 5.5
 ~~~
 
