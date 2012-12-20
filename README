@@ -38,6 +38,12 @@ from the `mercurial repository
 Changes
 -------
 
+6.1
+~~~
+
+* Added `context` module, with a null_context context manager. It is suitable
+  for taking the place of a real context when no context is needed.
+
 6.0
 ~~~
 
