@@ -38,6 +38,13 @@ from the `mercurial repository
 Changes
 -------
 
+6.2dev
+~~~
+
+* Added IntervalGovernor to `timing` module. Allows one to decorate a
+  function, causing that function to only be called once per interval, despite
+  the number of calls attempted.
+
 6.1
 ~~~
 

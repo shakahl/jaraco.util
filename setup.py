@@ -51,6 +51,7 @@ setup_params = dict(
 	],
 	tests_require=[
 		'pytest>=2',
+		'mock',
 	],
 	setup_requires=[
 		'hgtools',
