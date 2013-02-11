@@ -38,12 +38,14 @@ from the `mercurial repository
 Changes
 -------
 
-6.2dev
+6.2
 ~~~
 
 * Added IntervalGovernor to `timing` module. Allows one to decorate a
   function, causing that function to only be called once per interval, despite
   the number of calls attempted.
+* Added `itertools.suppress_exceptions`. Use it to iterate over callables,
+  suppressing exceptions.
 
 6.1
 ~~~
