@@ -11,7 +11,8 @@ class Menu(object):
 		self.formatter = formatter
 
 	def get_choice(self, prompt="> "):
-		number_width = len(self.choices)/10+1
+		n = len(self.choices)
+		number_width = len(str(n)) + 1
 		menu_fmt = '{number:{number_width}}) {choice}'
 		formatted_choices = map(self.formatter, self.choices)
 		for number, choice in zip(count(1), formatted_choices):
