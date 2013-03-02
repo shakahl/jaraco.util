@@ -43,6 +43,7 @@ class Command(object):
 		cmd_string = string.words(cls.__name__).lowered().dash_separated()
 		parser = subparsers.add_parser(cmd_string)
 		parser.set_defaults(action=cls)
+		cls.add_arguments(parser)
 		return parser
 
 	@classmethod
