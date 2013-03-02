@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+6.3
+~~~
+
+* Added cmdline module.
+
 6.2
 ~~~
 
