@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+6.5
+~~~
+
+* Added `itertools.remove_duplicates` and `itertools.every_other`.
+
 6.4
 ~~~
 
