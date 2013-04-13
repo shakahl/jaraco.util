@@ -42,6 +42,8 @@ Changes
 ~~~
 
 * Added `itertools.remove_duplicates` and `itertools.every_other`.
+* `functools.compose` now allows the innermost function to take arbitrary
+  arguments.
 
 6.4
 ~~~
