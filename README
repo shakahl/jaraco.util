@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+6.6
+~~~
+
+* Added `dateutil.parse_timedelta`.
+
 6.5
 ~~~
 
