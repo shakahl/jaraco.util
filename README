@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+6.7
+~~~
+
+* Added `itertools.unique_everseen` from Python docs.
+
 6.6
 ~~~
 
