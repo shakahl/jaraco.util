@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+6.8
+~~~
+
+* Added `string.simple_html_strip`.
+
 6.7
 ~~~
 
