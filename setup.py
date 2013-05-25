@@ -8,8 +8,6 @@ Copyright © 2004-2012 Jason R. Coombs
 
 from __future__ import unicode_literals
 
-import sys
-
 import setuptools
 
 name = 'jaraco.util'
@@ -39,7 +37,7 @@ setup_params = dict(
 		'console_scripts': [
 			'roll-dice = jaraco.util.dice:do_dice_roll',
 			'calc-prorate = jaraco.dateutil:calculate_prorated_values',
-			],
+		],
 	},
 	install_requires=[
 	],
@@ -62,8 +60,4 @@ setup_params = dict(
 )
 
 if __name__ == '__main__':
-	import pkg_resources
-	if sys.version_info >= (3,):
-		# distribute 0.6.24 is required to exclude the fixers
-		pkg_resources.require('distribute>=0.6.24')
 	setuptools.setup(**setup_params)
