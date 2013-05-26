@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+7.0
+~~~
+
+* Moved `blowfish` module to jaraco.crypto.
+
 6.8
 ~~~
 
