@@ -42,6 +42,7 @@ Changes
 ~~~
 
 * Moved `blowfish` module to jaraco.crypto.
+* Moved `image` module to jaraco.imaging.
 
 6.8
 ~~~

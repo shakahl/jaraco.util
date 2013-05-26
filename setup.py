@@ -39,14 +39,6 @@ setup_params = dict(
 			'calc-prorate = jaraco.dateutil:calculate_prorated_values',
 		],
 	},
-	install_requires=[
-	],
-	extras_require = {
-		'image':
-			['pil>=1.1.6'],
-	},
-	dependency_links = [
-	],
 	tests_require=[
 		'pytest>=2',
 		'mock',
