@@ -38,6 +38,13 @@ from the `mercurial repository
 Changes
 -------
 
+7.2
+~~~
+
+* ``dictlib.FrozenDict`` now supplies ``.copy``.
+* Fixed issue in ``FrozenDict`` where ``.__eq__`` didn't work on other
+  FrozenDict instances.
+
 7.1
 ~~~
 
