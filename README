@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+7.1
+~~~
+
+* Added ``dictlib.FrozenDict``.
+
 7.0
 ~~~
 
