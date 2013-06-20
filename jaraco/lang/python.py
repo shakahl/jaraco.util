@@ -10,8 +10,8 @@ def mf(obj, term):
 	looks for those containing the term passed (case insensitive).
 	Prints all matches or 'No matches' if none found.
 
-	>>> mf('', 'SPLIT')
-	['_formatter_field_name_split', 'rsplit', 'split', 'splitlines']
+	>>> mf('', 'SPLIT')  # doctest: +ELLIPSIS
+	[...'rsplit', 'split', 'splitlines']
 	"""
 	methods = dir(obj)
 	term = term.lower()

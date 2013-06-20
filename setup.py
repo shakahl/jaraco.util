@@ -3,7 +3,7 @@
 """
 Setup script for building jaraco.util distribution
 
-Copyright © 2004-2012 Jason R. Coombs
+Copyright © 2004-2013 Jason R. Coombs
 """
 
 from __future__ import unicode_literals
@@ -47,8 +47,6 @@ setup_params = dict(
 		'hgtools',
 		'pytest-runner',
 	],
-	use_2to3=True,
-	use_2to3_exclude_fixers=['lib2to3.fixes.fix_import'],
 )
 
 if __name__ == '__main__':

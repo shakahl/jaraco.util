@@ -64,7 +64,7 @@ class EditableFile(object):
 			cmd = [editor, self.name]
 			try:
 				res = subprocess.call(cmd)
-			except Exception, e:
+			except Exception as e:
 				print("Error launching editor %(editor)s" % vars())
 				print(e)
 				return

@@ -2,6 +2,8 @@ from __future__ import absolute_import, unicode_literals
 
 from functools import reduce
 
+from jaraco.util import six
+
 # consider Brandon Craig Rhoades presentation at PyCon 2010 for a new
 #  implementation to get bit values.
 # http://us.python.org/2010/conference/schedule/event/12/
@@ -40,7 +42,7 @@ def gen_bit_values(number):
 	Return a zero or one for each bit of a numeric value up to the most
 	significant 1 bit, beginning with the least significant bit.
 	"""
-	number = long(number)
+	number = six.integer_types[-1](number)
 	while number:
 		yield int(number & 0x1)
 		number >>= 1
@@ -109,7 +111,9 @@ class BitMask(type):
 	A metaclass to create a bitmask with attributes. Subclass an int and
 	set this as the metaclass to use.
 
-	>>> class MyBits(int):
+	>>> params = dict(metaclass=BitMask) if six.PY3 else dict()
+
+	>>> class MyBits(int, **params):
 	...   __metaclass__ = BitMask
 	...   a = 0x1
 	...   b = 0x4
