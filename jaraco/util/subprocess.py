@@ -2,7 +2,10 @@ from __future__ import absolute_import
 import sys
 import subprocess
 import threading
-import Queue as queue
+
+from . import six
+
+queue = six.moves.queue
 
 def enqueue_lines(stream, queue):
 	for line in iter(stream.readline, b''):

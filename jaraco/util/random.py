@@ -1,7 +1,9 @@
 from __future__ import absolute_import, unicode_literals
 
 import random
-import struct
+import itertools
+
+from . import six
 
 def bytes(n):
 	"""
@@ -11,8 +13,6 @@ def bytes(n):
 	>>> assert len(res) == 5
 	>>> assert all(len(b) == 1 for b in res)
 	"""
-	for i in range(n // 4):
-		for byte in struct.pack('f', random.random()):
-			yield byte
-	for byte in struct.pack('f', random.random())[: n % 4]:
-		yield byte
+	bytes = (random.randint(0,255) for i in itertools.count())
+	bytes = itertools.islice(bytes, n)
+	return (six.int2byte(i) for i in bytes)

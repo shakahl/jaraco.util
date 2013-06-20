@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 def ordinalth(n):
 	"""Return the ordinal with 'st', 'th', or 'nd' appended as appropriate.
@@ -24,13 +24,13 @@ def coerce(value):
 	returned.
 
 	>>> coerce('3')
-	3L
+	3
 
 	>>> coerce('foo')
-	u'foo'
+	'foo'
 	"""
 	result = value
-	for transform in (float, long):
+	for transform in (float, int):
 		try: result = transform(value)
 		except ValueError: pass
 
