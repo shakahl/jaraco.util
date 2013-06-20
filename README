@@ -38,6 +38,13 @@ from the `mercurial repository
 Changes
 -------
 
+8.0
+~~~
+
+* Package no longer uses 2to3 for Python 3 support, but instead relies on a
+  unified code base and compatibility routines (including six).
+* Moved ``wallpaper`` module to ``jaraco.desktop`` project.
+
 7.2
 ~~~
 
