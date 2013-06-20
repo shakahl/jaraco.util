@@ -111,13 +111,17 @@ class BitMask(type):
 	A metaclass to create a bitmask with attributes. Subclass an int and
 	set this as the metaclass to use.
 
-	>>> params = dict(metaclass=BitMask) if six.PY3 else dict()
+	Here's how to create such a class on Python 3:
 
-	>>> class MyBits(int, **params):
-	...   __metaclass__ = BitMask
-	...   a = 0x1
-	...   b = 0x4
-	...   c = 0x3
+	class MyBits(int, metaclass=BitMask):
+		a = 0x1
+		b = 0x4
+		c = 0x3
+
+	For testing purposes, construct explicitly to support Python 2
+
+	>>> ns = dict(a=0x1, b=0x4, c=0x3)
+	>>> MyBits = BitMask(str('MyBits'), (int,), ns)
 
 	>>> b1 = MyBits(3)
 	>>> b1.a, b1.b, b1.c
