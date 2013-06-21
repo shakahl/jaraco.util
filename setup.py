@@ -39,6 +39,9 @@ setup_params = dict(
 			'calc-prorate = jaraco.dateutil:calculate_prorated_values',
 		],
 	},
+	install_requires=[
+		'six>=1.3.0',
+	],
 	tests_require=[
 		'pytest>=2',
 		'mock',

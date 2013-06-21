@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import random
 import itertools
 
-from . import six
+import six
 
 def bytes(n):
 	"""

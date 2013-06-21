@@ -5,7 +5,7 @@ import random
 import itertools
 import binascii
 
-from . import six
+import six
 
 class PasswordGenerator(object):
 	"""

@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 from functools import reduce
 
-from jaraco.util import six
+import six
 
 # consider Brandon Craig Rhoades presentation at PyCon 2010 for a new
 #  implementation to get bit values.

@@ -9,7 +9,7 @@ import collections
 import io
 import difflib
 
-from . import six
+import six
 
 class EditProcessException(RuntimeError): pass
 

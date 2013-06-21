@@ -3,7 +3,7 @@ import sys
 import subprocess
 import threading
 
-from . import six
+import six
 
 queue = six.moves.queue
 

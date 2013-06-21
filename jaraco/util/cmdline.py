@@ -1,6 +1,5 @@
 from . import meta
 from . import string
-from . import six
 
 def with_metaclass(metaclass):
 	def wrapper(cls):
