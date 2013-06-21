@@ -1,6 +1,13 @@
 from . import meta
 from . import string
+from . import six
 
+def with_metaclass(metaclass):
+	def wrapper(cls):
+		return metaclass(cls.__name__, cls.__bases__, dict(cls.__dict__))
+	return wrapper
+
+@with_metaclass(meta.LeafClassesMeta)
 class Command(object):
 	"""
 	A general-purpose base class for creating commands for a command-line
@@ -31,7 +38,6 @@ class Command(object):
 			args = parser.parse_args()
 			args.action.run()
 	"""
-	__metaclass__ = meta.LeafClassesMeta
 
 	@classmethod
 	def add_subparsers(cls, parser):
@@ -49,3 +55,6 @@ class Command(object):
 	@classmethod
 	def add_arguments(cls, parser):
 		pass
+
+if six.PY3:
+	Command = meta.LeafClassesMeta('Command', (object,), dict(Command.__dict__))
