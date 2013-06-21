@@ -38,6 +38,12 @@ from the `mercurial repository
 Changes
 -------
 
+8.1
+~~~
+
+* Moved `jaraco.dateutil` to `jaraco.tempora` (but kept jaraco.dateutil for
+  compatibility). Expect `jaraco.dateutil` to be removed in 9.0.
+
 8.0
 ~~~
 

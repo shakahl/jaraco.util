@@ -36,7 +36,7 @@ setup_params = dict(
 	entry_points = {
 		'console_scripts': [
 			'roll-dice = jaraco.util.dice:do_dice_roll',
-			'calc-prorate = jaraco.dateutil:calculate_prorated_values',
+			'calc-prorate = jaraco.tempora:calculate_prorated_values',
 		],
 	},
 	install_requires=[
