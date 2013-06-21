@@ -55,6 +55,3 @@ class Command(object):
 	@classmethod
 	def add_arguments(cls, parser):
 		pass
-
-if six.PY3:
-	Command = meta.LeafClassesMeta('Command', (object,), dict(Command.__dict__))
