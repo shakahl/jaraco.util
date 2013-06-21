@@ -29,10 +29,11 @@ class EditableFile(object):
 	EDITOR is defined, defaults to 'notepad' on Windows and 'edit' on
 	other platforms.
 	"""
-	platform_default_editors = collections.defaultdict(lambda: 'edit',
+	platform_default_editors = collections.defaultdict(
+		lambda: 'edit',
 		win32 = 'notepad',
 		linux2 = 'vi',
-		)
+	)
 	encoding = 'utf-8'
 
 	def __init__(self, data=None, content_type='text/plain'):
