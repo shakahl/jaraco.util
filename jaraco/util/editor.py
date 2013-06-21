@@ -9,6 +9,8 @@ import collections
 import io
 import difflib
 
+from . import six
+
 class EditProcessException(RuntimeError): pass
 
 class EditableFile(object):
@@ -36,15 +38,14 @@ class EditableFile(object):
 	)
 	encoding = 'utf-8'
 
-	def __init__(self, data=None, content_type='text/plain'):
-		self.data = unicode(data)
+	def __init__(self, data='', content_type='text/plain'):
+		self.data = six.text_type(data)
 		self.content_type = content_type
 
 	def __enter__(self):
 		extension = mimetypes.guess_extension(self.content_type) or ''
 		fobj, self.name = tempfile.mkstemp(extension)
-		if self.data:
-			os.write(fobj, self.data.encode(self.encoding))
+		os.write(fobj, self.data.encode(self.encoding))
 		os.close(fobj)
 		return self
 
@@ -100,5 +101,8 @@ class EditableFile(object):
 
 	@staticmethod
 	def _save_diff(*versions):
-		diff = difflib.context_diff(*map(list, map(io.StringIO, versions)))
+		def get_lines(content):
+			return list(io.StringIO(content))
+		lines = map(get_lines, versions)
+		diff = difflib.context_diff(*lines)
 		return tuple(diff)
