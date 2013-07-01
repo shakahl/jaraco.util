@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+8.2
+~~~
+
+* ``timing.Stopwatch`` context now returns self for convenience.
+
 8.1
 ~~~
 
