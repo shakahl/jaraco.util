@@ -2,6 +2,8 @@ from __future__ import print_function, absolute_import, unicode_literals
 
 from itertools import count
 
+import six
+
 class Menu(object):
 	"""
 	A simple command-line based menu
@@ -19,7 +21,7 @@ class Menu(object):
 			print(menu_fmt.format(**vars()))
 		print()
 		try:
-			answer = int(raw_input(prompt))
+			answer = int(six.moves.input(prompt))
 			result = self.choices[answer - 1]
 		except ValueError:
 			print('invalid selection')
