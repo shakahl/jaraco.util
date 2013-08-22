@@ -43,7 +43,7 @@ setup_params = dict(
 		'https://bitbucket.org/jaraco/six/downloads',
 	],
 	install_requires=[
-		'six>=1.4.0dev',
+		'six>=1.4.0dev-20130821',
 	],
 	tests_require=[
 		'pytest>=2',

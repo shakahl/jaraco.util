@@ -38,7 +38,7 @@ class Menu(object):
 		return result
 
 
-six.patch_with_metaclass(abc.ABCMeta)
+six.add_metaclass(abc.ABCMeta)
 class AbstractProgressBar(object):
 	def __init__(self, unit='', size=70):
 		"""
