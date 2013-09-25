@@ -1,3 +1,5 @@
+import argparse
+
 import six
 
 from . import meta
@@ -29,10 +31,7 @@ class Command(object):
 	Then one could create an entry point for Mercurial like so::
 
 		def hg_command():
-			parser = argparse.ArgumentParser()
-			Command.add_subparsers(parser)
-			args = parser.parse_args()
-			args.action.run()
+			Command.invoke()
 	"""
 
 	@classmethod
@@ -51,3 +50,13 @@ class Command(object):
 	@classmethod
 	def add_arguments(cls, parser):
 		pass
+
+	@classmethod
+	def invoke(cls):
+		"""
+		Invoke the command using ArgumentParser
+		"""
+		parser = argparse.ArgumentParser()
+		cls.add_subparsers(parser)
+		args = parser.parse_args()
+		args.action.run(args)

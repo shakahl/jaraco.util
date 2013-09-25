@@ -38,6 +38,12 @@ from the `mercurial repository
 Changes
 -------
 
+8.4
+~~~
+
+* ``cmdline.Command`` now exposes an ``invoke`` class method to facilitate
+  a common invocation.
+
 8.2
 ~~~
 
