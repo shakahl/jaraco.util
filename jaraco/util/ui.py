@@ -5,6 +5,7 @@ import time
 import sys
 import itertools
 import abc
+import datetime
 
 import six
 
@@ -145,3 +146,24 @@ class TargetProgressBar(AbstractProgressBar):
 	def finish(self):
 		self.report(self.total)
 		super(TargetProgressBar, self).finish()
+
+
+def countdown(template, duration=datetime.timedelta(seconds=5)):
+	"""
+	Do a countdown for duration, printing the template (which may accept one
+	positional argument). Template should be something like:
+		"countdown complete in {} seconds."
+	"""
+	now = datetime.datetime.now()
+	deadline = now + duration
+	remaining = deadline - datetime.datetime.now()
+	while remaining:
+		remaining = deadline - datetime.datetime.now()
+		remaining = max(datetime.timedelta(), remaining)
+		msg = template.format(remaining.total_seconds())
+		print(msg, end=' '*10)
+		sys.stdout.flush()
+		time.sleep(.1)
+		print('\b'*80, end='')
+		sys.stdout.flush()
+	print()

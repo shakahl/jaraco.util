@@ -38,6 +38,11 @@ from the `mercurial repository
 Changes
 -------
 
+8.5
+~~~
+
+* Added ``ui.countdown`` function.
+
 8.4
 ~~~
 
