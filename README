@@ -21,6 +21,12 @@ Some of the more interesting modules include:
  - ``.dictlib`` contains RangeMap, a dictionary-like object that maps a
    range of values to a given value.
 
+Docs
+----
+
+The project is `documented with runnable tests
+<https://pythonhosted.org/jaraco.util>`_.
+
 Status and License
 ------------------
 
