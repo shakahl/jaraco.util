@@ -44,6 +44,14 @@ jaraco.util.cmp module
     :undoc-members:
     :show-inheritance:
 
+jaraco.util.collections module
+------------------------------
+
+.. automodule:: jaraco.util.collections
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 jaraco.util.concurrency module
 ------------------------------
 
