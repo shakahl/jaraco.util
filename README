@@ -44,6 +44,11 @@ from the `mercurial repository
 Changes
 -------
 
+8.6
+~~~
+
+* Added ``collections`` module with an Everything collection.
+
 8.5
 ~~~
 
