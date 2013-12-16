@@ -8,9 +8,14 @@ Copyright © 2004-2013 Jason R. Coombs
 
 from __future__ import unicode_literals
 
+import sys
+
 import setuptools
 
 name = 'jaraco.util'
+
+pytest_runner = ['pytest_runner'] if 'ptr' in sys.argv else []
+sphinx = ['sphinx'] if 'build_sphinx' in sys.argv else []
 
 setup_params = dict(
 	# convert to bytes to work around UnicodeDecodeError when using bdist --formats gztar
@@ -51,8 +56,7 @@ setup_params = dict(
 	],
 	setup_requires=[
 		'hgtools',
-		'pytest-runner',
-	],
+	] + pytest_runner + sphinx,
 )
 
 if __name__ == '__main__':
