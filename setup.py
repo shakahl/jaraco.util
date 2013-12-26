@@ -17,7 +17,7 @@ name = 'jaraco.util'
 pytest_runner = ['pytest_runner'] if 'ptr' in sys.argv else []
 sphinx = ['sphinx'] if 'build_sphinx' in sys.argv else []
 
-with open('README') as readme_stream:
+with open('README.txt') as readme_stream:
 	readme = readme_stream.read()
 with open('CHANGES.txt') as changes_stream:
 	changes = changes_stream.read()
