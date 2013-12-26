@@ -17,12 +17,17 @@ name = 'jaraco.util'
 pytest_runner = ['pytest_runner'] if 'ptr' in sys.argv else []
 sphinx = ['sphinx'] if 'build_sphinx' in sys.argv else []
 
+with open('README') as readme_stream:
+	readme = readme_stream.read()
+with open('CHANGES.txt') as changes_stream:
+	changes = changes_stream.read()
+
 setup_params = dict(
 	# convert to bytes to work around UnicodeDecodeError when using bdist --formats gztar
 	name = str(name),
 	use_hg_version=True,
 	description = 'General utility modules that supply commonly-used functionality',
-	long_description = open('README').read(),
+	long_description = readme + '\n\n' + changes,
 	author = 'Jason R. Coombs',
 	author_email = 'jaraco@jaraco.com',
 	url = 'http://pypi.python.org/pypi/' + name,
