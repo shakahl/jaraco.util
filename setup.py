@@ -44,9 +44,6 @@ setup_params = dict(
 			'calc-prorate = jaraco.tempora:calculate_prorated_values',
 		],
 	},
-	dependency_links=[
-		'https://bitbucket.org/jaraco/six/downloads',
-	],
 	install_requires=[
 		'six>=1.4.1',
 	],
