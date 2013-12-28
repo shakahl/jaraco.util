@@ -1,6 +1,11 @@
 Changes
 -------
 
+8.8
+~~~
+
+* Added ``context.ExceptionTrap``.
+
 8.7
 ~~~
 
