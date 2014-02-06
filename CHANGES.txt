@@ -1,6 +1,12 @@
 Changes
 -------
 
+8.9
+~~~
+
+* Added ``KeyTransformingDict.matching_key_for``, allowing the original key
+  to be returned.
+
 8.8
 ~~~
 
