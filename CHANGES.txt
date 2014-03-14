@@ -1,6 +1,12 @@
 Changes
 -------
 
+9.0
+~~~
+
+* ``itertools.one()`` now always raises a ValueError and never a
+  StopIteration.
+
 8.9
 ~~~
 
