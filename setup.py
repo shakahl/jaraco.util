@@ -51,6 +51,7 @@ setup_params = dict(
 	},
 	install_requires=[
 		'six>=1.4.1',
+		'more_itertools',
 	],
 	tests_require=[
 		'pytest>=2',

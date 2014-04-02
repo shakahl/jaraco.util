@@ -1,6 +1,15 @@
 Changes
 -------
 
+10.0
+~~~~
+
+* Removed several itertools recipes now obviated by `more-itertools
+  <https://github.com/erikrose/more-itertools>`_:
+
+  - grouper -> more_itertools.recipes.grouper
+  - grouper_nofill -> more_itertools.more.chunked
+
 9.0
 ~~~
 
