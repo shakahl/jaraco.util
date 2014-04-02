@@ -5,10 +5,20 @@ Changes
 ~~~~
 
 * Removed several itertools recipes now obviated by `more-itertools
-  <https://github.com/erikrose/more-itertools>`_:
+  <https://github.com/erikrose/more-itertools>`_ (recipes and more):
 
-  - grouper -> more_itertools.recipes.grouper
-  - grouper_nofill -> more_itertools.more.chunked
+  - grouper -> recipes.grouper
+  - grouper_nofill -> more.chunked
+  - chain -> itertools.chain.from_iterable
+
+  The following can now be found in more_itertools.recipes:
+
+  - pairwise
+  - consume
+  - roundrobin
+  - unique_justseen
+  - unique_everseen
+
 
 9.0
 ~~~
