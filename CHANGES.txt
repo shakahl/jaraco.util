@@ -1,6 +1,11 @@
 Changes
 -------
 
+8.9.1
+~~~~~
+
+* Use six for callable in NonDataProperty, restoring Python 3.1 compatibility.
+
 8.9
 ~~~
 
