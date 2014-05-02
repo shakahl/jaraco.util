@@ -19,6 +19,10 @@ Changes
   - unique_justseen
   - unique_everseen
 
+* Add logging.setup_requests_logging, following the pattern document at
+  `StackOverflow
+  <http://stackoverflow.com/questions/10588644/how-can-i-see-the-entire-request-thats-being-sent-to-paypal-in-my-python-applic/16630836#16630836>`_.
+
 
 9.0.1
 ~~~~~
