@@ -8,7 +8,7 @@ Changes
   <https://github.com/erikrose/more-itertools>`_ (recipes and more):
 
   - grouper -> recipes.grouper
-  - grouper_nofill -> more.chunked
+  - grouper_nofill -> more.chunked (note parameters are switched)
   - chain -> itertools.chain.from_iterable
 
   The following can now be found in more_itertools.recipes:
