@@ -1,6 +1,16 @@
 Changes
 -------
 
+10.0.2
+~~~~~~
+
+* Restore ``itertools.one``, unintentionally removed in 10.0.
+
+10.0.1
+~~~~~~
+
+* Restore Python 2 compatibility.
+
 10.0
 ~~~~
 
