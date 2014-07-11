@@ -1,6 +1,11 @@
 Changes
 -------
 
+10.1
+~~~~
+
+* Added ``meta.TagRegistered``.
+
 10.0.2
 ~~~~~~
 
