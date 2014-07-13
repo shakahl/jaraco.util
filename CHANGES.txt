@@ -1,6 +1,12 @@
 Changes
 -------
 
+10.2
+~~~~
+
+* Moved jaraco.util.timing into its own package under jaraco.timing and
+  deprecated the module in this package.
+
 10.1
 ~~~~
 
