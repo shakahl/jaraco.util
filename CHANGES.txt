@@ -1,6 +1,11 @@
 Changes
 -------
 
+10.3
+~~~~
+
+* Add classproperty to properties module.
+
 10.2
 ~~~~
 
