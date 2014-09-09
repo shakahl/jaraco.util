@@ -1,6 +1,12 @@
 Changes
 -------
 
+10.5
+~~~~
+
+* Moved functionality from words function to ``WordSet.parse``. ``words``
+  retained for compatibility.
+
 10.4
 ~~~~
 
