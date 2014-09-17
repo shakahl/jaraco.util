@@ -3,7 +3,7 @@
 """
 Setup script for building jaraco.util distribution
 
-Copyright © 2004-2013 Jason R. Coombs
+Copyright Â© 2004-2013 Jason R. Coombs
 """
 
 from __future__ import unicode_literals
