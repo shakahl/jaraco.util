@@ -3,7 +3,7 @@
 """
 Setup script for building jaraco.util distribution
 
-Copyright Â© 2004-2013 Jason R. Coombs
+Copyright © 2004-2013 Jason R. Coombs
 """
 
 from __future__ import unicode_literals
@@ -39,6 +39,7 @@ setup_params = dict(
 	classifiers = [
 		"Development Status :: 5 - Production/Stable",
 		"Intended Audience :: Developers",
+		"License :: OSI Approved :: MIT License",
 		"Programming Language :: Python :: 2.6",
 		"Programming Language :: Python :: 2.7",
 		"Programming Language :: Python :: 3",
