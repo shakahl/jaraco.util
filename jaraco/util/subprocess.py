@@ -20,15 +20,15 @@ def Popen_nonblocking(*args, **kwargs):
 	Open a subprocess without blocking. Return a process handle with any
 	output streams replaced by queues of lines from that stream.
 
-	Usage:
+	Usage::
 
-	proc = Popen_nonblocking(..., stdout=subprocess.PIPE)
-	try:
-		out_line = proc.stdout.get_nowait()
-	except queue.Empty:
-		"no output available"
-	else:
-		handle_output(out_line)
+		proc = Popen_nonblocking(..., stdout=subprocess.PIPE)
+		try:
+			out_line = proc.stdout.get_nowait()
+		except queue.Empty:
+			"no output available"
+		else:
+			handle_output(out_line)
 	"""
 	kwargs.setdefault('close_fds', 'posix' in sys.builtin_module_names)
 	kwargs.setdefault('bufsize', 1)

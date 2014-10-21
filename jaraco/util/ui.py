@@ -151,8 +151,8 @@ class TargetProgressBar(AbstractProgressBar):
 def countdown(template, duration=datetime.timedelta(seconds=5)):
 	"""
 	Do a countdown for duration, printing the template (which may accept one
-	positional argument). Template should be something like:
-		"countdown complete in {} seconds."
+	positional argument). Template should be something like
+	``countdown complete in {} seconds.``
 	"""
 	now = datetime.datetime.now()
 	deadline = now + duration

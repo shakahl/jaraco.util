@@ -19,12 +19,13 @@ class EditableFile(object):
 	platform editor for interactive editing, and then reloads the data,
 	setting .changed to True if the data was edited.
 
-	e.g.
+	e.g.::
 
-	x = EditableFile('foo')
-	x.edit()
-	if x.changed:
-		print x.data
+		x = EditableFile('foo')
+		x.edit()
+
+		if x.changed:
+			print(x.data)
 
 	The EDITOR environment variable can define which executable to use
 	(also XML_EDITOR if the content-type to edit includes 'xml'). If no
