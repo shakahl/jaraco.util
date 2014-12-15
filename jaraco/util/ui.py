@@ -23,7 +23,7 @@ class Menu(object):
 		menu_fmt = '{number:{number_width}}) {choice}'
 		formatted_choices = map(self.formatter, self.choices)
 		for number, choice in zip(itertools.count(1), formatted_choices):
-			print(menu_fmt.format(**vars()))
+			print(menu_fmt.format(**locals()))
 		print()
 		try:
 			answer = int(six.moves.input(prompt))
@@ -93,7 +93,7 @@ class SimpleProgressBar(AbstractProgressBar):
 			amt=amt,
 		)
 		bar_len = self.size - len(empty)
-		return template.format(**vars())
+		return template.format(**locals())
 
 	@classmethod
 	def demo(cls):
@@ -123,11 +123,11 @@ class TargetProgressBar(AbstractProgressBar):
 			total=self.total,
 			bar='',
 			bar_len=0,
-			**vars()
+			**locals()
 		)
 		bar_len = self.size - len(empty)
 		bar = '=' * int(completed * bar_len)
-		return template.format(total=self.total, **vars())
+		return template.format(total=self.total, **locals())
 
 	@classmethod
 	def demo(cls):
