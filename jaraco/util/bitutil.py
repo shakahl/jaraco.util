@@ -52,7 +52,8 @@ class Flags(object):
 	Subclasses should define _names, a list of flag names beginning
 	with the least-significant bit.
 
-	>>> MyFlags = type(str('MyFlags'), (Flags,), dict(_names=tuple('abc')))
+	>>> class MyFlags(Flags):
+	...     _names = 'a', 'b', 'c'
 	>>> mf = MyFlags.from_number(5)
 	>>> mf['a']
 	1
