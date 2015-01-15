@@ -41,6 +41,9 @@ def gen_bit_values(number):
 	"""
 	Return a zero or one for each bit of a numeric value up to the most
 	significant 1 bit, beginning with the least significant bit.
+
+	>>> list(gen_bit_values(16))
+	[0, 0, 0, 0, 1]
 	"""
 	number = six.integer_types[-1](number)
 	while number:
