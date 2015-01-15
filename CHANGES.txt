@@ -1,6 +1,11 @@
 Changes
 -------
 
+10.7.1
+~~~~~~
+
+* Fix ``tempora.calculate_prorate`` on Python 3.
+
 10.7
 ~~~~
 
