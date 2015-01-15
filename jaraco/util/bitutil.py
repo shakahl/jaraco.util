@@ -2,16 +2,6 @@ from __future__ import absolute_import, unicode_literals
 
 from functools import reduce
 
-import six
-
-# consider Brandon Craig Rhoades presentation at PyCon 2010 for a new
-#  implementation to get bit values.
-# http://us.python.org/2010/conference/schedule/event/12/
-"""
-def bits(n):
-	n += 2**32
-	return bin(n)[-32:]
-"""
 
 def get_bit_values(number, size=32):
 	"""
@@ -25,17 +15,15 @@ def get_bit_values(number, size=32):
 
 	You may override the default word size of 32-bits to match your actual
 	application.
+
 	>>> get_bit_values(0x3, 2)
 	[1, 1]
 
 	>>> get_bit_values(0x3, 4)
 	[0, 0, 1, 1]
 	"""
-	values = list(gen_bit_values(number))
-	# 0-pad the most significant bit
-	res = [0] * (size - len(values))
-	res.extend(reversed(values))
-	return res
+	number += 2**size
+	return list(map(int, bin(number)[-size:]))
 
 def gen_bit_values(number):
 	"""
@@ -45,10 +33,8 @@ def gen_bit_values(number):
 	>>> list(gen_bit_values(16))
 	[0, 0, 0, 0, 1]
 	"""
-	number = six.integer_types[-1](number)
-	while number:
-		yield int(number & 0x1)
-		number >>= 1
+	digits = bin(number)[2:]
+	return map(int, reversed(digits))
 
 def coalesce(bits):
 	"""
