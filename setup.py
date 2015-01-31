@@ -54,6 +54,7 @@ setup_params = dict(
 		'six>=1.4.1',
 		'more_itertools',
 		'jaraco.timing',
+		'jaraco.functools',
 	],
 	tests_require=[
 		'pytest>=2',
