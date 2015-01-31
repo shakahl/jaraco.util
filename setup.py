@@ -3,7 +3,7 @@
 """
 Setup script for building jaraco.util distribution
 
-Copyright © 2004-2013 Jason R. Coombs
+Copyright © 2004-2015 Jason R. Coombs
 """
 
 from __future__ import unicode_literals
@@ -47,7 +47,6 @@ setup_params = dict(
 	entry_points = {
 		'console_scripts': [
 			'roll-dice = jaraco.util.dice:do_dice_roll',
-			'calc-prorate = jaraco.tempora:calculate_prorated_values',
 		],
 	},
 	install_requires=[
@@ -55,6 +54,7 @@ setup_params = dict(
 		'more_itertools',
 		'jaraco.timing',
 		'jaraco.functools',
+		'tempora',
 	],
 	tests_require=[
 		'pytest>=2',
