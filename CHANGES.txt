@@ -8,6 +8,8 @@ Changes
   ``jaraco.functools`` package.
 * Deprecated ``jaraco.tempora`` module. Functionality has been moved to the
   ``tempora`` package.
+* Deprecated ``jaraco.util.numbers.ordinalth``. Use ``inflect`` package
+  instead.
 
 10.7.1
 ~~~~~~
