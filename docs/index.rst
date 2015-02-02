@@ -3,15 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to jaraco's documentation!
-==================================
+Welcome to the jaraco.util documentation!
+=========================================
 
 Contents:
 
 .. toctree::
    :maxdepth: 4
 
-   jaraco
+   jaraco.filesystem
+   jaraco.lang
+   jaraco.util
    history
 
 Indices and tables
