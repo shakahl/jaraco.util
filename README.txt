@@ -3,15 +3,20 @@
 jaraco.util
 ===========
 
-.. contents::
-
 Overview
 --------
 
 ``jaraco.util`` contains a number of nominally useful, reusable classes
-and functions. They're designed to be intuitively named and
-self-documenting (many with extensive doctests). Browse the source for
-details.
+and functions. Each is designed to be intuitively named and
+self-documenting (many with extensive doctests), though
+the project is also `documented with runnable tests
+<https://pythonhosted.org/jaraco.util>`_.
+
+Deprecation
+-----------
+
+In general, this grab-bag of routines is deprecated, with much of the
+functionality moved or pending move to another, more appropriate home.
 
 Highlights
 ----------
@@ -20,12 +25,6 @@ Some of the more interesting modules include:
 
  - ``.dictlib`` contains RangeMap, a dictionary-like object that maps a
    range of values to a given value.
-
-Docs
-----
-
-The project is `documented with runnable tests
-<https://pythonhosted.org/jaraco.util>`_.
 
 Status and License
 ------------------
@@ -39,4 +38,4 @@ projects developed by the author.
 
 You can install it with ``easy_install jaraco.util``, or grab the code
 from the `mercurial repository
-<http://bitbucket.org/jaraco/jaraco.util>`_.
+<https://bitbucket.org/jaraco/jaraco.util>`_.
