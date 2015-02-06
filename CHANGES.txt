@@ -1,6 +1,12 @@
 Changes
 -------
 
+10.9
+~~~~
+
+* Deprecated ``jaraco.util.logging``. Functionality has been moved to the
+  ``jaraco.logging`` package.
+
 10.8
 ~~~~
 

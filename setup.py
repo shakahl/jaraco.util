@@ -54,6 +54,7 @@ setup_params = dict(
 		'tempora',
 		'inflect',
 		'jaraco.itertools',
+		'jaraco.logging',
 	],
 	tests_require=[
 		'pytest>=2',
