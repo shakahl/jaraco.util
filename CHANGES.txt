@@ -8,6 +8,8 @@ Changes
   ``jaraco.logging`` package.
 * Deprecated ``jaraco.util.meta``. Functionality has been moved to the
   ``jaraco.meta`` package.
+* Deprecated ``jaraco.util.classlib.ensure_sequence``. Use
+  ``jaraco.itertools.always_iterable`` instead.
 
 10.8
 ~~~~
