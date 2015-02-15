@@ -1,5 +1,5 @@
 import warnings
 
-from jaraco.meta import *
+from jaraco.classes.meta import *
 
-warnings.warn("Use jaraco.meta package", DeprecationWarning)
+warnings.warn("Use jaraco.classes package", DeprecationWarning)
