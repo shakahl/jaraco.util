@@ -55,6 +55,7 @@ setup_params = dict(
 		'inflect',
 		'jaraco.itertools',
 		'jaraco.logging',
+		'jaraco.meta',
 	],
 	tests_require=[
 		'pytest>=2',

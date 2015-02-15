@@ -6,6 +6,8 @@ Changes
 
 * Deprecated ``jaraco.util.logging``. Functionality has been moved to the
   ``jaraco.logging`` package.
+* Deprecated ``jaraco.util.meta``. Functionality has been moved to the
+  ``jaraco.meta`` package.
 
 10.8
 ~~~~

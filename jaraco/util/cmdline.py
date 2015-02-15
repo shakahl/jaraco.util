@@ -1,8 +1,8 @@
 import argparse
 
 import six
+from jaraco import meta
 
-from . import meta
 from . import string
 
 @six.add_metaclass(meta.LeafClassesMeta)
