@@ -6,7 +6,8 @@ Changes
 
 * Deprecated ``jaraco.util.logging``. Functionality has been moved to the
   ``jaraco.logging`` package.
-* Deprecated ``jaraco.util.meta`` and ``jaraco.util.classlib``. Functionality
+* Deprecated ``jaraco.util.meta`` and ``jaraco.util.classlib`` and
+  ``jaraco.util.properties``. Functionality
   has been moved to the ``jaraco.classes`` package.
 * Deprecated ``jaraco.util.classlib.ensure_sequence``. Use
   ``jaraco.itertools.always_iterable`` instead.
