@@ -1,5 +1,8 @@
 from __future__ import unicode_literals
 
+from . import context
+
+
 def throws_exception(callable, *exceptions):
 	"""
 	Return True if the callable throws the specified exception
@@ -11,14 +14,11 @@ def throws_exception(callable, *exceptions):
 	>>> throws_exception(lambda: int('a'), KeyError)
 	False
 	"""
-	if not exceptions: exceptions = Exception,
-	try:
-		callable()
-	except exceptions:
-		return True
-	except Exception:
-		pass
-	return False
+	with context.ExceptionTrap():
+		with context.ExceptionTrap(*exceptions) as exc:
+			callable()
+	return bool(exc)
+
 
 def suppress_exception(callable, *exceptions):
 	"""
@@ -33,8 +33,5 @@ def suppress_exception(callable, *exceptions):
 	...
 	ValueError: invalid literal for int() with base 10: 'a'
 	"""
-	if not exceptions: exceptions = Exception,
-	try:
+	with context.ExceptionTrap(*exceptions):
 		return callable()
-	except exceptions:
-		pass
