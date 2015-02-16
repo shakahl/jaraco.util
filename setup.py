@@ -57,6 +57,8 @@ setup_params = dict(
 		'jaraco.logging',
 		'jaraco.classes>=1.1',
 		'jaraco.context>=1.2',
+		'jaraco.collections',
+		'jaraco.text',
 	],
 	tests_require=[
 		'pytest>=2',

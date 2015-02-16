@@ -2,8 +2,8 @@ import argparse
 
 import six
 from jaraco import meta
+from jaraco import text
 
-from . import string
 
 @six.add_metaclass(meta.LeafClassesMeta)
 class Command(object):
@@ -41,7 +41,7 @@ class Command(object):
 
 	@classmethod
 	def add_parser(cls, subparsers):
-		cmd_string = string.words(cls.__name__).lowered().dash_separated()
+		cmd_string = text.words(cls.__name__).lowered().dash_separated()
 		parser = subparsers.add_parser(cmd_string)
 		parser.set_defaults(action=cls)
 		cls.add_arguments(parser)

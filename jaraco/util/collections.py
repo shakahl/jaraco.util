@@ -1,15 +1,7 @@
-from __future__ import absolute_import
+import warnings
 
-class Everything(object):
-	"""
-	A collection "containing" every possibly thing.
+from jaraco.collections import Everything
 
-	>>> 'foo' in Everything()
-	True
+__all__ = ['Everything']
 
-	>>> import random
-	>>> random.randint(1, 999) in Everything()
-	True
-	"""
-	def __contains__(self, other):
-		return True
+warnings.warn("Use jaraco.collections package", DeprecationWarning)

@@ -13,6 +13,10 @@ Changes
   ``jaraco.itertools.always_iterable`` instead.
 * Deprecated ``jaraco.util.context``. Functionality moved to
   ``jaraco.context``.
+* Deprecated ``jaraco.util.dictlib`` and ``jaraco.util.collections``.
+  Functionality has been moved to the ``jaraco.collections`` package.
+* Deprecated ``jaraco.util.string``. Functionality moved to the ``jaraco.text``
+  package.
 
 10.8
 ~~~~
