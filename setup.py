@@ -59,6 +59,7 @@ setup_params = dict(
 		'jaraco.context>=1.2',
 		'jaraco.collections',
 		'jaraco.text',
+		'jaraco.ui',
 	],
 	tests_require=[
 		'pytest>=2',
