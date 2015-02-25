@@ -85,9 +85,8 @@ class EditableFile(object):
 		Search the environment for the supplied keys, returning the first
 		one found or None if none was found.
 		"""
-		for key in keys:
-			if key in os.environ:
-				return os.environ[key]
+		matches = (os.environ[key] for key in keys if key in os.environ)
+		return next(matches, None)
 
 	def get_editor(self):
 		"""
