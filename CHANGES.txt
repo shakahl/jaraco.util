@@ -1,6 +1,12 @@
 Changes
 -------
 
+10.13
+~~~~~
+
+* Deprecated ``jaraco.util.bitutil``. Functionality has been
+  moved to the ``jaraco.structures`` package.
+
 10.12
 ~~~~~
 
