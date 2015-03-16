@@ -1,6 +1,11 @@
 Changes
 -------
 
+11.0
+~~~~
+
+* Removed deprecated modules and functions.
+
 10.14
 ~~~~~
 
