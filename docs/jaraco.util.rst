@@ -100,14 +100,6 @@ jaraco.util.exceptions module
     :undoc-members:
     :show-inheritance:
 
-jaraco.util.filesystem module
------------------------------
-
-.. automodule:: jaraco.util.filesystem
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 jaraco.util.functools module
 ----------------------------
 

@@ -11,7 +11,6 @@ Contents:
 .. toctree::
    :maxdepth: 4
 
-   jaraco.filesystem
    jaraco.lang
    jaraco.util
    history
