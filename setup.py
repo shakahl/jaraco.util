@@ -61,6 +61,7 @@ setup_params = dict(
 		'jaraco.text',
 		'jaraco.ui>=1.2',
 		'jaraco.structures',
+		'jaraco.path',
 	],
 	tests_require=[
 		'pytest>=2',

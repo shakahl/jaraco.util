@@ -1,6 +1,12 @@
 Changes
 -------
 
+10.14
+~~~~~
+
+* Deprecated ``jaraco.util.filesystem`` and ``jaraco.filesystem``.
+  Functionality has been moved to the ``jaraco.path`` package.
+
 10.13
 ~~~~~
 
