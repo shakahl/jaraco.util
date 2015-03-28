@@ -7,6 +7,7 @@ import binascii
 
 import six
 
+
 class PasswordGenerator(object):
 	"""
 	Generates random passwords
