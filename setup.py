@@ -14,8 +14,10 @@ import setuptools
 
 name = 'jaraco.util'
 
-pytest_runner = ['pytest_runner>=2.1'] if 'pytest' in sys.argv else []
-sphinx = ['sphinx'] if 'build_sphinx' in sys.argv else []
+needs_pytest = set(['pytest', 'test']).intersection(sys.argv)
+pytest_runner = ['pytest_runner>=2.1'] if needs_pytest else []
+needs_sphinx = set(['build_sphinx']).intersection(sys.argv)
+sphinx = ['sphinx'] if needs_sphinx else []
 
 with open('README.txt') as readme_stream:
 	readme = readme_stream.read()
