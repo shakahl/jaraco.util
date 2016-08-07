@@ -1,3 +1,7 @@
+"""
+Don't use this module. Use grampg.
+"""
+
 from __future__ import absolute_import, unicode_literals
 
 import codecs
