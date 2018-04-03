@@ -14,6 +14,9 @@ Changes
 * Removed ``jaraco.util.exceptions.suppress_exception``. Use
   ``contextlib2.suppress`` instead.
 
+* Removed ``jaraco.util.random``. Use ``os.urandom`` instead
+  of ``random.bytes``.
+
 11.0
 ~~~~
 
