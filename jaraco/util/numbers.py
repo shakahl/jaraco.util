@@ -17,7 +17,9 @@ def coerce(value):
 	"""
 	result = value
 	for transform in (float, int):
-		try: result = transform(value)
-		except ValueError: pass
+		try:
+			result = transform(value)
+		except ValueError:
+			pass
 
 	return result

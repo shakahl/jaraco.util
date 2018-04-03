@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import threading
 import functools
 
+
 def atomize(f, lock=None):
 	"""
 	Decorate a function with a reentrant lock to prevent multiple
@@ -18,6 +19,7 @@ def atomize(f, lock=None):
 		finally:
 			lock.release()
 	return exec_atomic
+
 
 class AtomicGuard(object):
 	"""

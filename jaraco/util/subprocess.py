@@ -7,13 +7,16 @@ import six
 
 queue = six.moves.queue
 
+
 def enqueue_lines(stream, queue):
 	for line in iter(stream.readline, b''):
 		queue.put(line)
 	stream.close()
 
+
 # copy attribute for convenience
-PIPE=subprocess.PIPE
+PIPE = subprocess.PIPE
+
 
 def Popen_nonblocking(*args, **kwargs):
 	"""
@@ -35,7 +38,8 @@ def Popen_nonblocking(*args, **kwargs):
 	proc = subprocess.Popen(*args, **kwargs)
 	if proc.stdout:
 		q = queue.Queue()
-		t = threading.Thread(target=enqueue_lines,
+		t = threading.Thread(
+			target=enqueue_lines,
 			args=(proc.stdout, q))
 		proc.stdout = q
 		# thread dies with the parent
@@ -43,7 +47,8 @@ def Popen_nonblocking(*args, **kwargs):
 		t.start()
 	if proc.stderr:
 		q = queue.Queue()
-		t = threading.Thread(target=enqueue_lines,
+		t = threading.Thread(
+			target=enqueue_lines,
 			args=(proc.stderr, q))
 		proc.stderr = q
 		t.daemon = True

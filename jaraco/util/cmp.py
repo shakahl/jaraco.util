@@ -6,6 +6,7 @@ Based on recipe found at http://code.activestate.com/recipes/510403/
 
 from __future__ import unicode_literals
 
+
 class RichComparisonMixin(object):
 	"""
 	Define __cmp__, and inherit from this class to provide full rich
@@ -30,6 +31,7 @@ class RichComparisonMixin(object):
 	def __ge__(self, other):
 		return self.__cmp__(other) >= 0
 
+
 class KeyedEqualityMixin(object):
 
 	def __eq__(self, other):
@@ -37,6 +39,7 @@ class KeyedEqualityMixin(object):
 
 	def __ne__(self, other):
 		return self.__key__() != other.__key__()
+
 
 class KeyedComparisonMixin(KeyedEqualityMixin):
 	def __lt__(self, other):
@@ -50,6 +53,7 @@ class KeyedComparisonMixin(KeyedEqualityMixin):
 
 	def __ge__(self, other):
 		return self.__key__() >= other.__key__()
+
 
 class KeyedHashingMixin(KeyedEqualityMixin):
 	def __hash__(self):

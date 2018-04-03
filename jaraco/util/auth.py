@@ -31,13 +31,15 @@ class PasswordGenerator(object):
 	"""
 
 	@staticmethod
-	def make_password(n_bytes = 8, encoding = 'base-64'):
+	def make_password(n_bytes=8, encoding='base-64'):
 		'Make a password with n_bytes of disorder; optionally encoded'
 		chars = PasswordGenerator.get_random_chars(n_bytes)
 		result = b''.join(chars)
 		if encoding == 'hex':
 			return binascii.hexlify(result)
-		null_encoder = lambda s: (s, len(s))
+
+		def null_encoder(s):
+			return s, len(s)
 		encoder = codecs.getencoder(encoding) if encoding else null_encoder
 		encoded, length = encoder(result)
 		return encoded

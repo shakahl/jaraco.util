@@ -5,6 +5,7 @@ import itertools
 
 import six
 
+
 def bytes(n):
 	"""
 	Returns n random bytes
@@ -13,6 +14,6 @@ def bytes(n):
 	>>> assert len(res) == 5
 	>>> assert all(len(b) == 1 for b in res)
 	"""
-	bytes = (random.randint(0,255) for i in itertools.count())
+	bytes = (random.randint(0, 255) for i in itertools.count())
 	bytes = itertools.islice(bytes, n)
 	return (six.int2byte(i) for i in bytes)

@@ -1,9 +1,11 @@
 #!python
 
-from __future__ import (print_function, division, unicode_literals,
+from __future__ import (
+	print_function, division, unicode_literals,
 	absolute_import)
 
 import collections
+
 
 def mf(obj, term):
 	"""
@@ -18,6 +20,7 @@ def mf(obj, term):
 	term = term.lower()
 	result = [m for m in methods if term in m.lower()] or 'No matches'
 	print(result)
+
 
 def obinfo(obj):
 	"""
@@ -40,6 +43,7 @@ def obinfo(obj):
 		print("DOC:     ", "\n".join(topfive))
 	else:
 		print("No docstring. Yell at the author.")
+
 
 def callable(candidate):
 	# The Python 3 recommended way to do this

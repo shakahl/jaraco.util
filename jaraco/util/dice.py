@@ -7,6 +7,7 @@ from __future__ import print_function, absolute_import, unicode_literals
 import random
 from optparse import OptionParser
 
+
 def get_options():
 	parser = OptionParser()
 	parser.add_option('-s', '--sides', default=6, type="int")
@@ -17,6 +18,7 @@ def get_options():
 		number = 1
 	options.number = number
 	return options
+
 
 class Dice(object):
 	"""
@@ -29,6 +31,7 @@ class Dice(object):
 
 	def roll(self):
 		return random.randint(1, self.sides)
+
 
 def do_dice_roll():
 	"""
