@@ -4,6 +4,7 @@ import random
 import itertools
 
 import six
+from six.moves import map
 
 
 def bytes(n):
@@ -16,4 +17,4 @@ def bytes(n):
 	"""
 	bytes = (random.randint(0, 255) for i in itertools.count())
 	bytes = itertools.islice(bytes, n)
-	return (six.int2byte(i) for i in bytes)
+	return map(six.int2byte, bytes)
