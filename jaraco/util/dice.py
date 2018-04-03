@@ -5,19 +5,15 @@ Simple module for simulating dice rolls.
 from __future__ import print_function, absolute_import, unicode_literals
 
 import random
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 
 def get_options():
-	parser = OptionParser()
-	parser.add_option('-s', '--sides', default=6, type="int")
-	options, args = parser.parse_args()
-	try:
-		number = int(args.pop())
-	except Exception:
-		number = 1
-	options.number = number
-	return options
+	parser = ArgumentParser()
+	parser.add_argument('-s', '--sides', default=6, type=int)
+	parser.add_argument('number', nargs='?', type=int, default=1)
+	args = parser.parse_args()
+	return args
 
 
 class Dice(object):
