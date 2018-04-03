@@ -35,6 +35,7 @@ params = dict(
 	install_requires=[
 		'jaraco.context',
 		'six>=1.4.1',
+		'contextlib2',
 	],
 	extras_require={
 		'testing': [
