@@ -17,6 +17,11 @@ Changes
 * Removed ``jaraco.util.random``. Use ``os.urandom`` instead
   of ``random.bytes``.
 
+* Moved ``jaraco.util.stream.Tee`` to `jaraco.stream
+  <https://pypi.org/project/jaraco.stream`_ (1.2).
+
+* Removed PIPE attribute from ``jaraco.util.subprocess``.
+
 11.0
 ~~~~
 

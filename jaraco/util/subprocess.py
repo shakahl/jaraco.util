@@ -14,10 +14,6 @@ def enqueue_lines(stream, queue):
 	stream.close()
 
 
-# copy attribute for convenience
-PIPE = subprocess.PIPE
-
-
 def Popen_nonblocking(*args, **kwargs):
 	"""
 	Open a subprocess without blocking. Return a process handle with any
