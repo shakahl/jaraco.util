@@ -11,6 +11,9 @@ Changes
   ``mf`` and ``obinfo`` were unused and ``callable`` returned
   to Python 3.
 
+* Removed ``jaraco.util.exceptions.suppress_exception``. Use
+  ``contextlib2.suppress`` instead.
+
 11.0
 ~~~~
 

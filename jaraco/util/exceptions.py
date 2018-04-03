@@ -18,20 +18,3 @@ def throws_exception(callable, *exceptions):
 		with context.ExceptionTrap(*exceptions) as exc:
 			callable()
 	return bool(exc)
-
-
-def suppress_exception(callable, *exceptions):
-	"""
-	Call `callable` and return its result but suppress any specified
-	exceptions (returning None).
-
-	>>> suppress_exception(lambda: int('3'))
-	3
-	>>> suppress_exception(lambda: int('a'))
-	>>> suppress_exception(lambda: int('a'), KeyError)
-	Traceback (most recent call last):
-	...
-	ValueError: invalid literal for int() with base 10: 'a'
-	"""
-	with context.ExceptionTrap(*exceptions):
-		return callable()
