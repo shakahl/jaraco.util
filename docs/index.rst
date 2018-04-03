@@ -4,7 +4,6 @@ Welcome to jaraco.util documentation!
 .. toctree::
    :maxdepth: 4
 
-   jaraco.lang
    jaraco.util
 
    history
