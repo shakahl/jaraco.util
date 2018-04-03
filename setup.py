@@ -33,6 +33,7 @@ params = dict(
 	),
 	python_requires='>=2.7',
 	install_requires=[
+		'jaraco.context',
 		'six>=1.4.1',
 	],
 	extras_require={
