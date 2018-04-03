@@ -1,6 +1,16 @@
 Changes
 -------
 
+12.0
+~~~~
+
+* Removed ``auth`` module. Use `grampg
+  <https://pypi.org/project/grampg>`_ instead.
+
+* Removed ``jaraco.lang`` package with ``jaraco.lang.python``.
+  ``mf`` and ``obinfo`` were unused and ``callable`` returned
+  to Python 3.
+
 11.0
 ~~~~
 
