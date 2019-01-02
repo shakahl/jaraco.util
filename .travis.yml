@@ -1,10 +1,11 @@
-dist: trusty
+dist: xenial
 sudo: false
 language: python
 
 python:
 - 2.7
-- &latest_py3 3.6
+- 3.6
+- &latest_py3 3.7
 
 jobs:
   fast_finish: true
@@ -12,19 +13,13 @@ jobs:
   - stage: deploy
     if: tag IS present
     python: *latest_py3
-    install: skip
-    script: skip
-    deploy:
-      provider: pypi
-      on:
-        tags: true
-        all_branches: true
-      user: jaraco
-      password:
-        secure: xWBbiWBzP2ZgW8QWNbmk0TPh1ZRmSJchoVqEmWYrD9z507UyI2WYUQ2xP6fS/RoXNKFxLjJNqFgpFIY5wfppnLBW2N/bKDZM99oTKUDcyjV559UffRH1eVR4XCF01kgQqIaU68PixM8NDJ6yizGN5SNbN12U6fYjGoM+gx/ECDI88FfkRaNw+qmONOmMFfv10e3RhlWGr+R0c+sd1OSPpUlZMTwpI0FjMWV6gCQ87byXqYYRMdNuOW1kjZZNmAq5Oz9Gr4ReYTY2C3EORNRV35sNRuA9oEEMhjP+sga/M07cjILhzx8pvkzCv8cZ11e8svmyqDfmtNqmq5RSSucazaMbEVkZYCxJlOKckO1Ul2nDah/V7oqfvcAnqUA1uyz+i2+dGBuqGQMsPHgCdK72urjGMYIAitti4DoNXtvUd7/A9B2rPkmRvm3NWnybu4Ab8A9kwmG2M4kwdPSo/rT/ANSno/5MZezs0yYx1qS4/Xaa6pZ6p7lyqa9xV3TJIpaxgOj9si6ARCDySDiGxU31jPzrE2q3NK4OGKtoIfJ2FAJ8Ug+WW69XdYc+NpXCuGqZXlGyvN4YejHQvSscjqkqUzkjSxidwhvEVuDljjEolUrvOVXazQzN1Erv7pYp/8MVIGEDKQc9YfL4cME+meT1EaST+Z8CmbhxtUDHOhocPag=
-      distributions: dists
-      skip_cleanup: true
-      skip_upload_docs: true
+    before_script: skip
+    env:
+    - TWINE_USERNAME=jaraco
+    # TWINE_PASSWORD
+    - secure: bY0tGM/IRk1jC3aLuq37UQ8qIFddppSL0kPReqXZqJPMYPGsjLI8G5PqPgsg3xJ/wVF62EKTND86n1UqpHTuQ9gZYMwNJaah0On+YAoJbAJWuZoouFCnIgXHUDxNo+DGeTkIm63sMymtNdtQLek7hGu6e4rptmrYL0+6ta3noF15M6p+esGObKQ7w2zBcWtARyi84wFbrkcnnNptlrKXVTAR2cPPy5BAUFtITCrSdM4/pX/XGtSD4uQf+J+ruVpaBvH6vG8rD3Pb16uOYGQBbN/e8KBNQ1yImoYxj5reKCt/HBxpaWmS+t8ohpeNm5jQuXoOmSL8aroON2kA7nZ1JITlNA2Cc1uCOZ6sYRequgCcRGPcqi208x75IYdYyg0uwDJn3fdezqZL1C4Z7D+zlB+vpdubT5/QSgiTTeeffSHhqTNJbvK3wlkfM4wrpmB9TIyB/1TDDMcxpa3WpsA9bKQtT8wA9UPpcBlWM8mzi8F06wiCTs4mv8H+MWBdkP5pkrkqVeEMl83rKHE+zMhlWUHJMCjU1X9Q0r/155AFKvIHVkpUm/VyTydFruY8AgL1hOPMUX/aisHTCt8vM45uMcgZSECWsDvM+Z6ax6fK6IMAgo5SgOMs0M2pHK0Nmmtqo46nl475f7k1hDO9GpvmdwOgmjE1IbzW8P/Y2NtNKI8=
+    - TOX_TESTENV_PASSENV="TWINE_USERNAME TWINE_PASSWORD"
+    script: tox -e release
 
 cache: pip
 
