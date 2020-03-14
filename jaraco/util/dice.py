@@ -41,3 +41,6 @@ def do_dice_roll():
         print('rolled', roll)
     if options.number > 1:
         print('total', sum(rolls))
+
+
+__name__ == '__main__' and do_dice_roll()
