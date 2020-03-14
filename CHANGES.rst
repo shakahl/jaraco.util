@@ -1,3 +1,8 @@
+v14.0.0
+=======
+
+Require Python 3.6 or later.
+
 13.0
 ====
 
