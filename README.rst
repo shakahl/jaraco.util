@@ -6,8 +6,8 @@
 
 .. _PyPI link: https://pypi.org/project/jaraco.util
 
-.. image:: https://dev.azure.com/jaraco/skeleton/_apis/build/status/jaraco.skeleton?branchName=master
-   :target: https://dev.azure.com/jaraco/skeleton/_build/latest?definitionId=1&branchName=master
+.. image:: https://dev.azure.com/jaraco/jaraco.util/_apis/build/status/jaraco.jaraco.util?branchName=master
+   :target: https://dev.azure.com/jaraco/jaraco.util/_build/latest?definitionId=1&branchName=master
 
 .. image:: https://img.shields.io/travis/jaraco/jaraco.util/master.svg
    :target: https://travis-ci.org/jaraco/jaraco.util
