@@ -6,21 +6,16 @@
 
 .. _PyPI link: https://pypi.org/project/jaraco.util
 
-.. image:: https://dev.azure.com/jaraco/jaraco.util/_apis/build/status/jaraco.jaraco.util?branchName=master
-   :target: https://dev.azure.com/jaraco/jaraco.util/_build/latest?definitionId=1&branchName=master
-
-.. image:: https://img.shields.io/travis/jaraco/jaraco.util/master.svg
-   :target: https://travis-ci.org/jaraco/jaraco.util
+.. image:: https://github.com/jaraco/jaraco.util/workflows/Automated%20Tests/badge.svg
+   :target: https://github.com/jaraco/jaraco.util/actions?query=workflow%3A%22Automated+Tests%22
+   :alt: Automated Tests
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
    :alt: Code style: Black
 
-.. .. image:: https://img.shields.io/appveyor/ci/jaraco/jaraco.util/master.svg
-..    :target: https://ci.appveyor.com/project/jaraco/jaraco.util/branch/master
-
-.. .. image:: https://readthedocs.org/projects/jaracoutil/badge/?version=latest
-..    :target: https://jaracoutil.readthedocs.io/en/latest/?badge=latest
+.. .. image:: https://readthedocs.org/projects/skeleton/badge/?version=latest
+..    :target: https://skeleton.readthedocs.io/en/latest/?badge=latest
 
 ``jaraco.util`` contains a number of nominally useful, reusable classes
 and functions. Each is designed to be intuitively named and
