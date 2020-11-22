@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from jaraco import context
+from jaraco import context  # type: ignore
 
 
 def throws_exception(callable, *exceptions):
