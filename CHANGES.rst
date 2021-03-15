@@ -1,3 +1,8 @@
+v14.0.2
+=======
+
+Use PEP 420 for namespace package.
+
 v14.0.1
 =======
 
