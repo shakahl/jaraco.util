@@ -2,14 +2,12 @@
 Simple module for simulating dice rolls.
 """
 
-from __future__ import print_function, absolute_import, unicode_literals
-
 import random
-from argparse import ArgumentParser
+import argparse
 
 
 def get_options():
-    parser = ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--sides', default=6, type=int)
     parser.add_argument('number', nargs='?', type=int, default=1)
     args = parser.parse_args()

@@ -4,8 +4,6 @@ Utility functions to facilitate object comparison without __cmp__
 Based on recipe found at http://code.activestate.com/recipes/510403/
 """
 
-from __future__ import unicode_literals
-
 
 class RichComparisonMixin(object):
     """

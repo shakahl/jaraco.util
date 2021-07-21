@@ -1,10 +1,6 @@
-from __future__ import unicode_literals, absolute_import
-
-
 import json
 import numbers
-
-import contextlib2
+import contextlib
 
 
 def coerce(value):
@@ -30,7 +26,7 @@ def coerce(value):
     >>> coerce('{}')
     '{}'
     """
-    with contextlib2.suppress(Exception):
+    with contextlib.suppress(Exception):
         loaded = json.loads(value)
         assert isinstance(loaded, numbers.Number)
         return loaded
