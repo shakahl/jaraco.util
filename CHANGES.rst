@@ -1,3 +1,8 @@
+v14.0.3
+=======
+
+Removed compatibility code.
+
 v14.0.2
 =======
 
