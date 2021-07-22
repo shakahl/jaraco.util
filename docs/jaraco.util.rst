@@ -1,25 +1,3 @@
-jaraco.util package
-===================
-
-Submodules
-----------
-
-jaraco.util.auth module
------------------------
-
-.. automodule:: jaraco.util.auth
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-jaraco.util.cmp module
-----------------------
-
-.. automodule:: jaraco.util.cmp
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 jaraco.util.concurrency module
 ------------------------------
 
@@ -52,35 +30,10 @@ jaraco.util.numbers module
     :undoc-members:
     :show-inheritance:
 
-jaraco.util.random module
--------------------------
-
-.. automodule:: jaraco.util.random
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-jaraco.util.stream module
--------------------------
-
-.. automodule:: jaraco.util.stream
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 jaraco.util.subprocess module
 -----------------------------
 
 .. automodule:: jaraco.util.subprocess
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: jaraco.util
     :members:
     :undoc-members:
     :show-inheritance:
