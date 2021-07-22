@@ -3,6 +3,8 @@ v15.0.0
 
 Removed cmp module.
 
+``Popen_nonblocking`` now sets text mode.
+
 v14.0.3
 =======
 
