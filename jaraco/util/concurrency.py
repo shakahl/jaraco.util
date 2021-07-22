@@ -6,6 +6,23 @@ def atomize(f, lock=None):
     """
     Decorate a function with a reentrant lock to prevent multiple
     threads from calling said thread simultaneously.
+
+    >>> import time
+    >>> checkpoints = []
+    >>> @atomize
+    ... def sleep_and_save_time():
+    ...     time.sleep(.1)
+    ...     checkpoints.append(time.time())
+    >>> threads = [
+    ...     threading.Thread(target=sleep_and_save_time)
+    ...     for x in range(2)
+    ... ]
+    >>> for thread in threads:
+    ...     thread.start()
+    >>> for thread in threads:
+    ...     thread.join()
+    >>> (checkpoints[1] - checkpoints[0]) >= 0.1
+    True
     """
     lock = lock or threading.RLock()
 
@@ -24,6 +41,12 @@ class AtomicGuard(object):
     """
     A decorator that can be applied to multiple functions/methods to
     prevent more than one of them from being entered at any one time.
+
+    >>> guard = AtomicGuard()
+    >>> @guard
+    ... def func1(): pass
+    >>> @guard
+    ... def func2(): pass
     """
 
     def __init__(self):
