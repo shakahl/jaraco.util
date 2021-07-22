@@ -21,7 +21,7 @@ def atomize(f, lock=None):
     ...     thread.start()
     >>> for thread in threads:
     ...     thread.join()
-    >>> (checkpoints[1] - checkpoints[0]) >= 0.1
+    >>> abs(float.__sub__(*checkpoints)) >= .1
     True
     """
     lock = lock or threading.RLock()
